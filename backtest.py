@@ -355,13 +355,36 @@ def summarize(signals: list[dict], horizon_hours: int, direction: str | None = N
         "median_return_pct": statistics.median(values),
     }
 
+def sequential_non_overlapping(signals: list[dict], horizon_hours: int) -> list[dict]:
+    """
+    Keep only trades that do not overlap for the selected holding horizon.
+    One hypothetical account, one open position at a time. Any new signal
+    while a position is open is skipped, including a signal in the opposite direction.
+    """
+    accepted = []
+    next_available_ts = 0
+    for signal in sorted(signals, key=lambda x: x["signal_time"]):
+        ts = int(datetime.fromisoformat(signal["signal_time"]).timestamp() * 1000)
+        if ts < next_available_ts:
+            continue
+        accepted.append(signal)
+        next_available_ts = ts + horizon_hours * 3_600_000
+    return accepted
+
 def html_report(report: dict) -> str:
     metrics = report["metrics"]
     def pct(value):
         return "—" if value is None else f"{value:+.2f}%"
     rows = []
     for horizon, label_h in ((24, "1 gün"), (72, "3 gün"), (168, "7 gün")):
-        for label, key in (("Tüm sinyaller", "all"), ("LONG", "long"), ("SHORT", "short")):
+        for label, key in (
+            ("Tüm sinyaller (örtüşebilir)", "all"),
+            ("LONG (örtüşebilir)", "long"),
+            ("SHORT (örtüşebilir)", "short"),
+            ("Tek pozisyon: tümü", "sequential_all"),
+            ("Tek pozisyon: LONG", "sequential_long"),
+            ("Tek pozisyon: SHORT", "sequential_short"),
+        ):
             m = metrics[str(horizon)][key]
             win = "—" if m["win_rate_pct"] is None else f"{m['win_rate_pct']:.1f}%"
             rows.append(f"<tr><td>{label_h}</td><td>{label}</td><td>{m['trades']}</td><td>{win}</td><td>{pct(m['avg_return_pct'])}</td><td>{pct(m['median_return_pct'])}</td></tr>")
@@ -432,11 +455,17 @@ def main():
     for i, scored in scored_rows:
         score = scored["score"]
         direction = None
-        # Only emit on a threshold crossing; do not count every hourly bar within a persistent zone.
+        # A missing/invalid hourly score breaks continuity. The first score after
+        # a gap only resets the baseline; it is NOT treated as a fresh crossing.
         contiguous = previous_ts is not None and scored["timestamp"] - previous_ts == 3_600_000
-        if score >= 60 and (not contiguous or previous is None or previous < 60):
+        if not contiguous or previous is None:
+            previous = score
+            previous_ts = scored["timestamp"]
+            continue
+        # Emit only on a real crossing from the immediately preceding valid hour.
+        if score >= 60 and previous < 60:
             direction = "LONG"
-        elif score <= -60 and (not contiguous or previous is None or previous > -60):
+        elif score <= -60 and previous > -60:
             direction = "SHORT"
         previous = score
         previous_ts = scored["timestamp"]
@@ -457,13 +486,19 @@ def main():
             row[f"r{horizon}"] = round(forward_return(entry_candle["open"], exit_candle["close"], direction), 5)
         signals.append(row)
 
-    metrics = {
-        str(h): {
-            "all": summarize(signals, h),
-            "long": summarize(signals, h, "LONG"),
-            "short": summarize(signals, h, "SHORT"),
-        } for h in (24, 72, 168)
-    }
+    metrics = {}
+    sequential_counts = {}
+    for horizon in (24, 72, 168):
+        seq = sequential_non_overlapping(signals, horizon)
+        sequential_counts[str(horizon)] = len(seq)
+        metrics[str(horizon)] = {
+            "all": summarize(signals, horizon),
+            "long": summarize(signals, horizon, "LONG"),
+            "short": summarize(signals, horizon, "SHORT"),
+            "sequential_all": summarize(seq, horizon),
+            "sequential_long": summarize(seq, horizon, "LONG"),
+            "sequential_short": summarize(seq, horizon, "SHORT"),
+        }
     tested = [x[1]["signal_day"] for x in scored_rows]
     report = {
         "generated_at": datetime.now(timezone.utc).isoformat(),
@@ -475,6 +510,7 @@ def main():
             "short": sum(1 for x in signals if x["direction"] == "SHORT"),
             "total": len(signals),
         },
+        "sequential_non_overlapping_trade_counts_by_horizon": sequential_counts,
         "metrics": metrics,
         "signals": signals,
         "data_coverage": {
@@ -490,7 +526,8 @@ def main():
             "OKX sözleşme OI geçmişi en fazla son 1.440 veri noktasıyla sınırlıdır; 1 saatlik test yaklaşık 60 günle sınırlanır.",
             "OKX funding history endpoint'i dokümantasyona göre en fazla üç aylık geçmiş döndürür.",
             "Getiriler brüttür; komisyon, spread, slippage, fonlama nakit akışları, stop-loss, take-profit ve likidasyon etkileri dahil değildir.",
-            "1/3/7 günlük ölçümler aynı sinyalin farklı ufuklarıdır; sinyallerin getirileri birbirleriyle örtüşebilir ve bağımsız değildir.",
+            "Ham 1/3/7 günlük ölçümler birbirleriyle örtüşebilir ve bağımsız değildir. Raporda ayrıca her ufuk için tek pozisyon/örtüşmeyen işlem özeti bulunur; bu bölüm, aynı anda yalnızca bir pozisyon açık varsayar.",
+            "Veri boşluğundan sonra gelen ilk geçerli skor yeni eşik geçişi sayılmaz; gerçek geçiş için ardışık iki saatlik geçerli skor gerekir.",
             "Eşikler ve ağırlıklar deneysel başlangıç kurallarıdır; parametre optimizasyonu yapılmamıştır.",
             "Kote Charts yalnızca kişisel/ticari olmayan kullanım ve kaynak gösterme koşuluyla kullanılabilir: https://kotecharts.com/c/exchange-netflow",
             "ETF akışları Farside Investors günlük tablosundan alınır: https://farside.co.uk/bitcoin-etf-flow-all-data/",
@@ -501,7 +538,9 @@ def main():
     OUT_HTML.write_text(html_report(report), encoding="utf-8")
     print(json.dumps({
         "period": report["period"], "valid_score_hours": report["valid_score_hours"],
-        "signal_counts": report["signal_counts"], "metrics": report["metrics"],
+        "signal_counts": report["signal_counts"],
+        "sequential_non_overlapping_trade_counts_by_horizon": report["sequential_non_overlapping_trade_counts_by_horizon"],
+        "metrics": report["metrics"],
         "data_coverage": report["data_coverage"],
     }, ensure_ascii=False, indent=2))
 
