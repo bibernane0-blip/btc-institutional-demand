@@ -1,8 +1,8 @@
-name: Update BTC data and publish dashboard
+name: Update BTC institutional flows and publish dashboard
 
 on:
   schedule:
-    - cron: "*/15 * * * *"
+    - cron: "*/5 * * * *"
   workflow_dispatch:
 
 permissions:
@@ -11,15 +11,14 @@ permissions:
   id-token: write
 
 concurrency:
-  group: "pages"
+  group: pages
   cancel-in-progress: true
 
 jobs:
   build:
     runs-on: ubuntu-latest
-
     steps:
-      - name: Get repository files
+      - name: Checkout repository
         uses: actions/checkout@v4
 
       - name: Set up Python
@@ -30,30 +29,23 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
 
-      - name: Fetch market and flow data
+      - name: Refresh ETF and on-chain flow snapshot
         env:
           KOTE_API_KEY: ${{ secrets.KOTE_API_KEY }}
         run: python update_data.py
 
-      - name: Prepare dashboard
-        run: |
-          mkdir -p public
-          cp index.html data.json public/
-
-      - name: Upload dashboard files
+      - name: Upload dashboard
         uses: actions/upload-pages-artifact@v3
         with:
-          path: public
+          path: .
 
   deploy:
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
-
     runs-on: ubuntu-latest
     needs: build
-
     steps:
-      - name: Publish dashboard
+      - name: Deploy dashboard
         id: deployment
         uses: actions/deploy-pages@v4
