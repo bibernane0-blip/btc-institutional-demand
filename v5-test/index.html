@@ -1,0 +1,598 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#0b1220">
+<title>BTC Institutional Demand PRO — Live</title>
+<style>
+:root{color-scheme:dark;--bg:#0b1220;--panel:#151f31;--panel2:#101a2a;--line:#29384f;--text:#e5e7eb;--muted:#9ca3af;--green:#34d399;--red:#fb7185;--yellow:#fbbf24;--blue:#7dd3fc}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:15px/1.5 system-ui,Segoe UI,Arial}
+main{max-width:1180px;margin:auto;padding:20px}.top{display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap}
+h1{font-size:clamp(22px,4vw,30px);margin:0}.sub,.muted,.small{color:var(--muted)}.small{font-size:12px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:17px;margin:13px 0}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:11px}
+.hero{display:grid;grid-template-columns:1.25fr 1fr 1fr;gap:12px}
+.tile{background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:14px;min-width:0}
+.tile b{display:block;font-size:14px}.value{font-size:25px;font-weight:750;margin:7px 0;overflow-wrap:anywhere}
+.score{font-size:clamp(38px,6vw,58px);font-weight:850;line-height:1.1;margin:10px 0}
+.state{font-weight:750;margin:5px 0}.ok{color:var(--green)}.bad{color:var(--red)}.warn{color:var(--yellow)}.blue{color:var(--blue)}
+.pill{display:inline-flex;align-items:center;gap:7px;border:1px solid var(--line);border-radius:999px;padding:6px 10px;font-size:12px;color:var(--muted);margin:4px 5px 4px 0}
+.dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:#64748b}.dot.ok{background:var(--green)}.dot.bad{background:var(--red)}.dot.warn{background:var(--yellow)}
+.btn{background:#23344d;color:var(--text);border:1px solid #466080;border-radius:9px;padding:9px 12px;cursor:pointer}
+a{color:var(--blue)}table{width:100%;border-collapse:collapse}td,th{text-align:left;padding:8px;border-bottom:1px solid var(--line)}
+iframe{width:100%;height:485px;border:0;border-radius:10px}.source-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+hr{border:0;border-top:1px solid var(--line);margin:13px 0}
+@media(max-width:850px){.hero{grid-template-columns:1fr 1fr}.hero .combined{grid-column:1/-1}}
+@media(max-width:600px){main{padding:11px}.hero{grid-template-columns:1fr}.hero .combined{grid-column:auto}iframe{height:370px}td,th{font-size:12px;padding:6px}}
+</style>
+</head>
+<body>
+<main>
+ <div class="top">
+  <div><h1>BTC Institutional Demand PRO</h1><div class="sub">Canlı piyasa akışı + kurumsal sermaye akışı</div></div>
+  <div><button class="btn" id="refreshBtn">Akış verisini yenile</button></div>
+ </div>
+ <div class="source-row">
+  <span class="pill"><span id="publicDot" class="dot warn"></span><span id="publicStatus">OKX market WS: bağlanıyor</span></span>
+  <span class="pill"><span id="businessDot" class="dot warn"></span><span id="businessStatus">OKX candle WS: bağlanıyor</span></span>
+  <span class="pill"><span id="flowDot" class="dot warn"></span><span id="flowStatus">Kurumsal akış verisi bekleniyor</span></span>
+ </div>
+
+ <section class="hero">
+  <div class="card combined">
+   <div class="muted">Birleşik talep skoru</div>
+   <div class="score" id="combinedScore">N/A</div>
+   <div class="state" id="combinedLabel">Canlı ve kurumsal veriler bekleniyor</div>
+   <div class="small" id="combinedUpdated">Skor henüz hesaplanmadı.</div>
+   <div class="small">Ağırlık: %60 Live Market · %40 Institutional Flow</div>
+  </div>
+  <div class="card">
+   <div class="muted">Live Market Score</div>
+   <div class="score" id="liveScore">N/A</div>
+   <div class="state" id="liveLabel">OKX bağlantısı bekleniyor</div>
+   <div class="small" id="marketUpdated">—</div>
+  </div>
+  <div class="card">
+   <div class="muted">Institutional Flow Score</div>
+   <div class="score" id="flowScore">N/A</div>
+   <div class="state" id="flowLabel">Akış verisi bekleniyor</div>
+   <div class="small" id="flowUpdated">—</div>
+  </div>
+ </section>
+
+ <section class="card">
+  <div class="top"><h2 style="margin:0">Canlı piyasa verileri</h2><span class="small">OKX public WebSocket · BTC-USDT</span></div>
+  <div class="grid" style="margin-top:12px" id="marketTiles"></div>
+ </section>
+
+ <section class="card">
+  <div class="top"><h2 style="margin:0">Kurumsal sermaye akışı</h2><span class="small">Yavaş değişen veri katmanı</span></div>
+  <div class="grid" style="margin-top:12px" id="flowTiles"></div>
+  <p class="small">ETF akışı günlük yayımlanır. Exchange Netflow, Kote Charts'ın etiketlenmiş borsa cüzdanları üzerinden hesapladığı zincir üstü akıştır; emir defteri veya borsa içi transferleri göstermez.</p>
+ </section>
+
+ <section class="card">
+  <h2>Skor bileşenleri</h2>
+  <div class="grid" id="componentTiles"></div>
+  <hr>
+  <p class="small"><b>Deneysel formül:</b> Live Market = Open Interest (30) + Funding (20) + Fiyat/Hacim (50). Institutional Flow = ETF (50) + Exchange Netflow (50). Birleşik skor = %60 Live Market + %40 Institutional Flow. Bu yeni formül eski 55 günlük backtest ile doğrulanmış değildir; bu değişiklikten sonra yeni formülle yeniden test edilmelidir.</p>
+ </section>
+
+ <section class="card">
+  <h2>Veri tazeliği ve bağlantı durumu</h2>
+  <div id="freshness" class="small">Veri durumları hesaplanıyor…</div>
+  <div id="wsErrors" class="small warn" style="margin-top:8px"></div>
+ </section>
+
+ <section class="card">
+  <h2>OKX BTC-USDT grafiği</h2>
+  <iframe loading="lazy" src="https://www.tradingview.com/widgetembed/?symbol=OKX%3ABTCUSDT&interval=60&theme=dark&style=1&hide_top_toolbar=false&allow_symbol_change=true"></iframe>
+ </section>
+
+ <section class="card">
+  <h2>Skor nasıl okunmalı?</h2>
+  <p><b>+60 ile +100:</b> güçlü pozitif görünüm · <b>+30 ile +59:</b> pozitif görünüm · <b>-29 ile +29:</b> nötr · <b>-30 ile -59:</b> negatif görünüm · <b>-60 ile -100:</b> güçlü negatif görünüm.</p>
+  <p class="small">Bu bir karar destek prototipidir; otomatik emir göndermez. Ağırlıklar ve eşikler deneysel başlangıç varsayımlarıdır. Yeni skor formülü için ayrı tarihsel test ve ileriye dönük demo takibi tamamlanmadan işlem sinyali olarak kullanılmamalıdır.</p>
+ </section>
+
+ <footer class="small">
+  Kaynaklar:
+  <a href="https://www.okx.com/docs-v5/en/" target="_blank" rel="noopener">OKX API</a> ·
+  <a href="https://farside.co.uk/bitcoin-etf-flow-all-data/" target="_blank" rel="noopener">Farside Investors</a> ·
+  <a href="https://kotecharts.com/c/exchange-netflow" target="_blank" rel="noopener">Kote Charts Exchange Netflow</a>.
+  Kote Charts verileri kişisel/araştırma amaçlı ticari olmayan kullanım ve kaynak gösterme koşuluyla gösterilir.
+ </footer>
+</main>
+
+<script>
+"use strict";
+
+const OKX_PUBLIC_WS = "wss://ws.okx.com/ws/v5/public";
+const OKX_BUSINESS_WS = "wss://ws.okx.com/ws/v5/business";
+const OKX_REST = "https://www.okx.com";
+const FLOW_REFRESH_MS = 60000;
+const OI_STORAGE_KEY = "btc-demand-oi-history-v4";
+
+const state = {
+  price: null, priceTs: 0,
+  candles: [], candleUpdateAt: 0,
+  oiSamples: [], oi: null, oiTs: 0, oiHistoryStatus: "", serverHistoryStatus: "",
+  fundingPct: null, fundingTs: 0, fundingTime: null,
+  flowData: null,
+  publicSocket: null, businessSocket: null,
+  publicStatus: "connecting", businessStatus: "connecting",
+  publicError: "", businessError: "",
+  lastPublicMsg: 0, lastBusinessMsg: 0,
+  liveScore: null, liveParts: null, flowScore: null, flowParts: null, combinedScore: null,
+  lastCalculation: 0
+};
+
+const fmt = (value, digits=2) => value === null || value === undefined || !Number.isFinite(Number(value))
+  ? "—" : Number(value).toLocaleString("tr-TR", {maximumFractionDigits: digits});
+const signed = (value, digits=0) => value === null || value === undefined ? "—" : (value > 0 ? "+" : "") + fmt(value, digits);
+const trTime = (ts) => ts ? new Date(ts).toLocaleString("tr-TR", {timeZone:"Europe/Istanbul"}) : "—";
+const ageText = (ts) => {
+  if (!ts) return "zaman damgası yok";
+  const sec = Math.max(0, Math.floor((Date.now()-ts)/1000));
+  if (sec < 60) return `${sec} sn önce`;
+  if (sec < 3600) return `${Math.floor(sec/60)} dk önce`;
+  return `${(sec/3600).toFixed(1)} saat önce`;
+};
+const tone = (score) => score === null ? "warn" : score >= 30 ? "ok" : score <= -30 ? "bad" : "warn";
+const mood = (score) => score === null ? "VERİ BEKLENİYOR" : score >= 60 ? "GÜÇLÜ POZİTİF" : score >= 30 ? "POZİTİF — TEYİT BEKLE" : score <= -60 ? "GÜÇLÜ NEGATİF" : score <= -30 ? "NEGATİF — TEYİT BEKLE" : "NÖTR — BEKLE";
+
+function setConnection(prefix, status, message="") {
+  const dot = document.getElementById(prefix + "Dot");
+  const text = document.getElementById(prefix + "Status");
+  const cls = status === "connected" ? "ok" : status === "error" ? "bad" : "warn";
+  dot.className = "dot " + cls;
+  text.textContent = message || status;
+}
+function createTile(title, value, note, cls="") {
+  return `<div class="tile"><b>${title}</b><div class="value ${cls}">${value}</div><div class="small">${note || ""}</div></div>`;
+}
+function updateScoreCard(id, labelId, score, label, updatedId, updatedText) {
+  const el = document.getElementById(id);
+  el.textContent = score === null ? "N/A" : `${score > 0 ? "+" : ""}${Math.round(score)}/100`;
+  el.className = "score " + tone(score);
+  document.getElementById(labelId).textContent = label;
+  document.getElementById(labelId).className = "state " + tone(score);
+  if (updatedId) document.getElementById(updatedId).textContent = updatedText || "";
+}
+
+async function okxGet(path, params) {
+  const query = new URLSearchParams(params).toString();
+  const response = await fetch(`${OKX_REST}${path}?${query}`, {cache:"no-store"});
+  if (!response.ok) throw new Error(`OKX REST ${response.status} (${path})`);
+  const json = await response.json();
+  if (String(json.code) !== "0" || !Array.isArray(json.data)) throw new Error(`OKX ${path}: ${json.msg || "API yanıtı geçersiz"}`);
+  return json.data;
+}
+
+async function bootstrapMarket() {
+  const results = await Promise.allSettled([
+    okxGet("/api/v5/market/candles", {instId:"BTC-USDT", bar:"1H", limit:"100"}),
+    okxGet("/api/v5/public/funding-rate", {instId:"BTC-USDT-SWAP"})
+  ]);
+
+  if (results[0].status === "fulfilled") {
+    const incomingCandles = results[0].value.map(row => ({
+      ts:Number(row[0]), open:Number(row[1]), high:Number(row[2]), low:Number(row[3]),
+      close:Number(row[4]), volume:Number(row[5]), confirm:String(row[8] || "0")
+    })).sort((a,b)=>a.ts-b.ts);
+    const byTs = new Map(state.candles.map(c=>[c.ts,c]));
+    for (const candle of incomingCandles) byTs.set(candle.ts,candle);
+    state.candles=[...byTs.values()].sort((a,b)=>a.ts-b.ts).slice(-2200);
+    state.candleUpdateAt = Date.now();
+  } else {
+    state.publicError = "Başlangıç mum verisi alınamadı: " + results[0].reason.message;
+  }
+
+  if (results[1].status === "fulfilled" && results[1].value.length) {
+    const row = results[1].value[0];
+    state.fundingPct = Number(row.fundingRate) * 100;
+    state.fundingTs = Date.now();
+    state.fundingTime = Number(row.fundingTime || 0);
+  } else if (results[1].status === "rejected") {
+    state.publicError += " Funding başlangıcı: " + results[1].reason.message;
+  }
+  render();
+}
+
+async function loadServerHistory() {
+  try {
+    const response = await fetch(`./market_history.json?ts=${Date.now()}`, {cache:"no-store"});
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    const history = await response.json();
+    if (!Array.isArray(history.oi) || !Array.isArray(history.candles)) throw new Error("Geçmiş dosyası geçersiz");
+    const now = Date.now();
+    for (const x of history.oi) {
+      if (Number.isFinite(x.ts) && Number.isFinite(x.oiBtc) && x.oiBtc > 0 && now-x.ts < 31*86400000 && x.ts<=now+60000) {
+        // Merge without replacing the live current value.
+        if (!state.oiSamples.some(y=>y.ts===x.ts)) state.oiSamples.push({ts:x.ts,oiBtc:x.oiBtc});
+      }
+    }
+    state.oiSamples.sort((a,b)=>a.ts-b.ts);
+    if (state.oiSamples.length>10000) state.oiSamples=state.oiSamples.slice(-10000);
+    const byTs = new Map(state.candles.map(c=>[c.ts,c]));
+    for (const x of history.candles) {
+      if (Number.isFinite(x.ts) && Number.isFinite(x.close) && x.close>0) byTs.set(x.ts,x);
+    }
+    state.candles=[...byTs.values()].sort((a,b)=>a.ts-b.ts).slice(-2200);
+    // Archived candles may be old; do not claim a fresh WebSocket heartbeat.
+    state.serverHistoryStatus=`Sunucu geçmişi: ${history.oi.length} OI / ${history.candles.length} mum; kontrol: ${history.checked_at || "bilinmiyor"}`;
+    if (history.errors?.length) state.serverHistoryStatus += `; kaynak uyarısı: ${history.errors.join(" / ")}`;
+  } catch (error) {
+    state.serverHistoryStatus="Sunucu geçmişi alınamadı: "+error.message;
+  }
+  render();
+}
+
+function parseCandle(row) {
+  return {ts:Number(row[0]), open:Number(row[1]), high:Number(row[2]), low:Number(row[3]),
+    close:Number(row[4]), volume:Number(row[5]), confirm:String(row[8] || "0")};
+}
+function upsertCandle(candle) {
+  state.candleUpdateAt = Date.now();
+  const idx = state.candles.findIndex(x=>x.ts===candle.ts);
+  if (idx >= 0) state.candles[idx] = candle;
+  else state.candles.push(candle);
+  state.candles.sort((a,b)=>a.ts-b.ts);
+  if (state.candles.length > 160) state.candles = state.candles.slice(-160);
+}
+function restoreOiHistory() {
+  try {
+    const raw = JSON.parse(localStorage.getItem(OI_STORAGE_KEY) || "[]");
+    const cutoff = Date.now() - 48*3600000;
+    state.oiSamples = raw.filter(x => Number.isFinite(x.ts) && Number.isFinite(x.oiBtc) && x.oiBtc > 0 && x.ts >= cutoff && x.ts <= Date.now()+60000).sort((a,b)=>a.ts-b.ts);
+  } catch (_) { state.oiSamples = []; }
+}
+function saveOiHistory() {
+  try {
+    const cutoff = Date.now() - 48*3600000;
+    state.oiSamples = state.oiSamples.filter(x=>x.ts>=cutoff).slice(-2000);
+    localStorage.setItem(OI_STORAGE_KEY, JSON.stringify(state.oiSamples));
+  } catch (_) { state.oiHistoryStatus = "Tarayıcı geçmiş kaydı kullanılamıyor"; }
+}
+function addOiSample(item) {
+  if (!Number.isFinite(item.ts) || !Number.isFinite(item.oiBtc) || item.oiBtc <= 0) return;
+  const idx = state.oiSamples.findIndex(x=>x.ts===item.ts);
+  if (idx >= 0) state.oiSamples[idx] = item;
+  else state.oiSamples.push(item);
+  state.oiSamples.sort((a,b)=>a.ts-b.ts);
+  if (state.oiSamples.length > 10000) state.oiSamples = state.oiSamples.slice(-10000);
+  state.oi = item.oiBtc;
+  state.oiTs = item.ts;
+  saveOiHistory();
+}
+
+function connectOkxSocket(kind, url, args, onData) {
+  const isPublic = kind === "public";
+  const statusKey = isPublic ? "publicStatus" : "businessStatus";
+  const errorKey = isPublic ? "publicError" : "businessError";
+  const msgKey = isPublic ? "lastPublicMsg" : "lastBusinessMsg";
+  const statusPrefix = isPublic ? "public" : "business";
+  let retryMs = 2000;
+  let pingSentAt = 0;
+  let pingTimer = null;
+  let reconnectTimer = null;
+  let manuallyClosed = false;
+
+  function connect() {
+    state[statusKey] = "connecting";
+    setConnection(statusPrefix, "connecting", isPublic ? "OKX market WS: bağlanıyor" : "OKX candle WS: bağlanıyor");
+    const ws = new WebSocket(url);
+    if (isPublic) state.publicSocket = ws; else state.businessSocket = ws;
+
+    ws.onopen = () => {
+      state[statusKey] = "connected";
+      state[msgKey] = Date.now();
+      setConnection(statusPrefix, "connected", isPublic ? "OKX market WS: bağlı" : "OKX candle WS: bağlı");
+      ws.send(JSON.stringify({op:"subscribe", args}));
+      retryMs = 2000;
+    };
+
+    ws.onmessage = (event) => {
+      state[msgKey] = Date.now();
+      if (event.data === "pong") { pingSentAt = 0; return; }
+      let msg;
+      try { msg = JSON.parse(event.data); } catch { return; }
+      if (msg.event === "error") {
+        state[statusKey] = "error";
+        state[errorKey] = `${msg.code || ""} ${msg.msg || "OKX abonelik hatası"}`;
+        setConnection(statusPrefix, "error", `${isPublic ? "Market" : "Candle"} WS hata`);
+        render();
+        return;
+      }
+      if (msg.event === "subscribe") return;
+      if (msg.arg && Array.isArray(msg.data)) onData(msg.arg.channel, msg.data);
+      render();
+    };
+
+    ws.onerror = () => {
+      state[statusKey] = "error";
+      state[errorKey] = isPublic ? "OKX market WebSocket bağlantı hatası." : "OKX candle WebSocket bağlantı hatası.";
+      setConnection(statusPrefix, "error", "WebSocket bağlantı hatası");
+    };
+
+    ws.onclose = () => {
+      state[statusKey] = "connecting";
+      setConnection(statusPrefix, "connecting", "Bağlantı yeniden kuruluyor…");
+      if (pingTimer) clearInterval(pingTimer);
+      if (!manuallyClosed) {
+        reconnectTimer = setTimeout(connect, retryMs);
+        retryMs = Math.min(30000, retryMs * 1.7);
+      }
+    };
+
+    // OKX drops a WebSocket with no messages for >30 seconds.
+    // Its documented application-level heartbeat is the text "ping"/"pong".
+    pingTimer = setInterval(() => {
+      if (ws.readyState !== WebSocket.OPEN) return;
+      const last = state[msgKey] || Date.now();
+      const idle = Date.now() - last;
+      if (idle > 20000 && !pingSentAt) {
+        try { ws.send("ping"); pingSentAt = Date.now(); } catch {}
+      } else if (pingSentAt && Date.now() - pingSentAt > 10000) {
+        try { ws.close(); } catch {}
+      }
+    }, 5000);
+  }
+
+  connect();
+  return () => {
+    manuallyClosed = true;
+    if (pingTimer) clearInterval(pingTimer);
+    if (reconnectTimer) clearTimeout(reconnectTimer);
+    const socket = isPublic ? state.publicSocket : state.businessSocket;
+    if (socket) socket.close();
+  };
+}
+
+function startSockets() {
+  connectOkxSocket("public", OKX_PUBLIC_WS, [
+    {channel:"tickers", instId:"BTC-USDT"},
+    {channel:"open-interest", instId:"BTC-USDT-SWAP"},
+    {channel:"funding-rate", instId:"BTC-USDT-SWAP"}
+  ], (channel, data) => {
+    for (const row of data) {
+      if (channel === "tickers") {
+        state.price = Number(row.last);
+        state.priceTs = Number(row.ts || Date.now());
+      } else if (channel === "open-interest") {
+        addOiSample({ts:Number(row.ts || Date.now()), oiBtc:Number(row.oiCcy)});
+      } else if (channel === "funding-rate") {
+        if (row.fundingRate !== undefined) state.fundingPct = Number(row.fundingRate) * 100;
+        state.fundingTs = Number(row.ts || Date.now());
+        state.fundingTime = Number(row.fundingTime || 0);
+      }
+    }
+  });
+
+  connectOkxSocket("business", OKX_BUSINESS_WS, [
+    {channel:"candle1H", instId:"BTC-USDT"}
+  ], (channel, data) => {
+    if (channel === "candle1H") for (const row of data) upsertCandle(parseCandle(row));
+  });
+}
+
+function ema(values, period) {
+  if (!values.length) return null;
+  const alpha = 2 / (period + 1);
+  let result = values[0];
+  for (let i=1;i<values.length;i++) result = alpha * values[i] + (1-alpha) * result;
+  return result;
+}
+
+function computeLiveMarket() {
+  const now = Date.now();
+  const priceFresh = state.price && now-state.priceTs < 30000;
+  const oiFresh = state.oi !== null && now-state.oiTs < 90000;
+  const fundingFresh = state.fundingPct !== null && now-state.fundingTs < 240000;
+  const candleFresh = state.candles.length > 50 && state.candleUpdateAt > 0 && now-state.candleUpdateAt < 90000;
+  if (!priceFresh || !oiFresh || !fundingFresh || !candleFresh) {
+    return {score:null, parts:null, missing:[
+      !priceFresh?"fiyat":null, !oiFresh?"OI":null,
+      !fundingFresh?"Funding":null, !candleFresh?"mum geçmişi":null
+    ].filter(Boolean)};
+  }
+
+  const samples = state.oiSamples;
+  const newestOi = samples[samples.length-1];
+  const baselineTarget = newestOi.ts - 6*3600000;
+  let baseline = null;
+  for (const point of samples) if (point.ts <= baselineTarget) baseline = point;
+  if (!baseline || baseline.oiBtc <= 0) {
+    const first = samples.length ? samples[0].ts : Date.now();
+    const hoursLeft = Math.max(0, (6*3600000 - (Date.now()-first))/3600000);
+    return {score:null, parts:null, missing:[`6 saatlik OI referansı (yerel kayıt dolumu: yaklaşık ${hoursLeft.toFixed(1)} saat)`]};
+  }
+  const oiChangePct = (state.oi / baseline.oiBtc - 1) * 100;
+
+  const targetPriceTs = Date.now() - 6*3600000;
+  let baseCandle = null;
+  for (const candle of state.candles) if (candle.ts <= targetPriceTs) baseCandle = candle;
+  if (!baseCandle || baseCandle.close <= 0) return {score:null, parts:null, missing:["6 saatlik fiyat referansı"]};
+  const priceChange6hPct = (state.price / baseCandle.close - 1) * 100;
+
+  let oiScore = 0;
+  if (priceChange6hPct > 0 && oiChangePct > 0.5) oiScore = 30;
+  else if (priceChange6hPct > 0 && Math.abs(oiChangePct) <= 0.5) oiScore = 12;
+  else if (priceChange6hPct < 0 && oiChangePct > 0.5) oiScore = -23;
+
+  const funding = state.fundingPct;
+  let fundingScore = 0;
+  if (funding <= -0.05) fundingScore = 7;
+  else if (funding < -0.01) fundingScore = 12;
+  else if (Math.abs(funding) <= 0.01) fundingScore = 20;
+  else if (funding >= 0.05) fundingScore = -20;
+
+  const allCandles = state.candles.slice().sort((a,b)=>a.ts-b.ts);
+  const closes = allCandles.slice(-100).map(c=>c.close);
+  const ema20 = ema(closes.slice(-40), 20);
+  const ema50 = ema(closes.slice(-80), 50);
+  const completed = allCandles.filter(c=>c.confirm === "1");
+  const lastClosed = completed[completed.length-1];
+  const previous20 = completed.slice(-21,-1);
+  let highVolume = false;
+  if (lastClosed && previous20.length >= 20) {
+    const avgVol = previous20.reduce((sum,c)=>sum+c.volume,0)/previous20.length;
+    highVolume = lastClosed.volume > avgVol;
+  }
+
+  let priceScore = 0;
+  if (state.price > ema20 && state.price > ema50 && highVolume) priceScore = 50;
+  else if (state.price > ema20) priceScore = 20;
+  else if (state.price < ema20 && state.price < ema50 && highVolume) priceScore = -50;
+
+  return {
+    score: Math.max(-100, Math.min(100, oiScore + fundingScore + priceScore)),
+    parts: {
+      "Open Interest": {score:oiScore, value:oiChangePct, unit:"% / son 6 saat"},
+      "Funding": {score:fundingScore, value:funding, unit:"% · mevcut dönem"},
+      "Fiyat & Hacim": {score:priceScore, value:state.price, unit:"USD"}
+    },
+    metrics:{oiChangePct, priceChange6hPct, fundingPct:funding, ema20, ema50, highVolume}
+  };
+}
+
+function calcFlowScore() {
+  const flow = state.flowData;
+  if (!flow || !flow.sources) return {score:null, parts:null, reason:"Akış veri dosyası henüz okunamadı."};
+  const etf = flow.sources.etf || {};
+  const nf = flow.sources.netflow || {};
+  if (!etf.ok || !nf.ok) return {score:null, parts:null, reason:[etf.error,nf.error].filter(Boolean).join(" · ") || "ETF veya Netflow verisi eksik."};
+
+  const fetchedTs = Date.parse(flow.updated_at || "");
+  const netflowTs = Date.parse(nf.latest_bucket_ts || "");
+  const etfDay = Date.parse((etf.date || "") + "T00:00:00Z");
+  const etfAgeDays = etfDay ? (Date.now()-etfDay)/86400000 : Infinity;
+  const snapshotAge = fetchedTs ? (Date.now()-fetchedTs)/60000 : Infinity;
+  const netflowAge = netflowTs ? (Date.now()-netflowTs)/60000 : Infinity;
+  if (snapshotAge > 90) return {score:null,parts:null,reason:`Akış dosyası eski (${snapshotAge.toFixed(0)} dk).`};
+  if (netflowAge > 180) return {score:null,parts:null,reason:`Netflow son verisi eski (${netflowAge.toFixed(0)} dk).`};
+  if (etfAgeDays > 4 || etfAgeDays < -0.2) return {score:null,parts:null,reason:`ETF günlük verisinin tarihi uygun değil (${etf.date || "tarih yok"}).`};
+  if (Number(nf.coverage_pct || 0) < 60) return {score:null,parts:null,reason:"Kote 5 dakikalık veri kapsaması %60'ın altında."};
+
+  const etfFlow = Number(etf.flow_usd_m);
+  const nf24h = Number(nf.trailing_24h_btc);
+  const etfScore = etfFlow >= 100 ? 50 : etfFlow > 0 ? 25 : etfFlow <= -100 ? -50 : etfFlow < 0 ? -25 : 0;
+  const netflowScore = nf24h <= -500 ? 50 : nf24h < 0 ? 25 : nf24h >= 500 ? -50 : nf24h > 0 ? -25 : 0;
+  return {
+    score:etfScore+netflowScore,
+    parts:{
+      "ETF":{score:etfScore,value:etfFlow,unit:"milyon USD",date:etf.date},
+      "Exchange Netflow":{score:netflowScore,value:nf24h,unit:"BTC / son 24 saat",coverage:nf.coverage_pct}
+    },
+    metrics:{snapshotAge,netflowAge,etfAgeDays}
+  };
+}
+
+function render() {
+  const live = computeLiveMarket();
+  const flow = calcFlowScore();
+  state.liveScore = live.score;
+  state.liveParts = live.parts;
+  state.flowScore = flow.score;
+  state.flowParts = flow.parts;
+  state.combinedScore = live.score === null || flow.score === null ? null : Math.round(live.score*0.60 + flow.score*0.40);
+
+  updateScoreCard("combinedScore","combinedLabel",state.combinedScore,mood(state.combinedScore),"combinedUpdated",
+    state.combinedScore === null ? "Canlı piyasa ve kurumsal akış katmanlarının ikisi de güncel olmalı." :
+    `Son hesaplama: ${trTime(Date.now())}`);
+  updateScoreCard("liveScore","liveLabel",live.score,mood(live.score),"marketUpdated",
+    live.score === null ? `Eksik: ${(live.missing||[]).join(", ")}` : `Fiyat ${ageText(state.priceTs)} · OI ${ageText(state.oiTs)} · Funding ${ageText(state.fundingTs)}`);
+  updateScoreCard("flowScore","flowLabel",flow.score,mood(flow.score),"flowUpdated",
+    flow.score === null ? (flow.reason || "Kurumsal akış verisi henüz geçerli değil.") :
+    `Netflow ${ageText(Date.parse(state.flowData.sources.netflow.latest_bucket_ts))} · Akış dosyası ${ageText(Date.parse(state.flowData.updated_at))}`);
+
+  const priceScore = live.parts ? live.parts["Fiyat & Hacim"].score : null;
+  const priceScoreText = live.parts ? `${signed(priceScore)} puan` : "Bekleniyor";
+  const liveMetrics = live.metrics || {};
+  document.getElementById("marketTiles").innerHTML = [
+    createTile("BTC-USDT fiyatı",state.price===null?"—":"$"+fmt(state.price,1),`OKX ticker · ${ageText(state.priceTs)}`),
+    createTile("Open Interest",state.oi===null?"—":fmt(state.oi,2)+" BTC",`OKX BTC-USDT-SWAP · ${ageText(state.oiTs)}`),
+    createTile("OI değişimi (6s)",liveMetrics.oiChangePct===undefined?"—":signed(liveMetrics.oiChangePct,3)+"%",`Puan: ${live.parts ? signed(live.parts["Open Interest"].score) : "—"}`),
+    createTile("Funding Rate",state.fundingPct===null?"—":signed(state.fundingPct,4)+"%",`Mevcut dönem oranı · ${ageText(state.fundingTs)}`),
+    createTile("Fiyat değişimi (6s)",liveMetrics.priceChange6hPct===undefined?"—":signed(liveMetrics.priceChange6hPct,3)+"%",`EMA20 ${fmt(liveMetrics.ema20,1)} · EMA50 ${fmt(liveMetrics.ema50,1)}`),
+    createTile("Fiyat & hacim puanı",priceScoreText,liveMetrics.highVolume===undefined?"Hacim teyidi bekleniyor":(liveMetrics.highVolume?"Son kapanan saat hacmi güçlü":"Son kapanan saat hacmi ortalama altında"))
+  ].join("");
+
+  const etf = state.flowData?.sources?.etf || {};
+  const nf = state.flowData?.sources?.netflow || {};
+  document.getElementById("flowTiles").innerHTML = [
+    createTile("Spot ETF net akışı",etf.ok?(etf.flow_usd_m>0?"+":"")+fmt(etf.flow_usd_m,1)+" M$":"Veri yok",etf.ok?`${etf.date} · Farside günlük veri`:(etf.error||"Bekleniyor"),etf.ok?"":"warn"),
+    createTile("Exchange Netflow (24s)",nf.ok?(nf.trailing_24h_btc>0?"+":"")+fmt(nf.trailing_24h_btc,1)+" BTC":"Veri yok",nf.ok?`5 dk kovalar · ${nf.coverage_pct}% kapsama · ${ageText(Date.parse(nf.latest_bucket_ts))}`:(nf.error||"Bekleniyor"),nf.ok?"":"warn"),
+    createTile("Akış dosyasının yaşı",state.flowData?.updated_at?ageText(Date.parse(state.flowData.updated_at)):"—",`En son kontrol: ${trTime(Date.parse(state.flowData?.updated_at || ""))}`),
+    createTile("ETF tarihi",etf.date||"—",etf.fetched_at?`Çekilme zamanı: ${trTime(Date.parse(etf.fetched_at))}`:"")
+  ].join("");
+
+  const components = [];
+  if (live.parts) for (const [name,item] of Object.entries(live.parts)) components.push(createTile("Live · "+name,`${signed(item.score)} puan`,`${fmt(item.value,3)} ${item.unit}`));
+  if (flow.parts) for (const [name,item] of Object.entries(flow.parts)) components.push(createTile("Flow · "+name,`${signed(item.score)} puan`,`${fmt(item.value,2)} ${item.unit}${item.date?" · "+item.date:""}`));
+  document.getElementById("componentTiles").innerHTML = components.length ? components.join("") : createTile("Skor bileşenleri","Bekleniyor","Gerekli veri akışları henüz hazır değil.");
+
+  const freshness = [
+    `Fiyat: ${state.priceTs?ageText(state.priceTs):"bekleniyor"}`,
+    `OI: ${state.oiTs?ageText(state.oiTs):"bekleniyor"}`,
+    `Funding: ${state.fundingTs?ageText(state.fundingTs):"bekleniyor"}`,
+    `Son mum: ${state.candles.length?ageText(state.candles[state.candles.length-1].ts):"bekleniyor"}`,
+    `Flow snapshot: ${state.flowData?.updated_at?ageText(Date.parse(state.flowData.updated_at)):"bekleniyor"}`
+  ];
+  document.getElementById("freshness").textContent = freshness.join("  |  ");
+  document.getElementById("wsErrors").textContent = [state.serverHistoryStatus,state.publicError,state.businessError,state.oiHistoryStatus,flow.reason].filter(Boolean).join(" · ");
+}
+
+async function loadFlowData() {
+  try {
+    const response = await fetch(`./data.json?ts=${Date.now()}`, {cache:"no-store"});
+    if (!response.ok) throw new Error(`data.json HTTP ${response.status}`);
+    state.flowData = await response.json();
+    const flow = calcFlowScore();
+    if (flow.score === null) setConnection("flow","error","Kurumsal akış: veri eksik/eski");
+    else setConnection("flow","connected","Kurumsal akış: güncel");
+    render();
+  } catch (error) {
+    setConnection("flow","error","Kurumsal akış: dosya okunamadı");
+    state.publicError = error.message;
+    render();
+  }
+}
+
+document.getElementById("refreshBtn").addEventListener("click", loadFlowData);
+
+async function pollOiRest() {
+  try {
+    const rows = await okxGet("/api/v5/public/open-interest", {instType:"SWAP", instId:"BTC-USDT-SWAP"});
+    if (rows.length) {
+      const row = rows[0];
+      const ts = Number(row.ts || Date.now());
+      addOiSample({ts, oiBtc:Number(row.oiCcy)});
+    }
+  } catch (error) {
+    state.oiHistoryStatus = "OI REST yedeği: " + error.message;
+  }
+}
+
+async function init() {
+  restoreOiHistory();
+  await loadServerHistory();
+  await bootstrapMarket();
+  await loadFlowData();
+  startSockets();
+  pollOiRest();
+  setInterval(pollOiRest, 60000);
+  setInterval(loadServerHistory, 5*60000);
+  setInterval(loadFlowData, FLOW_REFRESH_MS);
+  setInterval(render, 1000);
+  document.addEventListener("visibilitychange", () => {
+    if (!document.hidden) loadFlowData();
+  });
+}
+init().catch(error => {
+  document.getElementById("combinedLabel").textContent = "Başlatma hatası: " + error.message;
+});
+</script>
+</body>
+</html>
