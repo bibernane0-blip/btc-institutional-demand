@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>BTC Institutional Demand PRO — Ücretsiz Panel</title>
+<style>
+:root{color-scheme:dark}*{box-sizing:border-box}body{margin:0;background:#0b1220;color:#e5e7eb;font:15px/1.5 system-ui,Segoe UI,Arial}
+main{max-width:1120px;margin:auto;padding:22px}.top{display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap}
+h1{font-size:clamp(22px,4vw,30px);margin:0}.sub,.muted{color:#9ca3af}.card{background:#151f31;border:1px solid #29384f;border-radius:14px;padding:17px;margin:14px 0}
+.hero{display:grid;grid-template-columns:1.3fr 1fr;gap:14px}.score{font-size:clamp(42px,8vw,64px);font-weight:800;line-height:1.15}.state{font-weight:700;margin-top:8px}
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:10px}.tile{background:#111b2b;border:1px solid #2a3950;border-radius:12px;padding:14px}
+.tile b{display:block}.value{font-size:25px;font-weight:700;margin:7px 0}.small{font-size:12px;color:#9ca3af}.ok{color:#34d399}.bad{color:#fb7185}.warn{color:#fbbf24}
+a{color:#7dd3fc}table{width:100%;border-collapse:collapse}td,th{text-align:left;padding:8px;border-bottom:1px solid #2a3950}
+iframe{width:100%;height:490px;border:0;border-radius:10px}.btn{background:#23344d;color:#e5e7eb;border:1px solid #466080;border-radius:9px;padding:9px 12px;cursor:pointer}
+@media(max-width:700px){main{padding:13px}.hero{grid-template-columns:1fr}iframe{height:380px}td,th{font-size:13px}}
+</style>
+</head>
+<body><main>
+<div class="top"><div><h1>BTC Institutional Demand PRO</h1><div class="sub">Ücretsiz otomatik veri paneli · kişisel kullanım</div></div><button class="btn" onclick="loadData()">Şimdi yenile</button></div>
+<div class="hero">
+<section class="card"><div class="muted">Kurumsal talep skoru</div><div class="score" id="score">--</div><div class="state" id="label">Veriler yükleniyor…</div><div class="small" id="updated">--</div></section>
+<section class="card"><div class="muted">BTCUSDT spot fiyatı</div><div class="score" style="font-size:38px" id="price">--</div><div class="small" id="price-meta">Binance · 1 saatlik mum verisi</div><hr style="border-color:#29384f"><div class="muted">Veri bütünlüğü</div><div id="integrity" class="state">--</div></section>
+</div>
+<h2>Gösterge özeti</h2><div class="tiles" id="tiles"></div>
+<section class="card"><h2>Kaynakların son durumu</h2><div id="sources" class="small">--</div></section>
+<section class="card"><h2>Bitcoin grafiği</h2><iframe src="https://www.tradingview.com/widgetembed/?symbol=BINANCE%3ABTCUSDT&interval=60&theme=dark&style=1&hide_top_toolbar=false&allow_symbol_change=true"></iframe></section>
+<section class="card"><h2>Skor nasıl okunmalı?</h2>
+<p><b>+60 ile +100:</b> Güçlü pozitif, long fırsatı ara. <b>+30 ile +59:</b> Pozitif, fiyat teyidi bekle.</p>
+<p><b>-29 ile +29:</b> Nötr. <b>-30 ile -59:</b> Negatif, teyit bekle. <b>-60 ile -100:</b> Güçlü negatif, short fırsatı ara.</p>
+<p class="muted">Bu skor emir sinyali değildir. Eşikler prototip varsayımlarıdır ve geçmiş verilerle test edilmemiştir. Herhangi bir kritik kaynak eksik veya hatalıysa skor gösterilmez.</p></section>
+<footer class="small">Veri kaynakları: <a href="https://farside.co.uk/bitcoin-etf-flow-all-data/" target="_blank">Farside Investors</a>, <a href="https://kotecharts.com/c/exchange-netflow" target="_blank">Kote Charts</a>, <a href="https://developers.binance.com/docs/derivatives/usds-margined-futures/market-data/rest-api" target="_blank">Binance</a>. Kote Charts verileri kişisel/ticari olmayan kullanım ve kaynak gösterme koşuluyla kullanılmaktadır.</footer>
+</main>
+<script>
+const fmt=(v,d=2)=>v===null||v===undefined?'—':Number(v).toLocaleString('tr-TR',{maximumFractionDigits:d});
+function status(ok){return ok?'<span class="ok">● Çalışıyor</span>':'<span class="bad">● Veri alınamadı</span>'}
+function tile(title,value,sub,cls=''){return `<div class="tile"><b>${title}</b><div class="value ${cls}">${value}</div><div class="small">${sub||''}</div></div>`}
+async function loadData(){
+ try{
+  const r=await fetch('./data.json?ts='+Date.now(),{cache:'no-store'}); if(!r.ok)throw Error('data.json henüz oluşturulmamış'); const d=await r.json();
+  const a=d.analysis||{}, s=d.sources||{}, m=s.market||{}, e=s.etf||{}, n=s.netflow||{};
+  document.getElementById('score').textContent=a.score===null||a.score===undefined?'N/A':(a.score>0?'+':'')+a.score+'/100';
+  document.getElementById('label').textContent=a.label||'Analiz yok';
+  document.getElementById('updated').textContent='Son otomatik veri kontrolü: '+(d.updated_at||'—');
+  document.getElementById('price').textContent=m.ok?'$'+fmt(m.price_usd,0):'—';
+  document.getElementById('price-meta').textContent=m.ok?'Binance · OI '+fmt(m.oi_change_6h_pct)+'% / 6s · Funding '+fmt(m.funding_rate_pct,4)+'%':'Binance verisi alınamadı';
+  document.getElementById('integrity').innerHTML=a.score===null?'<span class="warn">Eksik kaynak var; skor geçersiz.</span>':'<span class="ok">5/5 ana veri bileşeni mevcut.</span>';
+  let t=[];
+  t.push(tile('ETF net akışı',e.ok?(e.flow_usd_m>0?'+':'')+fmt(e.flow_usd_m,1)+' M$':'—',e.ok?e.date+' · Farside':'Hata: '+(e.error||''),e.ok?(e.flow_usd_m>=0?'ok':'bad'):'warn'));
+  t.push(tile('Exchange Netflow',n.ok?(n.mean_3d_btc>0?'+':'')+fmt(n.mean_3d_btc,1)+' BTC':'—',n.ok?'3 günlük ortalama · '+n.date:'Hata: '+(n.error||''),n.ok?(n.mean_3d_btc<0?'ok':'bad'):'warn'));
+  t.push(tile('Open Interest',m.ok?fmt(m.open_interest_btc,0)+' BTC':'—',m.ok?'6 saat değişim: '+fmt(m.oi_change_6h_pct)+'%':'Binance verisi yok'));
+  t.push(tile('Funding Rate',m.ok?fmt(m.funding_rate_pct,4)+'%':'—','Binance perpetual'));
+  t.push(tile('Fiyat / Hacim',m.ok?'EMA20 '+fmt(m.ema20,0)+' · EMA50 '+fmt(m.ema50,0):'—',m.ok?'6 saat fiyat: '+fmt(m.price_change_6h_pct)+'%':'Binance verisi yok'));
+  for(const [k,v] of Object.entries(a.components||{})) t.push(tile(k+' skoru',(v.score>0?'+':'')+v.score,'Ağırlık: '+v.weight));
+  document.getElementById('tiles').innerHTML=t.join('');
+  document.getElementById('sources').innerHTML=[
+   'Binance: '+status(!!m.ok),
+   'Farside ETF: '+status(!!e.ok),
+   'Kote netflow: '+status(!!n.ok),
+   'Eksik bileşen: '+((a.missing||[]).join(', ')||'yok')
+  ].join('<br>');
+ }catch(err){document.getElementById('label').textContent='Panel verisi henüz hazır değil: '+err.message}
+}
+loadData();setInterval(loadData,60000);
+</script></body></html>

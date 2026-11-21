@@ -1,0 +1,27 @@
+{
+  "updated_at": null,
+  "sources": {
+    "market": {
+      "ok": false,
+      "error": "Henüz ilk otomatik güncelleme yapılmadı."
+    },
+    "etf": {
+      "ok": false,
+      "error": "Henüz ilk otomatik güncelleme yapılmadı."
+    },
+    "netflow": {
+      "ok": false,
+      "error": "KOTE_API_KEY tanımlanmadı veya henüz ilk güncelleme yapılmadı."
+    }
+  },
+  "analysis": {
+    "score": null,
+    "label": "VERİ BEKLENİYOR",
+    "components": {},
+    "missing": [
+      "ETF",
+      "Exchange Netflow",
+      "Market"
+    ]
+  }
+}
