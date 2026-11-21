@@ -1,0 +1,25 @@
+name: V5.5 Market Regime Audit
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  research:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Run V5.5 audit
+        run: python backtest_v55.py
+      - uses: actions/upload-artifact@v4
+        with:
+          name: v55-regime-audit-reports
+          path: |
+            backtest_v55_results.json
+            backtest_v55_trades.csv
+          if-no-files-found: error
