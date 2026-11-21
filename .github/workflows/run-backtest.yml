@@ -1,0 +1,64 @@
+name: BTC Historical Signal Test
+
+on:
+  workflow_dispatch:
+    inputs:
+      days:
+        description: "Saatlik test süresi (20-60 gün; OKX OI geçmişi nedeniyle en fazla 60)"
+        required: true
+        default: "55"
+        type: string
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run historical test
+        env:
+          KOTE_API_KEY: ${{ secrets.KOTE_API_KEY }}
+          BACKTEST_DAYS: ${{ inputs.days }}
+        run: python backtest.py
+
+      - name: Prepare Pages files
+        run: |
+          mkdir -p public
+          curl -fLsS "https://bibernane0-blip.github.io/btc-institutional-demand/" -o public/index.html
+          curl -fLsS "https://bibernane0-blip.github.io/btc-institutional-demand/data.json" -o public/data.json
+          cp backtest_report.html public/backtest.html
+          cp backtest_report.json public/backtest_report.json
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: public
+
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Deploy historical test report
+        id: deployment
+        uses: actions/deploy-pages@v4
