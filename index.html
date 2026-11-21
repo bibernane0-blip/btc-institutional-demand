@@ -112,11 +112,12 @@ const OKX_PUBLIC_WS = "wss://ws.okx.com/ws/v5/public";
 const OKX_BUSINESS_WS = "wss://ws.okx.com/ws/v5/business";
 const OKX_REST = "https://www.okx.com";
 const FLOW_REFRESH_MS = 60000;
+const OI_STORAGE_KEY = "btc-demand-oi-history-v4";
 
 const state = {
   price: null, priceTs: 0,
   candles: [], candleUpdateAt: 0,
-  oiSamples: [], oi: null, oiTs: 0,
+  oiSamples: [], oi: null, oiTs: 0, oiHistoryStatus: "",
   fundingPct: null, fundingTs: 0, fundingTime: null,
   flowData: null,
   publicSocket: null, businessSocket: null,
@@ -172,7 +173,6 @@ async function okxGet(path, params) {
 async function bootstrapMarket() {
   const results = await Promise.allSettled([
     okxGet("/api/v5/market/candles", {instId:"BTC-USDT", bar:"1H", limit:"100"}),
-    okxGet("/api/v5/rubik/stat/contracts/open-interest-history", {instId:"BTC-USDT-SWAP", period:"1H", limit:"10"}),
     okxGet("/api/v5/public/funding-rate", {instId:"BTC-USDT-SWAP"})
   ]);
 
@@ -186,26 +186,13 @@ async function bootstrapMarket() {
     state.publicError = "Başlangıç mum verisi alınamadı: " + results[0].reason.message;
   }
 
-  if (results[1].status === "fulfilled") {
-    state.oiSamples = results[1].value.map(row => ({
-      ts:Number(row[0]), oiBtc:Number(row[2])
-    })).filter(x=>Number.isFinite(x.ts)&&Number.isFinite(x.oiBtc)).sort((a,b)=>a.ts-b.ts);
-    if (state.oiSamples.length) {
-      const last = state.oiSamples[state.oiSamples.length-1];
-      state.oi = last.oiBtc;
-      state.oiTs = last.ts;
-    }
-  } else {
-    state.publicError += " OI geçmişi: " + results[1].reason.message;
-  }
-
-  if (results[2].status === "fulfilled" && results[2].value.length) {
-    const row = results[2].value[0];
+  if (results[1].status === "fulfilled" && results[1].value.length) {
+    const row = results[1].value[0];
     state.fundingPct = Number(row.fundingRate) * 100;
-    state.fundingTs = Number(row.ts || row.fundingTime || Date.now());
+    state.fundingTs = Date.now();
     state.fundingTime = Number(row.fundingTime || 0);
-  } else if (results[2].status === "rejected") {
-    state.publicError += " Funding başlangıcı: " + results[2].reason.message;
+  } else if (results[1].status === "rejected") {
+    state.publicError += " Funding başlangıcı: " + results[1].reason.message;
   }
   render();
 }
@@ -222,7 +209,22 @@ function upsertCandle(candle) {
   state.candles.sort((a,b)=>a.ts-b.ts);
   if (state.candles.length > 160) state.candles = state.candles.slice(-160);
 }
+function restoreOiHistory() {
+  try {
+    const raw = JSON.parse(localStorage.getItem(OI_STORAGE_KEY) || "[]");
+    const cutoff = Date.now() - 48*3600000;
+    state.oiSamples = raw.filter(x => Number.isFinite(x.ts) && Number.isFinite(x.oiBtc) && x.oiBtc > 0 && x.ts >= cutoff && x.ts <= Date.now()+60000).sort((a,b)=>a.ts-b.ts);
+  } catch (_) { state.oiSamples = []; }
+}
+function saveOiHistory() {
+  try {
+    const cutoff = Date.now() - 48*3600000;
+    state.oiSamples = state.oiSamples.filter(x=>x.ts>=cutoff).slice(-2000);
+    localStorage.setItem(OI_STORAGE_KEY, JSON.stringify(state.oiSamples));
+  } catch (_) { state.oiHistoryStatus = "Tarayıcı geçmiş kaydı kullanılamıyor"; }
+}
 function addOiSample(item) {
+  if (!Number.isFinite(item.ts) || !Number.isFinite(item.oiBtc) || item.oiBtc <= 0) return;
   const idx = state.oiSamples.findIndex(x=>x.ts===item.ts);
   if (idx >= 0) state.oiSamples[idx] = item;
   else state.oiSamples.push(item);
@@ -230,6 +232,7 @@ function addOiSample(item) {
   if (state.oiSamples.length > 2000) state.oiSamples = state.oiSamples.slice(-2000);
   state.oi = item.oiBtc;
   state.oiTs = item.ts;
+  saveOiHistory();
 }
 
 function connectOkxSocket(kind, url, args, onData) {
@@ -368,7 +371,11 @@ function computeLiveMarket() {
   const baselineTarget = newestOi.ts - 6*3600000;
   let baseline = null;
   for (const point of samples) if (point.ts <= baselineTarget) baseline = point;
-  if (!baseline || baseline.oiBtc <= 0) return {score:null, parts:null, missing:["6 saatlik OI referansı"]};
+  if (!baseline || baseline.oiBtc <= 0) {
+    const first = samples.length ? samples[0].ts : Date.now();
+    const hoursLeft = Math.max(0, (6*3600000 - (Date.now()-first))/3600000);
+    return {score:null, parts:null, missing:[`6 saatlik OI referansı (yerel kayıt dolumu: yaklaşık ${hoursLeft.toFixed(1)} saat)`]};
+  }
   const oiChangePct = (state.oi / baseline.oiBtc - 1) * 100;
 
   const targetPriceTs = Date.now() - 6*3600000;
@@ -502,7 +509,7 @@ function render() {
     `Flow snapshot: ${state.flowData?.updated_at?ageText(Date.parse(state.flowData.updated_at)):"bekleniyor"}`
   ];
   document.getElementById("freshness").textContent = freshness.join("  |  ");
-  document.getElementById("wsErrors").textContent = [state.publicError,state.businessError,flow.reason].filter(Boolean).join(" · ");
+  document.getElementById("wsErrors").textContent = [state.publicError,state.businessError,state.oiHistoryStatus,flow.reason].filter(Boolean).join(" · ");
 }
 
 async function loadFlowData() {
@@ -523,10 +530,26 @@ async function loadFlowData() {
 
 document.getElementById("refreshBtn").addEventListener("click", loadFlowData);
 
+async function pollOiRest() {
+  try {
+    const rows = await okxGet("/api/v5/public/open-interest", {instType:"SWAP", instId:"BTC-USDT-SWAP"});
+    if (rows.length) {
+      const row = rows[0];
+      const ts = Number(row.ts || Date.now());
+      addOiSample({ts, oiBtc:Number(row.oiCcy)});
+    }
+  } catch (error) {
+    state.oiHistoryStatus = "OI REST yedeği: " + error.message;
+  }
+}
+
 async function init() {
+  restoreOiHistory();
   await bootstrapMarket();
   await loadFlowData();
   startSockets();
+  pollOiRest();
+  setInterval(pollOiRest, 60000);
   setInterval(loadFlowData, FLOW_REFRESH_MS);
   setInterval(render, 1000);
   document.addEventListener("visibilitychange", () => {
