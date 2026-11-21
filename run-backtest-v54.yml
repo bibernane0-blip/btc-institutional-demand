@@ -1,0 +1,26 @@
+name: V5.4 Strategy Robustness Research
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  backtest:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Run V5.4 robustness analysis
+        run: python backtest_v54.py
+      - name: Upload reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: v54-robustness-reports
+          path: |
+            backtest_v54_results.json
+            backtest_v54_trades.csv
+          if-no-files-found: error
