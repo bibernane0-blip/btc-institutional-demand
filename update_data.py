@@ -2,7 +2,7 @@
 """
 BTC Institutional Demand PRO — Free data collector.
 Sources:
-- Binance public REST endpoints (market data; no key)
+- OKX public REST endpoints (spot market, perpetual open interest and funding; no key)
 - Farside Investors public BTC ETF flow table (daily; HTML extraction)
 - Kote Charts API (daily exchange netflow; free API key; non-commercial use with attribution)
 """
@@ -14,8 +14,6 @@ import requests
 from bs4 import BeautifulSoup
 
 OUT = "data.json"
-BINANCE_SPOT = "https://api.binance.com"
-BINANCE_FUT = "https://fapi.binance.com"
 FARSIDE_URL = "https://farside.co.uk/bitcoin-etf-flow-all-data/"
 KOTE_URL = "https://kotecharts.com/api/v1/public/charts/exchange-netflow"
 KOTE_KEY = os.getenv("KOTE_API_KEY", "").strip()
@@ -152,48 +150,106 @@ def fetch_kote_netflow() -> dict:
             "frequency": "daily", "fetched_at": utcnow(),
             "note": "Etiketlenmiş borsa cüzdanlarına dayalı tahmini on-chain akış; tek günlük transferler yanıltıcı olabilir."}
 
-def fetch_binance() -> dict:
-    # 1h spot klines for technical context
-    klines = get_json(f"{BINANCE_SPOT}/api/v3/klines",
-                      params={"symbol": "BTCUSDT", "interval": "1h", "limit": 60})
-    closes = [float(k[4]) for k in klines]
-    volumes = [float(k[5]) for k in klines]
-    if len(closes) < 50:
-        raise RuntimeError("Binance fiyat geçmişi yetersiz.")
+def fetch_okx() -> dict:
+    """Fetch OKX public spot and perpetual market data; no API key is required."""
+    base = "https://www.okx.com"
+
+    candles_payload = get_json(
+        f"{base}/api/v5/market/candles",
+        params={"instId": "BTC-USDT", "bar": "1H", "limit": "60"},
+    )
+    ticker_payload = get_json(
+        f"{base}/api/v5/market/ticker",
+        params={"instId": "BTC-USDT"},
+    )
+    oi_payload = get_json(
+        f"{base}/api/v5/rubik/stat/contracts/open-interest-history",
+        params={"instId": "BTC-USDT-SWAP", "period": "1H", "limit": "7"},
+    )
+    funding_payload = get_json(
+        f"{base}/api/v5/public/funding-rate",
+        params={"instId": "BTC-USDT-SWAP"},
+    )
+
+    # OKX wraps successful API responses as {"code":"0","data":[...]}.
+    for label, payload in [
+        ("candles", candles_payload),
+        ("ticker", ticker_payload),
+        ("open_interest", oi_payload),
+        ("funding", funding_payload),
+    ]:
+        if str(payload.get("code", "0")) != "0":
+            raise RuntimeError(f"OKX {label} API error: {payload.get('msg', payload)}")
+        if not payload.get("data"):
+            raise RuntimeError(f"OKX {label} API returned empty data")
+
+    # Candles: [timestamp, open, high, low, close, base-volume, quote-volume, quote-volume, confirm]
+    candles = []
+    for row in candles_payload["data"]:
+        if len(row) >= 9 and str(row[8]) == "1":  # completed hourly candles only
+            candles.append({
+                "ts": int(row[0]),
+                "close": float(row[4]),
+                "volume_btc": float(row[5]),
+            })
+    candles.sort(key=lambda x: x["ts"])
+    if len(candles) < 50:
+        raise RuntimeError(f"OKX returned only {len(candles)} completed hourly candles; 50 required")
+
+    closes = [x["close"] for x in candles]
+    volumes = [x["volume_btc"] for x in candles]
 
     def ema(values: list[float], period: int) -> float:
         alpha = 2 / (period + 1)
         current = values[0]
-        for v in values[1:]:
-            current = alpha * v + (1 - alpha) * current
+        for value in values[1:]:
+            current = alpha * value + (1 - alpha) * current
         return current
 
     ema20 = ema(closes[-40:], 20)
     ema50 = ema(closes[-60:], 50)
     vol_avg20 = sum(volumes[-20:]) / 20
-    price_6h_pct = ((closes[-1] / closes[-7]) - 1) * 100 if closes[-7] else 0.0
+    price_change_6h = ((closes[-1] / closes[-7]) - 1) * 100 if closes[-7] else 0.0
 
-    premium = get_json(f"{BINANCE_FUT}/fapi/v1/premiumIndex", params={"symbol": "BTCUSDT"})
-    oi_hist = get_json(f"{BINANCE_FUT}/futures/data/openInterestHist",
-                       params={"symbol": "BTCUSDT", "period": "1h", "limit": 7})
-    if len(oi_hist) >= 2 and float(oi_hist[0]["sumOpenInterest"]) != 0:
-        oi_change_6h = (float(oi_hist[-1]["sumOpenInterest"]) /
-                        float(oi_hist[0]["sumOpenInterest"]) - 1) * 100
-    else:
-        oi_change_6h = None
+    ticker = ticker_payload["data"][0]
+    latest_price = float(ticker["last"])
 
-    funding_pct = float(premium["lastFundingRate"]) * 100
-    current_oi = get_json(f"{BINANCE_FUT}/fapi/v1/openInterest", params={"symbol": "BTCUSDT"})
+    # OI history rows: [timestamp, oi contracts, oiCcy (BTC), oiUsd]
+    oi_rows = []
+    for row in oi_payload["data"]:
+        if len(row) >= 4:
+            oi_rows.append({
+                "ts": int(row[0]),
+                "oi_btc": float(row[2]),
+                "oi_usd": float(row[3]),
+            })
+    oi_rows.sort(key=lambda x: x["ts"])
+    if len(oi_rows) < 2 or oi_rows[0]["oi_btc"] == 0:
+        raise RuntimeError("OKX open-interest history is insufficient for a 6-hour comparison")
+    oi_change_6h = (oi_rows[-1]["oi_btc"] / oi_rows[0]["oi_btc"] - 1) * 100
+
+    funding_row = funding_payload["data"][0]
+    funding_pct = float(funding_row["fundingRate"]) * 100
+
     return {
-        "ok": True, "source": "Binance public market data",
-        "source_url": "https://developers.binance.com/docs/derivatives/usds-margined-futures/market-data/rest-api",
-        "fetched_at": utcnow(), "frequency": "near-real-time",
-        "price_usd": closes[-1], "ema20": ema20, "ema50": ema50,
-        "volume": volumes[-1], "volume_avg20": vol_avg20,
-        "price_change_6h_pct": price_6h_pct,
-        "open_interest_btc": float(current_oi["openInterest"]),
+        "ok": True,
+        "source": "OKX public market data",
+        "source_url": "https://www.okx.com/docs-v5/en/",
+        "market_scope": "OKX BTC-USDT spot and BTC-USDT-SWAP perpetual only; not an all-exchange aggregate",
+        "fetched_at": utcnow(),
+        "frequency": "near-real-time on each scheduled run",
+        "price_usd": latest_price,
+        "ema20": ema20,
+        "ema50": ema50,
+        "volume": volumes[-1],
+        "volume_avg20": vol_avg20,
+        "price_change_6h_pct": price_change_6h,
+        "open_interest_btc": oi_rows[-1]["oi_btc"],
         "oi_change_6h_pct": oi_change_6h,
         "funding_rate_pct": funding_pct,
+        "funding_settlement_time": funding_row.get("fundingTime"),
+        "candles_asof_ms": candles[-1]["ts"],
+        "oi_asof_ms": oi_rows[-1]["ts"],
     }
 
 def score_components(etf: dict | None, netflow: dict | None, market: dict | None) -> dict:
@@ -252,9 +308,9 @@ def main():
     data = {"updated_at": utcnow(), "sources": {}, "analysis": None,
             "disclaimer": "Eğitim/araştırma amaçlı karar destek aracıdır; otomatik emir göndermez ve yatırım tavsiyesi değildir."}
     try:
-        data["sources"]["market"] = fetch_binance()
+        data["sources"]["market"] = fetch_okx()
     except Exception as e:
-        data["sources"]["market"] = {"ok": False, "error": str(e), "source": "Binance"}
+        data["sources"]["market"] = {"ok": False, "error": str(e), "source": "OKX"}
     try:
         data["sources"]["etf"] = fetch_farside_etf()
     except Exception as e:
