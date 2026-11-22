@@ -44,6 +44,7 @@ jobs:
           mkdir -p public
           curl -fLsS "https://bibernane0-blip.github.io/btc-institutional-demand/" -o public/index.html
           curl -fLsS "https://bibernane0-blip.github.io/btc-institutional-demand/data.json" -o public/data.json
+          cp market_history.json public/market_history.json
           cp backtest_report.html public/backtest.html
           cp backtest_report.json public/backtest_report.json
 

@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """V5.2: collect public OKX BTC candles and OI; preserve verified history."""
 import json
+import math
 import os
 import time
 from datetime import datetime, timezone
@@ -63,7 +64,7 @@ try:
         raise ValueError('Empty OI response')
     row = rows[0]
     ts, oi = int(row['ts']), float(row['oiCcy'])
-    if oi <= 0 or abs(NOW - ts) >= 10 * 60_000:
+    if not math.isfinite(oi) or oi <= 0 or abs(NOW - ts) >= 10 * 60_000:
         raise ValueError('OI timestamp/value invalid')
     old['oi'].append({'ts': ts, 'oiBtc': oi})
 except (RuntimeError, ValueError, KeyError, TypeError, IndexError) as exc:
@@ -73,7 +74,7 @@ except (RuntimeError, ValueError, KeyError, TypeError, IndexError) as exc:
 # Each page contains up to 100 hourly candles. A complete 90-day backfill can take ~22 calls.
 try:
     known = dedup(old.get('candles', []), CUTOFF, 2500)
-    known_ts = {x['ts'] for x in known}
+    completed_ts = {x['ts'] for x in known if x.get('confirm') == '1'}
     cursor = None
     for page in range(30):
         params = {'instId': 'BTC-USDT', 'bar': '1H', 'limit': '100'}
@@ -86,17 +87,21 @@ try:
         for row in rows:
             ts = int(row[0])
             page_timestamps.append(ts)
-            if ts < CUTOFF or ts > NOW or ts in known_ts:
+            if ts < CUTOFF or ts > NOW or ts in completed_ts:
                 continue
             item = {
                 'ts': ts, 'open': float(row[1]), 'high': float(row[2]),
                 'low': float(row[3]), 'close': float(row[4]),
                 'volume': float(row[5]), 'confirm': str(row[8]),
             }
-            if min(item['open'], item['high'], item['low'], item['close']) <= 0:
+            if (any(not math.isfinite(item[key]) or item[key] <= 0
+                    for key in ('open', 'high', 'low', 'close'))
+                    or not math.isfinite(item['volume']) or item['volume'] < 0
+                    or item['confirm'] not in {'0', '1'}):
                 continue
             known.append(item)
-            known_ts.add(ts)
+            if item['confirm'] == '1':
+                completed_ts.add(ts)
         oldest = min(page_timestamps)
         if oldest < CUTOFF or (cursor is not None and oldest >= cursor):
             break

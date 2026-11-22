@@ -12,6 +12,7 @@ KOTE_API_KEY remains a GitHub Actions secret and is never sent to the browser.
 from __future__ import annotations
 import os
 import json
+import math
 from datetime import datetime, timezone, timedelta
 from typing import Any
 
@@ -55,6 +56,8 @@ def parse_money(cell: str) -> float | None:
         value = value[1:-1]
     try:
         number = float(value)
+        if not math.isfinite(number):
+            return None
         return -number if negative else number
     except ValueError:
         return None
@@ -155,7 +158,8 @@ def fetch_kote_netflow() -> dict:
     """
     if not KOTE_KEY:
         raise RuntimeError("KOTE_API_KEY GitHub Secret bulunamadı.")
-    end = utcnow()
+    now = utcnow()
+    end = now.replace(minute=now.minute // 5 * 5, second=0, microsecond=0)
     start = end - timedelta(hours=24)
     payload = get_json(
         KOTE_URL,
@@ -163,36 +167,41 @@ def fetch_kote_netflow() -> dict:
         headers={"X-API-Key": KOTE_KEY},
     )
     points = find_points(payload.get("data", payload))
-    normalized = []
+    buckets = {}
+    conflicting = set()
     for point in points:
         if point.get("partial") is True or point.get("t") is None:
             continue
         value = netflow_value(point)
-        if value is None:
+        if value is None or not math.isfinite(value):
             continue
         timestamp = parse_point_datetime(point["t"])
-        if start <= timestamp <= end:
-            normalized.append({"timestamp": timestamp, "netflow_btc": value})
-    normalized.sort(key=lambda item: item["timestamp"])
-    if not normalized:
+        if not start <= timestamp < end or (timestamp - start).total_seconds() % 300:
+            continue
+        if timestamp in buckets and buckets[timestamp] != value:
+            conflicting.add(timestamp)
+        buckets[timestamp] = value
+    for timestamp in conflicting:
+        del buckets[timestamp]
+
+    if not buckets:
         raise RuntimeError("Kote Charts 5 dakikalık Exchange Netflow verisi döndürmedi.")
-    # 5-minute buckets: expected ~288 buckets over 24h. Show coverage explicitly.
-    latest = normalized[-1]
-    trailing_sum = sum(item["netflow_btc"] for item in normalized)
+    latest = max(buckets)
+    trailing_sum = sum(buckets.values())
     expected = 288
-    coverage = min(100.0, len(normalized) / expected * 100.0)
+    coverage = min(100.0, len(buckets) / expected * 100.0)
     return {
         "ok": True,
         "trailing_24h_btc": trailing_sum,
-        "latest_bucket_ts": iso_z(latest["timestamp"]),
-        "observations_24h": len(normalized),
+        "latest_bucket_ts": iso_z(latest),
+        "observations_24h": len(buckets),
         "expected_observations_24h": expected,
         "coverage_pct": round(coverage, 1),
         "granularity": "5m",
         "source": "Kote Charts",
         "source_url": "https://kotecharts.com/c/exchange-netflow",
         "frequency": "5-minute buckets; data updated by Kote when new processed blocks change the chart",
-        "fetched_at": iso_z(end),
+        "fetched_at": iso_z(now),
         "note": "Negatif değer net borsa çıkışını, pozitif değer net borsa girişini gösterir. Kote entity labels heuristics-based estimates.",
     }
 
@@ -227,7 +236,19 @@ def main() -> None:
     }
     etf = data["sources"].get("etf", {})
     netflow = data["sources"].get("netflow", {})
-    if etf.get("ok") and netflow.get("ok") and float(netflow.get("coverage_pct", 0)) >= 60:
+    if etf.get("ok") and netflow.get("ok"):
+        checked_at = utcnow()
+        etf_age = checked_at - datetime.fromisoformat(etf["date"]).replace(tzinfo=timezone.utc)
+        netflow_age = checked_at - datetime.fromisoformat(netflow["latest_bucket_ts"])
+        missing = data["flow_analysis"]["missing"]
+        if not timedelta(0) <= etf_age <= timedelta(days=4):
+            missing.append("ETF günlük verisi eski veya tarihi geçersiz")
+        if not timedelta(0) <= netflow_age <= timedelta(minutes=180):
+            missing.append("Netflow verisi eski veya zaman damgası geçersiz")
+        if netflow["coverage_pct"] != 100 or netflow["granularity"] != "5m":
+            missing.append("Netflow için 24 saatlik 5 dakika verisi eksik")
+
+    if not data["flow_analysis"]["missing"]:
         etf_value = float(etf["flow_usd_m"])
         etf_score = 50 if etf_value >= 100 else 25 if etf_value > 0 else -50 if etf_value <= -100 else -25 if etf_value < 0 else 0
         nf_value = float(netflow["trailing_24h_btc"])
@@ -248,8 +269,6 @@ def main() -> None:
             "missing": [],
             "formula": "ETF ±50 + Exchange Netflow ±50; experimental weighting.",
         }
-    elif etf.get("ok") and netflow.get("ok"):
-        data["flow_analysis"]["missing"] = ["Kote 5m veri kapsaması %60 altında"]
     with open(OUT, "w", encoding="utf-8") as output:
         json.dump(data, output, ensure_ascii=False, indent=2)
     print(json.dumps({

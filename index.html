@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#080f1c">
 <meta name="description" content="BTC Institutional Demand PRO — Bitcoin piyasa ve kurumsal akış analiz paneli">
-<title>BTC Institutional Demand PRO — V6.0</title>
+<title>BTC Institutional Demand PRO — V6.1</title>
 <style>
 :root{color-scheme:dark;--bg:#0b1220;--panel:#151f31;--panel2:#101a2a;--line:#29384f;--text:#e5e7eb;--muted:#9ca3af;--green:#34d399;--red:#fb7185;--yellow:#fbbf24;--blue:#7dd3fc}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:15px/1.5 system-ui,Segoe UI,Arial}
@@ -27,7 +27,7 @@ hr{border:0;border-top:1px solid var(--line);margin:13px 0}
 @media(max-width:850px){.hero{grid-template-columns:1fr 1fr}.hero .combined{grid-column:1/-1}}
 @media(max-width:600px){main{padding:11px}.hero{grid-template-columns:1fr}.hero .combined{grid-column:auto}iframe{height:370px}td,th{font-size:12px;padding:6px}}
 
-/* V6.0 — visual system */
+/* V6.1 — visual system */
 :root{--bg:#080f1c;--panel:#111c2c;--panel2:#0c1726;--line:#263850;--text:#edf4ff;--muted:#9bb0c9;--blue:#73c6ff}
 body{background:radial-gradient(ellipse at 10% -15%,#153450 0%,transparent 45%),var(--bg);letter-spacing:.005em}
 main{max-width:1440px;padding:24px 30px 48px}
@@ -152,13 +152,15 @@ footer{margin:28px 0 0;padding:18px 0;border-top:1px solid var(--line)}
 const OKX_PUBLIC_WS = "wss://ws.okx.com/ws/v5/public";
 const OKX_BUSINESS_WS = "wss://ws.okx.com/ws/v5/business";
 const OKX_REST = "https://www.okx.com";
+const HOUR_MS = 3600000;
+const HISTORY_REFRESH_MS = 10 * 60000;
 const FLOW_REFRESH_MS = 60000;
 const OI_STORAGE_KEY = "btc-demand-oi-history-v4";
 
 const state = {
   price: null, priceTs: 0,
-  candles: [], candleUpdateAt: 0,
-  oiSamples: [], oi: null, oiTs: 0, oiHistoryStatus: "",
+  candles: [], historyError: "",
+  oiSamples: new Map(), centralOi: [], oi: null, oiTs: 0, oiHistoryStatus: "",
   fundingPct: null, fundingTs: 0, fundingTime: null,
   flowData: null, flowError: "",
   publicSocket: null, businessSocket: null,
@@ -222,62 +224,110 @@ async function bootstrapMarket() {
   ]);
 
   if (results[0].status === "fulfilled") {
-    state.candles = results[0].value.map(row => ({
-      ts:Number(row[0]), open:Number(row[1]), high:Number(row[2]), low:Number(row[3]),
-      close:Number(row[4]), volume:Number(row[5]), confirm:String(row[8] || "0")
-    })).sort((a,b)=>a.ts-b.ts);
-    state.candleUpdateAt = Date.now();
+    mergeCandles(results[0].value.map(parseCandle));
   } else {
     state.publicError = "Başlangıç mum verisi alınamadı: " + results[0].reason.message;
   }
 
   if (results[1].status === "fulfilled" && results[1].value.length) {
     const row = results[1].value[0];
-    state.fundingPct = Number(row.fundingRate) * 100;
-    state.fundingTs = Date.now();
-    state.fundingTime = Number(row.fundingTime || 0);
+    updateFunding(row, Date.now());
   } else if (results[1].status === "rejected") {
     state.publicError += " Funding başlangıcı: " + results[1].reason.message;
   }
   render();
 }
 
+function numericValue(value) {
+  if (typeof value === "number" || (typeof value === "string" && value.trim())) return Number(value);
+  return NaN;
+}
+
+function updateFunding(row, receivedAt) {
+  const rate = numericValue(row.fundingRate);
+  const ts = Number(row.ts ?? receivedAt);
+  if (!Number.isFinite(rate) || !isFresh(ts, receivedAt, 240000) || ts < state.fundingTs) return;
+  state.fundingPct = rate * 100;
+  state.fundingTs = ts;
+  state.fundingTime = Number(row.fundingTime || 0);
+}
+
 function parseCandle(row) {
   return {ts:Number(row[0]), open:Number(row[1]), high:Number(row[2]), low:Number(row[3]),
-    close:Number(row[4]), volume:Number(row[5]), confirm:String(row[8] || "0")};
+    close:numericValue(row[4]), volume:numericValue(row[5]), confirm:String(row[8] || "0")};
 }
-function upsertCandle(candle) {
-  state.candleUpdateAt = Date.now();
-  const idx = state.candles.findIndex(x=>x.ts===candle.ts);
-  if (idx >= 0) state.candles[idx] = candle;
-  else state.candles.push(candle);
-  state.candles.sort((a,b)=>a.ts-b.ts);
-  if (state.candles.length > 160) state.candles = state.candles.slice(-160);
+function mergeCandles(candles) {
+  const merged = new Map(state.candles.map(candle => [candle.ts, candle]));
+  const currentHour = Math.floor(Date.now() / HOUR_MS) * HOUR_MS;
+  for (const candle of candles) {
+    if (!candle || !Number.isInteger(candle.ts) || candle.ts <= 0 ||
+        candle.ts % HOUR_MS || candle.ts > currentHour ||
+        !Number.isFinite(candle.close) || candle.close <= 0 ||
+        !Number.isFinite(candle.volume) || candle.volume < 0 ||
+        !["0", "1"].includes(candle.confirm) ||
+        (candle.confirm === "1" && candle.ts === currentHour)) continue;
+    if (merged.get(candle.ts)?.confirm === "1") continue;
+    merged.set(candle.ts, candle);
+  }
+  state.candles = [...merged.values()].sort((a,b)=>a.ts-b.ts).slice(-160);
 }
+
+function validOi(point, now) {
+  return point && Number.isFinite(point.oiBtc) && point.oiBtc > 0 &&
+    Number.isInteger(point.ts) && point.ts >= now - 48 * HOUR_MS &&
+    point.ts <= now + 60000;
+}
+
+function rememberOi(point) {
+  const minute = Math.floor(point.ts / 60000);
+  if ((state.oiSamples.get(minute)?.ts ?? 0) <= point.ts) state.oiSamples.set(minute, point);
+}
+
 function restoreOiHistory() {
   try {
     const raw = JSON.parse(localStorage.getItem(OI_STORAGE_KEY) || "[]");
-    const cutoff = Date.now() - 48*3600000;
-    state.oiSamples = raw.filter(x => Number.isFinite(x.ts) && Number.isFinite(x.oiBtc) && x.oiBtc > 0 && x.ts >= cutoff && x.ts <= Date.now()+60000).sort((a,b)=>a.ts-b.ts);
-  } catch (_) { state.oiSamples = []; }
+    const now = Date.now();
+    for (const point of raw) if (validOi(point, now)) rememberOi(point);
+  } catch { state.oiHistoryStatus = "Tarayıcı geçmiş kaydı kullanılamıyor"; }
 }
+
 function saveOiHistory() {
   try {
-    const cutoff = Date.now() - 48*3600000;
-    state.oiSamples = state.oiSamples.filter(x=>x.ts>=cutoff).slice(-2000);
-    localStorage.setItem(OI_STORAGE_KEY, JSON.stringify(state.oiSamples));
-  } catch (_) { state.oiHistoryStatus = "Tarayıcı geçmiş kaydı kullanılamıyor"; }
+    const now = Date.now();
+    for (const [minute, point] of state.oiSamples) {
+      if (!validOi(point, now)) state.oiSamples.delete(minute);
+    }
+    localStorage.setItem(OI_STORAGE_KEY, JSON.stringify([...state.oiSamples.values()]));
+  } catch { state.oiHistoryStatus = "Tarayıcı geçmiş kaydı kullanılamıyor"; }
 }
+
 function addOiSample(item) {
-  if (!Number.isFinite(item.ts) || !Number.isFinite(item.oiBtc) || item.oiBtc <= 0) return;
-  const idx = state.oiSamples.findIndex(x=>x.ts===item.ts);
-  if (idx >= 0) state.oiSamples[idx] = item;
-  else state.oiSamples.push(item);
-  state.oiSamples.sort((a,b)=>a.ts-b.ts);
-  if (state.oiSamples.length > 2000) state.oiSamples = state.oiSamples.slice(-2000);
-  state.oi = item.oiBtc;
-  state.oiTs = item.ts;
-  saveOiHistory();
+  if (!validOi(item, Date.now())) return;
+  const previousMinute = Math.floor(state.oiTs / 60000);
+  rememberOi(item);
+  if (item.ts >= state.oiTs) {
+    state.oi = item.oiBtc;
+    state.oiTs = item.ts;
+  }
+  if (Math.floor(state.oiTs / 60000) > previousMinute) saveOiHistory();
+}
+
+async function loadMarketHistory() {
+  try {
+    const response = await fetch("./market_history.json", {cache:"no-store"});
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    const history = await response.json();
+    if (!Array.isArray(history?.candles) || !Array.isArray(history.oi)) {
+      throw new Error("Dosya biçimi geçersiz");
+    }
+    mergeCandles(history.candles.map(candle => candle && {...candle, confirm:String(candle.confirm)}));
+    const now = Date.now();
+    state.centralOi = history.oi.filter(point => validOi(point, now));
+    state.historyError = "";
+  } catch (error) {
+    state.historyError = "Merkezi piyasa geçmişi: " + error.message;
+  }
+  render();
 }
 
 function connectOkxSocket(kind, url, args, onData) {
@@ -372,14 +422,16 @@ function startSockets() {
   ], (channel, data) => {
     for (const row of data) {
       if (channel === "tickers") {
-        state.price = Number(row.last);
-        state.priceTs = Number(row.ts || Date.now());
+        const price = numericValue(row.last);
+        const ts = Number(row.ts ?? Date.now());
+        if (Number.isFinite(price) && price > 0 && isFresh(ts, Date.now(), 30000) && ts >= state.priceTs) {
+          state.price = price;
+          state.priceTs = ts;
+        }
       } else if (channel === "open-interest") {
         addOiSample({ts:Number(row.ts || Date.now()), oiBtc:Number(row.oiCcy)});
       } else if (channel === "funding-rate") {
-        if (row.fundingRate !== undefined) state.fundingPct = Number(row.fundingRate) * 100;
-        state.fundingTs = Number(row.ts || Date.now());
-        state.fundingTime = Number(row.fundingTime || 0);
+        updateFunding(row, Date.now());
       }
     }
   });
@@ -387,7 +439,7 @@ function startSockets() {
   connectOkxSocket("business", OKX_BUSINESS_WS, [
     {channel:"candle1H", instId:"BTC-USDT"}
   ], (channel, data) => {
-    if (channel === "candle1H") for (const row of data) upsertCandle(parseCandle(row));
+    if (channel === "candle1H") for (const row of data) mergeCandles([parseCandle(row)]);
   });
 }
 
@@ -399,61 +451,68 @@ function ema(values, period) {
   return result;
 }
 
+function isFresh(ts, now, maxAge) {
+  return Number.isFinite(ts) && ts > 0 && now - ts >= -60000 && now - ts <= maxAge;
+}
+
 function computeLiveMarket() {
   const now = Date.now();
-  const priceFresh = state.price && now-state.priceTs < 30000;
-  const oiFresh = state.oi !== null && now-state.oiTs < 90000;
-  const fundingFresh = state.fundingPct !== null && now-state.fundingTs < 240000;
-  const candleFresh = state.candles.length > 50 && state.candleUpdateAt > 0 && now-state.candleUpdateAt < 90000;
-  if (!priceFresh || !oiFresh || !fundingFresh || !candleFresh) {
-    return {score:null, parts:null, missing:[
-      !priceFresh?"fiyat":null, !oiFresh?"OI":null,
-      !fundingFresh?"Funding":null, !candleFresh?"mum geçmişi":null
-    ].filter(Boolean)};
-  }
+  const priceFresh = Number.isFinite(state.price) && state.price > 0 && isFresh(state.priceTs, now, 30000);
+  const oiFresh = Number.isFinite(state.oi) && state.oi > 0 && isFresh(state.oiTs, now, 90000);
+  const fundingFresh = Number.isFinite(state.fundingPct) && isFresh(state.fundingTs, now, 240000);
+  const completed = state.candles.filter(candle => candle.confirm === "1");
+  const lastClosed = completed.at(-1);
+  const contiguous = lastClosed ? completed.slice(completed.findLastIndex((candle, index) =>
+    index < completed.length - 1 && completed[index + 1].ts - candle.ts !== HOUR_MS) + 1) : [];
+  const closes = contiguous.map(candle => candle.close);
+  const ema20 = closes.length >= 20 ? ema(closes.slice(-40), 20) : null;
+  const ema50 = closes.length >= 50 ? ema(closes.slice(-80), 50) : null;
+  const previous20 = contiguous.slice(-21, -1);
+  const averageVolume = previous20.length === 20
+    ? previous20.reduce((sum, candle) => sum + candle.volume, 0) / 20 : null;
+  const highVolume = averageVolume === null ? null : lastClosed.volume > averageVolume;
+  const currentHour = Math.floor(now / HOUR_MS) * HOUR_MS;
+  const candleFresh = lastClosed?.ts === currentHour - HOUR_MS;
 
-  const samples = state.oiSamples;
-  const newestOi = samples[samples.length-1];
-  const baselineTarget = newestOi.ts - 6*3600000;
+  const targetPriceTs = Math.floor((state.priceTs - 6 * HOUR_MS) / HOUR_MS) * HOUR_MS - HOUR_MS;
+  const baseCandle = completed.find(candle => candle.ts === targetPriceTs);
+  const priceChange6hPct = priceFresh && baseCandle ? (state.price / baseCandle.close - 1) * 100 : null;
+
+  const historicalBase = contiguous.at(-7);
+  const closedPriceChange6hPct = historicalBase ? (lastClosed.close / historicalBase.close - 1) * 100 : null;
+
+  const baselineTarget = state.oiTs - 6 * HOUR_MS;
   let baseline = null;
-  for (const point of samples) if (point.ts <= baselineTarget) baseline = point;
-  if (!baseline || baseline.oiBtc <= 0) {
-    const first = samples.length ? samples[0].ts : Date.now();
-    const hoursLeft = Math.max(0, (6*3600000 - (Date.now()-first))/3600000);
-    return {score:null, parts:null, missing:[`6 saatlik OI referansı (yerel kayıt dolumu: yaklaşık ${hoursLeft.toFixed(1)} saat)`]};
+  for (const samples of [state.centralOi, state.oiSamples.values()]) {
+    for (const point of samples) {
+      if (point.ts <= baselineTarget && point.ts >= baselineTarget - 20 * 60000 &&
+          (!baseline || point.ts > baseline.ts)) baseline = point;
+    }
   }
-  const oiChangePct = (state.oi / baseline.oiBtc - 1) * 100;
-
-  const targetPriceTs = Date.now() - 6*3600000;
-  let baseCandle = null;
-  for (const candle of state.candles) if (candle.ts <= targetPriceTs) baseCandle = candle;
-  if (!baseCandle || baseCandle.close <= 0) return {score:null, parts:null, missing:["6 saatlik fiyat referansı"]};
-  const priceChange6hPct = (state.price / baseCandle.close - 1) * 100;
+  const oiChangePct = oiFresh && baseline ? (state.oi / baseline.oiBtc - 1) * 100 : null;
+  const funding = state.fundingPct;
+  const metrics = {oiChangePct, priceChange6hPct, fundingPct:funding, ema20, ema50,
+    highVolume, lastClosed, candleFresh, averageVolume, baseline, closedPriceChange6hPct};
+  const missing = [
+    !priceFresh && "güncel fiyat",
+    !oiFresh && "güncel OI",
+    !baseline && "6 saatlik OI referansı (yetersiz geçmiş)",
+    !fundingFresh && "güncel Funding",
+    (!candleFresh || ema50 === null || highVolume === null) && "güncel ve kesintisiz saatlik mum geçmişi",
+    priceChange6hPct === null && "6 saatlik fiyat referansı"
+  ].filter(Boolean);
+  if (missing.length) return {score:null, parts:null, missing, metrics};
 
   let oiScore = 0;
   if (priceChange6hPct > 0 && oiChangePct > 0.5) oiScore = 30;
   else if (priceChange6hPct > 0 && Math.abs(oiChangePct) <= 0.5) oiScore = 12;
   else if (priceChange6hPct < 0 && oiChangePct > 0.5) oiScore = -23;
 
-  const funding = state.fundingPct;
   let fundingScore = 0;
   if (funding <= -0.05) fundingScore = 7;
   else if (funding < -0.01) fundingScore = 12;
   else if (Math.abs(funding) <= 0.01) fundingScore = 20;
   else if (funding >= 0.05) fundingScore = -20;
-
-  const allCandles = state.candles.slice().sort((a,b)=>a.ts-b.ts);
-  const closes = allCandles.slice(-100).map(c=>c.close);
-  const ema20 = ema(closes.slice(-40), 20);
-  const ema50 = ema(closes.slice(-80), 50);
-  const completed = allCandles.filter(c=>c.confirm === "1");
-  const lastClosed = completed[completed.length-1];
-  const previous20 = completed.slice(-21,-1);
-  let highVolume = false;
-  if (lastClosed && previous20.length >= 20) {
-    const avgVol = previous20.reduce((sum,c)=>sum+c.volume,0)/previous20.length;
-    highVolume = lastClosed.volume > avgVol;
-  }
 
   let priceScore = 0;
   if (state.price > ema20 && state.price > ema50 && highVolume) priceScore = 50;
@@ -467,7 +526,7 @@ function computeLiveMarket() {
       "Funding": {score:fundingScore, value:funding, unit:"% · mevcut dönem"},
       "Fiyat & Hacim": {score:priceScore, value:state.price, unit:"USD"}
     },
-    metrics:{oiChangePct, priceChange6hPct, fundingPct:funding, ema20, ema50, highVolume}
+    metrics
   };
 }
 
@@ -478,24 +537,25 @@ function calcFlowScore() {
   const nf = flow.sources.netflow || {};
   if (!etf.ok || !nf.ok) return {score:null, parts:null, reason:[etf.error,nf.error].filter(Boolean).join(" · ") || "ETF veya Netflow verisi eksik."};
 
+  const now = Date.now();
   const fetchedTs = Date.parse(flow.updated_at || "");
   const netflowTs = Date.parse(nf.latest_bucket_ts || "");
-  const etfDay = Date.parse((etf.date || "") + "T00:00:00Z");
-  const etfAgeDays = etfDay ? (Date.now()-etfDay)/86400000 : Infinity;
-  const snapshotAge = fetchedTs ? (Date.now()-fetchedTs)/60000 : Infinity;
-  const netflowAge = netflowTs ? (Date.now()-netflowTs)/60000 : Infinity;
-  if (snapshotAge > 90) return {score:null,parts:null,reason:`Akış dosyası eski (${snapshotAge.toFixed(0)} dk).`};
-  if (netflowAge > 180) return {score:null,parts:null,reason:`Netflow son verisi eski (${netflowAge.toFixed(0)} dk).`};
-  if (etfAgeDays > 4 || etfAgeDays < -0.2) return {score:null,parts:null,reason:`ETF günlük verisinin tarihi uygun değil (${etf.date || "tarih yok"}).`};
-  if (Number(nf.coverage_pct || 0) < 60) return {score:null,parts:null,reason:"Kote 5 dakikalık veri kapsaması %60'ın altında."};
+  const etfDateValid = typeof etf.date === "string" && /^\d{4}-\d{2}-\d{2}$/.test(etf.date);
+  const etfDay = etfDateValid ? Date.parse(etf.date + "T00:00:00Z") : NaN;
+  if (!isFresh(fetchedTs, now, 90 * 60000)) return {score:null,parts:null,reason:"Akış dosyası eski veya zaman damgası geçersiz."};
+  if (!isFresh(netflowTs, now, 180 * 60000)) return {score:null,parts:null,reason:"Netflow verisi eski veya zaman damgası geçersiz."};
+  if (!isFresh(etfDay, now, 4 * 24 * HOUR_MS) || new Date(etfDay).toISOString().slice(0, 10) !== etf.date) {
+    return {score:null,parts:null,reason:`ETF günlük verisinin tarihi uygun değil (${etf.date || "tarih yok"}).`};
+  }
+  if (nf.granularity !== "5m" || numericValue(nf.coverage_pct) !== 100) {
+    return {score:null,parts:null,reason:"Netflow için 24 saatlik 5 dakika verisi eksik."};
+  }
 
-  if (etf.flow_usd_m === null || etf.flow_usd_m === undefined ||
-      nf.trailing_24h_btc === null || nf.trailing_24h_btc === undefined ||
-      !Number.isFinite(Number(etf.flow_usd_m)) || !Number.isFinite(Number(nf.trailing_24h_btc))) {
+  const etfFlow = numericValue(etf.flow_usd_m);
+  const nf24h = numericValue(nf.trailing_24h_btc);
+  if (!Number.isFinite(etfFlow) || !Number.isFinite(nf24h)) {
     return {score:null,parts:null,reason:"ETF veya Netflow sayısal değeri geçersiz."};
   }
-  const etfFlow = Number(etf.flow_usd_m);
-  const nf24h = Number(nf.trailing_24h_btc);
   const etfScore = etfFlow >= 100 ? 50 : etfFlow > 0 ? 25 : etfFlow <= -100 ? -50 : etfFlow < 0 ? -25 : 0;
   const netflowScore = nf24h <= -500 ? 50 : nf24h < 0 ? 25 : nf24h >= 500 ? -50 : nf24h > 0 ? -25 : 0;
   return {
@@ -503,8 +563,7 @@ function calcFlowScore() {
     parts:{
       "ETF":{score:etfScore,value:etfFlow,unit:"milyon USD",date:etf.date},
       "Exchange Netflow":{score:netflowScore,value:nf24h,unit:"BTC / son 24 saat",coverage:nf.coverage_pct}
-    },
-    metrics:{snapshotAge,netflowAge,etfAgeDays}
+    }
   };
 }
 
@@ -550,8 +609,8 @@ function renderIntelligence(live, flow) {
     ["BTC fiyatı", state.priceTs > 0 && now-state.priceTs < 30000, state.priceTs ? ageText(state.priceTs) : "Veri yok"],
     ["Open Interest", state.oiTs > 0 && now-state.oiTs < 90000, state.oiTs ? ageText(state.oiTs) : "Veri yok"],
     ["Funding", state.fundingTs > 0 && now-state.fundingTs < 240000, state.fundingTs ? ageText(state.fundingTs) : "Veri yok"],
-    ["ETF akışı", etf.ok === true && Number.isFinite(flowUpdated) && now-flowUpdated < 90*60000, etf.ok ? "Tarih: " + (etf.date || "belirsiz") : (etf.error || "Veri yok")],
-    ["Exchange Netflow", nf.ok === true && Number.isFinite(flowUpdated) && now-flowUpdated < 90*60000, nf.ok ? "Kapsama: " + (nf.coverage_pct ?? "—") + "%" : (nf.error || "Veri yok")]
+    ["ETF akışı", etf.ok === true && isFresh(flowUpdated, now, 90 * 60000) && isFresh(Date.parse(etf.date + "T00:00:00Z"), now, 4 * 24 * HOUR_MS), etf.ok ? "Tarih: " + (etf.date || "belirsiz") : (etf.error || "Veri yok")],
+    ["Exchange Netflow", nf.ok === true && isFresh(flowUpdated, now, 90 * 60000) && isFresh(Date.parse(nf.latest_bucket_ts), now, 180 * 60000) && nf.granularity === "5m" && numericValue(nf.coverage_pct) === 100, nf.ok ? "Kapsama: " + (nf.coverage_pct ?? "—") + "%" : (nf.error || "Veri yok")]
   ];
   const grid = document.getElementById("healthGrid");
   if (!grid) return;
@@ -567,6 +626,10 @@ function renderIntelligence(live, flow) {
 function render() {
   const live = computeLiveMarket();
   const flow = calcFlowScore();
+  if (state.flowData) {
+    setConnection("flow", flow.score === null ? "error" : "connected",
+      flow.score === null ? "Kurumsal akış: veri eksik/eski" : "Kurumsal akış: güncel");
+  }
   renderIntelligence(live, flow);
   state.liveScore = live.score;
   state.liveParts = live.parts;
@@ -585,14 +648,17 @@ function render() {
 
   const priceScore = live.parts ? live.parts["Fiyat & Hacim"].score : null;
   const priceScoreText = live.parts ? `${signed(priceScore)} puan` : "Bekleniyor";
-  const liveMetrics = live.metrics || {};
+  const liveMetrics = live.metrics;
+  const priceChange = liveMetrics.priceChange6hPct ?? liveMetrics.closedPriceChange6hPct;
+  const priceReference = liveMetrics.priceChange6hPct !== null ? "Canlı fiyat / saatlik kapanış" :
+    priceChange === null ? "6 saatlik fiyat referansı bekleniyor" : "Son kapanan mum itibarıyla";
   document.getElementById("marketTiles").innerHTML = [
     createTile("BTC-USDT fiyatı",state.price===null?"—":"$"+fmt(state.price,1),`OKX ticker · ${ageText(state.priceTs)}`),
     createTile("Open Interest",state.oi===null?"—":fmt(state.oi,2)+" BTC",`OKX BTC-USDT-SWAP · ${ageText(state.oiTs)}`),
-    createTile("OI değişimi (6s)",liveMetrics.oiChangePct===undefined?"—":signed(liveMetrics.oiChangePct,3)+"%",`Puan: ${live.parts ? signed(live.parts["Open Interest"].score) : "—"}`),
+    createTile("OI değişimi (6s)",liveMetrics.oiChangePct===null?"—":signed(liveMetrics.oiChangePct,3)+"%",liveMetrics.baseline ? `Referans: ${trTime(liveMetrics.baseline.ts)}` : "6 saatlik referans için geçmiş yetersiz"),
     createTile("Funding Rate",state.fundingPct===null?"—":signed(state.fundingPct,4)+"%",`Mevcut dönem oranı · ${ageText(state.fundingTs)}`),
-    createTile("Fiyat değişimi (6s)",liveMetrics.priceChange6hPct===undefined?"—":signed(liveMetrics.priceChange6hPct,3)+"%",`EMA20 ${fmt(liveMetrics.ema20,1)} · EMA50 ${fmt(liveMetrics.ema50,1)}`),
-    createTile("Fiyat & hacim puanı",priceScoreText,liveMetrics.highVolume===undefined?"Hacim teyidi bekleniyor":(liveMetrics.highVolume?"Son kapanan saat hacmi güçlü":"Son kapanan saat hacmi ortalama altında"))
+    createTile("Fiyat değişimi (6s)",priceChange===null?"—":signed(priceChange,3)+"%",`${priceReference} · EMA20 ${fmt(liveMetrics.ema20,1)} · EMA50 ${fmt(liveMetrics.ema50,1)}${liveMetrics.lastClosed && !liveMetrics.candleFresh ? " · eski mum geçmişi" : ""}`),
+    createTile("Fiyat & hacim puanı",priceScoreText,liveMetrics.highVolume===null?"Hacim teyidi bekleniyor":`Son kapanan saat: ${fmt(liveMetrics.lastClosed.volume,2)} BTC · Önceki 20 saat ort.: ${fmt(liveMetrics.averageVolume,2)} BTC${liveMetrics.candleFresh ? "" : " · eski mum geçmişi"}`)
   ].join("");
 
   const etf = state.flowData?.sources?.etf || {};
@@ -617,7 +683,7 @@ function render() {
     `Flow snapshot: ${state.flowData?.updated_at?ageText(Date.parse(state.flowData.updated_at)):"bekleniyor"}`
   ];
   document.getElementById("freshness").textContent = freshness.join("  |  ");
-  document.getElementById("wsErrors").textContent = [state.publicError,state.businessError,state.oiHistoryStatus,state.flowError,flow.reason].filter(Boolean).join(" · ");
+  document.getElementById("wsErrors").textContent = [state.publicError,state.businessError,state.oiHistoryStatus,state.historyError,state.flowError,flow.reason].filter(Boolean).join(" · ");
 }
 
 async function loadFlowData() {
@@ -626,9 +692,6 @@ async function loadFlowData() {
     if (!response.ok) throw new Error(`data.json HTTP ${response.status}`);
     state.flowData = await response.json();
     state.flowError = "";
-    const flow = calcFlowScore();
-    if (flow.score === null) setConnection("flow","error","Kurumsal akış: veri eksik/eski");
-    else setConnection("flow","connected","Kurumsal akış: güncel");
     render();
   } catch (error) {
     setConnection("flow","error","Kurumsal akış: dosya okunamadı");
@@ -655,10 +718,12 @@ async function pollOiRest() {
 
 async function init() {
   restoreOiHistory();
-  await bootstrapMarket();
-  await loadFlowData();
   startSockets();
   pollOiRest();
+  bootstrapMarket();
+  loadMarketHistory();
+  loadFlowData();
+  setInterval(loadMarketHistory, HISTORY_REFRESH_MS);
   setInterval(pollOiRest, 60000);
   setInterval(loadFlowData, FLOW_REFRESH_MS);
   setInterval(render, 1000);
