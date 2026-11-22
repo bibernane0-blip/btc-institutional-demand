@@ -3,8 +3,9 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="theme-color" content="#0b1220">
-<title>BTC Institutional Demand PRO — Live</title>
+<meta name="theme-color" content="#080f1c">
+<meta name="description" content="BTC Institutional Demand PRO — Bitcoin piyasa ve kurumsal akış analiz paneli">
+<title>BTC Institutional Demand PRO — V6.0</title>
 <style>
 :root{color-scheme:dark;--bg:#0b1220;--panel:#151f31;--panel2:#101a2a;--line:#29384f;--text:#e5e7eb;--muted:#9ca3af;--green:#34d399;--red:#fb7185;--yellow:#fbbf24;--blue:#7dd3fc}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:15px/1.5 system-ui,Segoe UI,Arial}
@@ -25,6 +26,33 @@ iframe{width:100%;height:485px;border:0;border-radius:10px}.source-row{display:f
 hr{border:0;border-top:1px solid var(--line);margin:13px 0}
 @media(max-width:850px){.hero{grid-template-columns:1fr 1fr}.hero .combined{grid-column:1/-1}}
 @media(max-width:600px){main{padding:11px}.hero{grid-template-columns:1fr}.hero .combined{grid-column:auto}iframe{height:370px}td,th{font-size:12px;padding:6px}}
+
+/* V6.0 — visual system */
+:root{--bg:#080f1c;--panel:#111c2c;--panel2:#0c1726;--line:#263850;--text:#edf4ff;--muted:#9bb0c9;--blue:#73c6ff}
+body{background:radial-gradient(ellipse at 10% -15%,#153450 0%,transparent 45%),var(--bg);letter-spacing:.005em}
+main{max-width:1440px;padding:24px 30px 48px}
+header.brand{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;padding:14px 0 22px;border-bottom:1px solid var(--line)}
+.brand h1{font-size:clamp(22px,3vw,34px);letter-spacing:-.04em;font-weight:800}
+.eyebrow{font-size:11px;font-weight:800;letter-spacing:.17em;text-transform:uppercase;color:var(--blue);margin-bottom:5px}
+.sub{font-size:13px}.source-row{margin:16px 0 20px}.pill{background:#0e1b2c;padding:8px 12px}
+.card{background:linear-gradient(155deg,#142238,#0e1929);border:1px solid #263a54;border-radius:18px;padding:22px;box-shadow:0 8px 30px #0002;margin:0}
+.hero{grid-template-columns:1.3fr 1fr 1fr;margin-bottom:16px}.hero .combined{background:linear-gradient(135deg,#12344a,#102136 70%)}
+.score{letter-spacing:-.06em}.grid{grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
+.tile{background:#0b1727;border:1px solid #253851;border-radius:13px;padding:18px;min-height:118px}
+.tile b{color:#c0d1e5;font-size:12px;font-weight:650}.tile .value{font-size:clamp(21px,2.3vw,29px);letter-spacing:-.035em}
+section.card{margin:16px 0}h2{font-size:18px;letter-spacing:-.025em;margin:0 0 15px}.top h2{margin:0}
+.btn{background:#1d4665;border:1px solid #36749a;font-weight:700;padding:11px 16px}.btn:hover{background:#25577a}
+.section-tag{font-size:11px;letter-spacing:.13em;color:#8cabc8;font-weight:800;margin:0 0 10px}
+.intelligence{display:grid;grid-template-columns:1.2fr 1fr;gap:16px}
+.intelligence .card{margin:0}.insight-head{font-size:20px;font-weight:800;margin:4px 0 10px}
+.insight-body{font-size:14px;color:#c8d6e7;line-height:1.8}.insight-list{padding-left:20px;margin:12px 0 0}.insight-list li{margin:8px 0}
+.health-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px}
+.health-item{padding:13px;border:1px solid var(--line);background:#0b1727;border-radius:12px}
+.health-item strong{display:block;font-size:13px}.health-item span{display:block;color:var(--muted);font-size:12px;margin-top:5px;overflow-wrap:anywhere}
+.health-item.ok{border-color:#215b50}.health-item.bad{border-color:#703546}.health-item.warn{border-color:#66532e}
+footer{margin:28px 0 0;padding:18px 0;border-top:1px solid var(--line)}
+@media(max-width:900px){main{padding:15px}.intelligence{grid-template-columns:1fr}}
+@media(max-width:600px){.hero{grid-template-columns:1fr}.card{padding:17px}.source-row{margin:12px 0}.tile{min-height:100px}iframe{height:360px}}
 </style>
 </head>
 <body>
@@ -76,7 +104,7 @@ hr{border:0;border-top:1px solid var(--line);margin:13px 0}
   <h2>Skor bileşenleri</h2>
   <div class="grid" id="componentTiles"></div>
   <hr>
-  <p class="small"><b>Deneysel formül:</b> Live Market = Open Interest (30) + Funding (20) + Fiyat/Hacim (50). Institutional Flow = ETF (50) + Exchange Netflow (50). Birleşik skor = %60 Live Market + %40 Institutional Flow. Bu yeni formül eski 55 günlük backtest ile doğrulanmış değildir; bu değişiklikten sonra yeni formülle yeniden test edilmelidir.</p>
+  <p class="small"><b>Deneysel formül:</b> Live Market = Open Interest (30) + Funding (20) + Fiyat/Hacim (50). Institutional Flow = ETF (50) + Exchange Netflow (50). Birleşik skor = %60 Live Market + %40 Institutional Flow. Bu yeni formül eski 55 günlük backtest ile doğrulanmış değildir; bu formül yatırım sinyali olarak doğrulanmış değildir.</p>
  </section>
 
  <section class="card">
@@ -93,7 +121,7 @@ hr{border:0;border-top:1px solid var(--line);margin:13px 0}
  <section class="card">
   <h2>Skor nasıl okunmalı?</h2>
   <p><b>+60 ile +100:</b> güçlü pozitif görünüm · <b>+30 ile +59:</b> pozitif görünüm · <b>-29 ile +29:</b> nötr · <b>-30 ile -59:</b> negatif görünüm · <b>-60 ile -100:</b> güçlü negatif görünüm.</p>
-  <p class="small">Bu bir karar destek prototipidir; otomatik emir göndermez. Ağırlıklar ve eşikler deneysel başlangıç varsayımlarıdır. Yeni skor formülü için ayrı tarihsel test ve ileriye dönük demo takibi tamamlanmadan işlem sinyali olarak kullanılmamalıdır.</p>
+  <p class="small">Bu bir karar destek prototipidir; otomatik emir göndermez. Ağırlıklar ve eşikler deneysel başlangıç varsayımlarıdır. Skor deneysel olup yatırım sinyali olarak kullanılmamalıdır.</p>
  </section>
 
  <footer class="small">
@@ -119,7 +147,7 @@ const state = {
   candles: [], candleUpdateAt: 0,
   oiSamples: [], oi: null, oiTs: 0, oiHistoryStatus: "",
   fundingPct: null, fundingTs: 0, fundingTime: null,
-  flowData: null,
+  flowData: null, flowError: "",
   publicSocket: null, businessSocket: null,
   publicStatus: "connecting", businessStatus: "connecting",
   publicError: "", businessError: "",
@@ -149,8 +177,12 @@ function setConnection(prefix, status, message="") {
   dot.className = "dot " + cls;
   text.textContent = message || status;
 }
+function escapeHtml(value) {
+  return String(value ?? "").replace(/[&<>"']/g, ch => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"})[ch]);
+}
 function createTile(title, value, note, cls="") {
-  return `<div class="tile"><b>${title}</b><div class="value ${cls}">${value}</div><div class="small">${note || ""}</div></div>`;
+  const safeClass = ["ok","bad","warn","blue"].includes(cls) ? cls : "";
+  return `<div class="tile"><b>${escapeHtml(title)}</b><div class="value ${safeClass}">${escapeHtml(value)}</div><div class="small">${escapeHtml(note || "")}</div></div>`;
 }
 function updateScoreCard(id, labelId, score, label, updatedId, updatedText) {
   const el = document.getElementById(id);
@@ -443,6 +475,11 @@ function calcFlowScore() {
   if (etfAgeDays > 4 || etfAgeDays < -0.2) return {score:null,parts:null,reason:`ETF günlük verisinin tarihi uygun değil (${etf.date || "tarih yok"}).`};
   if (Number(nf.coverage_pct || 0) < 60) return {score:null,parts:null,reason:"Kote 5 dakikalık veri kapsaması %60'ın altında."};
 
+  if (etf.flow_usd_m === null || etf.flow_usd_m === undefined ||
+      nf.trailing_24h_btc === null || nf.trailing_24h_btc === undefined ||
+      !Number.isFinite(Number(etf.flow_usd_m)) || !Number.isFinite(Number(nf.trailing_24h_btc))) {
+    return {score:null,parts:null,reason:"ETF veya Netflow sayısal değeri geçersiz."};
+  }
   const etfFlow = Number(etf.flow_usd_m);
   const nf24h = Number(nf.trailing_24h_btc);
   const etfScore = etfFlow >= 100 ? 50 : etfFlow > 0 ? 25 : etfFlow <= -100 ? -50 : etfFlow < 0 ? -25 : 0;
@@ -457,9 +494,64 @@ function calcFlowScore() {
   };
 }
 
+
+function renderIntelligence(live, flow) {
+  const title = document.getElementById("insightTitle");
+  const body = document.getElementById("insightBody");
+  const items = [];
+  if (live.score === null) {
+    items.push("Piyasa skoru henüz hesaplanamıyor: " + (live.missing || []).join(", ") + ".");
+  } else {
+    const m = live.metrics || {};
+    if (Number.isFinite(m.priceChange6hPct) && Number.isFinite(m.oiChangePct)) {
+      if (m.priceChange6hPct > 0 && m.oiChangePct > 0) items.push("Fiyat ve açık pozisyon miktarı birlikte artıyor; yeni kaldıraçlı pozisyonlar birikiyor olabilir. Bu durum tek başına kurumsal alım kanıtı değildir.");
+      else if (m.priceChange6hPct < 0 && m.oiChangePct > 0) items.push("Fiyat düşerken açık pozisyon miktarı artıyor; aşağı yönlü pozisyonlanma veya risk artışı söz konusu olabilir.");
+      else if (m.priceChange6hPct > 0 && m.oiChangePct < 0) items.push("Fiyat artışı açık pozisyon miktarındaki azalışla birlikte görülüyor; pozisyon kapanışları etkili olabilir.");
+      else if (m.priceChange6hPct < 0 && m.oiChangePct < 0) items.push("Fiyat ve açık pozisyon miktarı birlikte düşüyor; pozisyon azaltımı etkili olabilir.");
+      else items.push("Fiyat ve açık pozisyon değişimleri belirgin bir yön göstermiyor.");
+    }
+    if (Number.isFinite(m.fundingPct)) items.push("Funding oranı " + signed(m.fundingPct, 4) + "%. Bu oran pozisyonlanma bağlamı sağlar; tek başına yön tahmini değildir.");
+  }
+  if (flow.score === null) {
+    items.push("Kurumsal akış değerlendirmesi kullanılamıyor: " + (flow.reason || "veri eksik") + ".");
+  } else {
+    const e = Number(state.flowData.sources.etf.flow_usd_m);
+    const n = Number(state.flowData.sources.netflow.trailing_24h_btc);
+    items.push("Son bildirilen ETF net akışı " + signed(e, 1) + " milyon USD; borsa net akışı " + signed(n, 1) + " BTC. Farklı zaman aralıklarını ve kapsamlarını doğrudan eşdeğer kabul etmeyin.");
+  }
+  title.textContent = live.score === null && flow.score === null ? "Kısmi veri · değerlendirme bekleniyor" :
+    live.score !== null && flow.score !== null ? "Piyasa ve kurumsal akış görünümü" : "Kısmi piyasa görünümü";
+  body.replaceChildren();
+  const list = document.createElement("ul");
+  list.className = "insight-list";
+  for (const message of items) { const li = document.createElement("li"); li.textContent = message; list.append(li); }
+  body.append(list);
+
+  const now = Date.now();
+  const etf = state.flowData?.sources?.etf || {};
+  const nf = state.flowData?.sources?.netflow || {};
+  const flowUpdated = Date.parse(state.flowData?.updated_at || "");
+  const checks = [
+    ["BTC fiyatı", state.priceTs > 0 && now-state.priceTs < 30000, state.priceTs ? ageText(state.priceTs) : "Veri yok"],
+    ["Open Interest", state.oiTs > 0 && now-state.oiTs < 90000, state.oiTs ? ageText(state.oiTs) : "Veri yok"],
+    ["Funding", state.fundingTs > 0 && now-state.fundingTs < 240000, state.fundingTs ? ageText(state.fundingTs) : "Veri yok"],
+    ["ETF akışı", etf.ok === true && Number.isFinite(flowUpdated) && now-flowUpdated < 90*60000, etf.ok ? "Tarih: " + (etf.date || "belirsiz") : (etf.error || "Veri yok")],
+    ["Exchange Netflow", nf.ok === true && Number.isFinite(flowUpdated) && now-flowUpdated < 90*60000, nf.ok ? "Kapsama: " + (nf.coverage_pct ?? "—") + "%" : (nf.error || "Veri yok")]
+  ];
+  const grid = document.getElementById("healthGrid");
+  grid.replaceChildren();
+  for (const [name, ok, description] of checks) {
+    const node = document.createElement("div"); node.className = "health-item " + (ok ? "ok" : "warn");
+    const strong = document.createElement("strong"); strong.textContent = (ok ? "● " : "○ ") + name;
+    const detail = document.createElement("span"); detail.textContent = description;
+    node.append(strong, detail); grid.append(node);
+  }
+}
+
 function render() {
   const live = computeLiveMarket();
   const flow = calcFlowScore();
+  renderIntelligence(live, flow);
   state.liveScore = live.score;
   state.liveParts = live.parts;
   state.flowScore = flow.score;
@@ -509,7 +601,7 @@ function render() {
     `Flow snapshot: ${state.flowData?.updated_at?ageText(Date.parse(state.flowData.updated_at)):"bekleniyor"}`
   ];
   document.getElementById("freshness").textContent = freshness.join("  |  ");
-  document.getElementById("wsErrors").textContent = [state.publicError,state.businessError,state.oiHistoryStatus,flow.reason].filter(Boolean).join(" · ");
+  document.getElementById("wsErrors").textContent = [state.publicError,state.businessError,state.oiHistoryStatus,state.flowError,flow.reason].filter(Boolean).join(" · ");
 }
 
 async function loadFlowData() {
@@ -517,13 +609,15 @@ async function loadFlowData() {
     const response = await fetch(`./data.json?ts=${Date.now()}`, {cache:"no-store"});
     if (!response.ok) throw new Error(`data.json HTTP ${response.status}`);
     state.flowData = await response.json();
+    state.flowError = "";
     const flow = calcFlowScore();
     if (flow.score === null) setConnection("flow","error","Kurumsal akış: veri eksik/eski");
     else setConnection("flow","connected","Kurumsal akış: güncel");
     render();
   } catch (error) {
     setConnection("flow","error","Kurumsal akış: dosya okunamadı");
-    state.publicError = error.message;
+    state.flowError = error.message;
+    state.flowData = null;
     render();
   }
 }
