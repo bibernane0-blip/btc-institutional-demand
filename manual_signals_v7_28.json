@@ -172,7 +172,7 @@
       "estimated_atr": 293.0972,
       "estimate_updated_at": 1795368600000,
       "last_repriced_candle_close": 1795368600000,
-      "last_checked_ts": 1795369500000,
+      "last_checked_ts": 1795373100000,
       "adx": 28.58,
       "ema20": 60894.53,
       "ema50": 60541.74,
@@ -217,15 +217,17 @@
       "ema20": 60890.52,
       "ema50": 60567.28,
       "ema200": 60190.41,
-      "status": "WAITING",
-      "note": "MANUAL ONLY. Limit price is a watch level, not an exchange order."
+      "status": "INVALIDATED",
+      "note": "MANUAL ONLY. Limit price is a watch level, not an exchange order.",
+      "invalidated_at": 1795371300000,
+      "invalidated_reason": "ADX / EMA50-EMA200 / close-EMA50 / original parent trend"
     }
   ],
-  "updated_at": 1795370915141,
+  "updated_at": 1795374117235,
   "trend": {
     "1D": "SHORT",
     "4H": "YATAY",
-    "1H": "LONG"
+    "1H": "YATAY"
   },
   "settings": {
     "stop_atr": 2.5,
