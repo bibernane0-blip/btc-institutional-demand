@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#080f1c">
 <meta name="description" content="BTC Institutional Demand PRO — Bitcoin piyasa ve kurumsal akış analiz paneli">
-<title>BTC Institutional Demand PRO — V7.6</title>
+<title>BTC Institutional Demand PRO — V7.15</title>
 <style>
 :root{color-scheme:dark;--bg:#0b1220;--panel:#151f31;--panel2:#101a2a;--line:#29384f;--text:#e5e7eb;--muted:#9ca3af;--green:#34d399;--red:#fb7185;--yellow:#fbbf24;--blue:#7dd3fc}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:15px/1.5 system-ui,Segoe UI,Arial}
@@ -902,100 +902,97 @@ async function loadStructure() {
 
 
 // V7.4: Conservative read-only candidate scanner. No execution, no score modification.
+// V7.15: score + adjacent timeframe alignment + confirmed 15m EMA20 breakout.
+function v715Setup(side) {
+  const duration=15*60000, now=Date.now();
+  const cs=[...new Map(state.plannerCandles.filter(c=>c && c.confirm==="1" &&
+    Number.isInteger(c.ts) && c.ts+duration<=now &&
+    [c.open,c.high,c.low,c.close].every(v=>Number.isFinite(v)&&v>0))
+    .map(c=>[c.ts,c])).values()].sort((a,b)=>a.ts-b.ts).slice(-45);
+  if(cs.length<35 || cs.some((c,i)=>i && c.ts-cs[i-1].ts!==duration) ||
+     now-(cs.at(-1).ts+duration)>30*60000 || now-state.plannerCandlesAt>10*60000)
+    return {reason:"15m mumları eksik veya eski."};
+  // EMA20 calculated from closed candles only.
+  const ema=[], k=2/21;
+  cs.forEach((c,i)=>ema.push(i?c.close*k+ema[i-1]*(1-k):c.close));
+  const n=cs.length-1, confirm=cs[n-1], breakout=cs[n];
+  const isLong=side==="LONG";
+  // Confirmation candle must touch EMA20 and close back on trend side.
+  const touched=confirm.low<=ema[n-1] && confirm.high>=ema[n-1];
+  const confirmed=isLong?confirm.close>ema[n-1]:confirm.close<ema[n-1];
+  // The NEXT fully closed candle must break confirmation high/low.
+  const broke=isLong?breakout.high>confirm.high && breakout.close>confirm.high:
+    breakout.low<confirm.low && breakout.close<confirm.low;
+  if(!touched || !confirmed || !broke)
+    return {reason:"15m EMA20 geri çekilme + kapanışlı kırılım henüz yok."};
+  const atrPct=state.regime["15m"]?.atr;
+  if(!Number.isFinite(atrPct)||atrPct<=0) return {reason:"15m ATR mevcut değil."};
+  const entry=breakout.close, atr=entry*atrPct/100;
+  const swingCandles=cs.slice(-10,-1);
+  const swing=isLong?Math.min(...swingCandles.map(c=>c.low)):
+    Math.max(...swingCandles.map(c=>c.high));
+  const stop=isLong?swing-atr:swing+atr;
+  const risk=Math.abs(entry-stop), riskPct=100*risk/entry;
+  if(!(isLong?stop<entry:stop>entry) || riskPct<0.10 || riskPct>3)
+    return {reason:`Stop mesafesi uygun değil (%${fmt(riskPct,2)}).`};
+  return {side,entry,stop,tp1:entry+(isLong?1:-1)*1.5*risk,
+    tp2:entry+(isLong?1:-1)*2.5*risk,signalClose:breakout.ts+duration,
+    riskPct,reason:"EMA20 geri çekilmesi ve sonraki 15m kapanışlı kırılım teyit edildi."};
+}
 function renderScanner() {
-  const box=document.getElementById("scannerTiles");
-  if (!box) return;
+  const box=document.getElementById("scannerTiles"); if(!box)return;
   const frames=["1D","4H","1H","15m"];
+  const score=computeLiveMarket().score;
+  const scoreSide=score===null?null:score>=30?"LONG":score<=-30?"SHORT":null;
+  const trends=frames.map(k=>state.structure[k]?.trend);
+  const wanted=scoreSide==="LONG"?"YÜKSELİŞ":"DÜŞÜŞ";
+  const pair=scoreSide?frames.slice(0,-1).find((k,i)=>trends[i]===wanted && trends[i+1]===wanted):null;
   const ready=frames.every(k=>state.structure[k]?.trend &&
-    state.regime[k]?.status==="Hazır" && state.liquidity[k]?.status==="Hazır");
-  let verdict="BEKLE", reason="Veri eksik veya eski; yön değerlendirmesi yapılamıyor.";
-  let aligned=false, regimeOK=false, entryOK=false, riskOK=false;
-  if (ready) {
-    const trends=frames.map(k=>state.structure[k].trend);
-    aligned=trends.every(t=>t==="YÜKSELİŞ") || trends.every(t=>t==="DÜŞÜŞ");
-    const direction=trends[0];
-    regimeOK=["4H","1H"].every(k=>state.regime[k].strength==="TREND" &&
-      state.regime[k].direction===direction);
-    entryOK=state.regime["15m"].direction===direction &&
-      state.regime["15m"].strength==="TREND";
-    // High daily volatility and missing OI baseline are explicit caution flags, not bypassed.
-    const oi=computeLiveMarket();
-    riskOK=state.regime["1D"].volatility!=="YÜKSEK" && oi.score!==null;
-    if (!aligned) reason="Dört zaman diliminde yön uyumu yok.";
-    else if (!regimeOK) reason="4H ve 1H trend gücü/yön teyidi eksik.";
-    else if (!entryOK) reason="15m giriş yönü veya trend gücü teyitsiz.";
-    else if (!riskOK) reason="Yüksek günlük volatilite veya eksik canlı piyasa skoru: aday engellendi.";
-    else {
-      verdict=direction==="YÜKSELİŞ"?"LONG ADAYI":"SHORT ADAYI";
-      reason="Yapı ve rejim uyumlu; likidite bölgeleri yalnızca bağlam sağlar. Giriş, SL/TP ve R:R doğrulanmadı.";
-    }
-  }
+    state.regime[k]?.status==="Hazır");
+  const aligned=!!pair && ready;
+  const scoreOK=!!scoreSide;
+  const riskOK=ready && state.regime["1D"].volatility!=="YÜKSEK";
+  const setup=scoreOK&&aligned&&riskOK?v715Setup(scoreSide):null;
+  const entryOK=!!setup?.entry;
+  const verdict=scoreOK&&aligned&&riskOK&&entryOK?`${scoreSide} ADAYI`:"BEKLE";
+  const reason=!scoreOK?"Skor ±30 eşiğinde değil veya veri eksik.":
+    !ready?"Yapı veya rejim verisi eksik.":
+    !aligned?"Skor yönünde ardışık iki zaman dilimi bulunamadı.":
+    !riskOK?"Günlük volatilite yüksek; işlem engellendi.":
+    setup.reason;
   state.scannerVerdict=verdict;
-  renderPlanner();
-  updatePaper();
-  const flags=[
-    ["Yön uyumu",aligned], ["4H + 1H rejim",regimeOK],
-    ["15m teyit",entryOK], ["Risk/veri filtresi",riskOK]
-  ];
-  box.innerHTML=createTile("Tarama sonucu",verdict,reason,verdict==="BEKLE"?"warn":"blue")+
-    flags.map(([label,ok])=>createTile(label,ok?"UYGUN":"TEYİTSİZ",ok?"Koşul sağlandı":"Koşul sağlanmadı veya veri bekleniyor",ok?"ok":"warn")).join("");
+  state.v715Plan=verdict!=="BEKLE"?setup:null;
+  renderPlanner(); updatePaper();
+  const flags=[["Skor yön filtresi",scoreOK],["Ardışık zaman dilimleri",aligned],
+    ["15m EMA20 giriş",entryOK],["Risk/veri filtresi",riskOK]];
+  box.innerHTML=createTile("Tarama sonucu",verdict,
+    `${reason}${pair?` · Eşleşme: ${pair} + ${frames[frames.indexOf(pair)+1]}`:""}`,
+    verdict==="BEKLE"?"warn":"blue")+
+    flags.map(([label,ok])=>createTile(label,ok?"UYGUN":"TEYİTSİZ",
+      ok?"Koşul sağlandı":"Koşul sağlanmadı veya veri bekleniyor",ok?"ok":"warn")).join("");
   document.getElementById("scannerUpdated").textContent=state.regimeUpdated?
     `Son kontrol: ${trTime(state.regimeUpdated)}`:"Veriler bekleniyor…";
   document.getElementById("scannerSummary").textContent=
-    "Deneysel tarayıcı; geçmiş BOS/CHoCH ve likidite bölgeleri güncel emir akışını kanıtlamaz. Otomatik emir göndermez.";
+    "V7.15 deneysel sinyal: skor ±30, ardışık zaman dilimi ve 15m EMA20 kırılımı. Gerçek emir göndermez.";
 }
-
-// V7.5: Conditional, read-only research plan; never creates orders.
 function renderPlanner() {
-  const box=document.getElementById("plannerTiles");
-  if(!box) return;
+  const box=document.getElementById("plannerTiles"); if(!box)return;
   const note=document.getElementById("plannerSummary");
-  const updated=document.getElementById("plannerUpdated");
-  updated.textContent=state.plannerCandlesAt?`Son veri kontrolü: ${trTime(state.plannerCandlesAt)}`:"Mumlar bekleniyor…";
-  const verdict=state.scannerVerdict;
-  if(verdict!=="LONG ADAYI" && verdict!=="SHORT ADAYI") {
-    state.paperPlan=null;
-    box.innerHTML=createTile("Plan durumu","BEKLE","Tarayıcı onayı yok; giriş, SL ve TP hesaplanmadı.","warn");
-    note.textContent="Tüm tarama filtreleri sağlanmadan işlem planı üretilmez.";
-    return;
-  }
-  const duration=15*60000, now=Date.now();
-  const candles=[...new Map(state.plannerCandles.filter(c=>c && c.confirm==="1" &&
-    Number.isInteger(c.ts) && c.ts+duration<=now &&
-    [c.open,c.high,c.low,c.close].every(v=>Number.isFinite(v)&&v>0))
-    .map(c=>[c.ts,c])).values()].sort((a,b)=>a.ts-b.ts).slice(-35);
-  const last=candles.at(-1);
-  const contiguous=candles.length>=20 && candles.every((c,i)=>!i||c.ts-candles[i-1].ts===duration);
-  const atrPct=state.regime["15m"]?.atr;
-  const fresh=last && now-(last.ts+duration)<=30*60000 && now-state.plannerCandlesAt<=10*60000;
-  if(!contiguous||!fresh||!Number.isFinite(atrPct)||atrPct<=0) {
-    state.paperPlan=null;
-    box.innerHTML=createTile("Plan durumu","BEKLE","15m mumları eski/eksik veya ATR geçersiz.","warn");
-    note.textContent="Eksik veriyle fiyat seviyesi üretilmez.";
-    return;
-  }
-  const isLong=verdict==="LONG ADAYI", entry=last.close;
-  const atr=entry*atrPct/100, recent=candles.slice(-10);
-  const swing=isLong?Math.min(...recent.map(c=>c.low)):Math.max(...recent.map(c=>c.high));
-  const stop=isLong?Math.min(swing-0.25*atr,entry-1.5*atr):Math.max(swing+0.25*atr,entry+1.5*atr);
-  const risk=Math.abs(entry-stop), riskPct=100*risk/entry;
-  if(!Number.isFinite(riskPct)||riskPct<=0||riskPct>3) {
-    state.paperPlan=null;
-    box.innerHTML=createTile("Plan durumu","BEKLE",`Stop mesafesi kabul edilmiyor (${fmt(riskPct,2)}%).`,"warn");
-    note.textContent="Deneysel risk filtresi: stop mesafesi %3 üzerindeyse plan engellenir.";
-    return;
-  }
-  const tp1=entry+(isLong?1:-1)*1.5*risk;
-  const tp2=entry+(isLong?1:-1)*2.5*risk;
-  state.paperPlan={side:isLong?"LONG":"SHORT",reference:entry,stop,tp1,tp2,signalClose:last.ts+duration};
+  document.getElementById("plannerUpdated").textContent=state.plannerCandlesAt?
+    `Son veri kontrolü: ${trTime(state.plannerCandlesAt)}`:"Mumlar bekleniyor…";
+  const plan=state.v715Plan;
+  if(!plan){state.paperPlan=null;
+    box.innerHTML=createTile("Plan durumu","BEKLE","V7.15 giriş koşulları sağlanmadı.","warn");
+    note.textContent="Skor, zaman dilimi ve 15m kırılım teyidi bekleniyor.";return;}
+  state.paperPlan={side:plan.side,reference:plan.entry,stop:plan.stop,
+    tp1:plan.tp1,tp2:plan.tp2,signalClose:plan.signalClose};
   box.innerHTML=[
-    createTile("Aday",verdict,"Kapanmış son 15m mumuna dayalı koşullu senaryo","blue"),
-    createTile("Referans giriş",`$${fmt(entry,1)}`,`15m kapanışı · ${trTime(last.ts+duration)}`),
-    createTile("Stop-loss",`$${fmt(stop,1)}`,`Swing + ATR tamponu · mesafe %${fmt(riskPct,2)}`),
-    createTile("TP1",`$${fmt(tp1,1)}`,"Risk/ödül 1:1,5"),
-    createTile("TP2",`$${fmt(tp2,1)}`,"Risk/ödül 1:2,5")
-  ].join("");
-  note.textContent="Seviyeler teoriktir: spread, kayma, komisyon, funding ve likidasyon dahil değildir. Gerçek zamanlı giriş emri değildir; geriye dönük test edilmemiştir.";
+    createTile("Aday",`${plan.side} ADAYI`,"15m EMA20 geri çekilme + kapanışlı kırılım","blue"),
+    createTile("Referans giriş",`$${fmt(plan.entry,1)}`,`15m kapanışı · ${trTime(plan.signalClose)}`),
+    createTile("Stop-loss",`$${fmt(plan.stop,1)}`,`Son geri çekilme swing ± 1 ATR · %${fmt(plan.riskPct,2)}`),
+    createTile("TP1",`$${fmt(plan.tp1,1)}`,"1,5R"),
+    createTile("TP2",`$${fmt(plan.tp2,1)}`,"2,5R")].join("");
+  note.textContent="Deneysel sanal plan. Giriş canlı fiyatla yapılır; gerçek emir gönderilmez. Maliyetler simülasyonda tahminidir.";
 }
 
 // V7.6: browser-local paper trades. Never submits an order.
