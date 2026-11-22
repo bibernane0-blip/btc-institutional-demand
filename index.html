@@ -550,7 +550,7 @@ function calcFlowScore() {
   if (!isFresh(etfDay, now, 4 * 24 * HOUR_MS) || new Date(etfDay).toISOString().slice(0, 10) !== etf.date) {
     return {score:null,parts:null,reason:`ETF günlük verisinin tarihi uygun değil (${etf.date || "tarih yok"}).`};
   }
-  if (nf.granularity !== "5m" || numericValue(nf.coverage_pct) !== 100) {
+  if (nf.granularity !== "5m" || numericValue(nf.coverage_pct) < 99) {
     return {score:null,parts:null,reason:"Netflow için 24 saatlik 5 dakika verisi eksik."};
   }
 
@@ -613,7 +613,7 @@ function renderIntelligence(live, flow) {
     ["Open Interest", state.oiTs > 0 && now-state.oiTs < 90000, state.oiTs ? ageText(state.oiTs) : "Veri yok"],
     ["Funding", state.fundingTs > 0 && now-state.fundingTs < 240000, state.fundingTs ? ageText(state.fundingTs) : "Veri yok"],
     ["ETF akışı", etf.ok === true && isFresh(flowUpdated, now, 90 * 60000) && isFresh(Date.parse(etf.date + "T00:00:00Z"), now, 4 * 24 * HOUR_MS), etf.ok ? "Tarih: " + (etf.date || "belirsiz") : (etf.error || "Veri yok")],
-    ["Exchange Netflow", nf.ok === true && isFresh(flowUpdated, now, 90 * 60000) && isFresh(Date.parse(nf.latest_bucket_ts), now, 180 * 60000) && nf.granularity === "5m" && numericValue(nf.coverage_pct) === 100, nf.ok ? "Kapsama: " + (nf.coverage_pct ?? "—") + "%" : (nf.error || "Veri yok")]
+    ["Exchange Netflow", nf.ok === true && isFresh(flowUpdated, now, 90 * 60000) && isFresh(Date.parse(nf.latest_bucket_ts), now, 180 * 60000) && nf.granularity === "5m" && numericValue(nf.coverage_pct) >= 99, nf.ok ? "Kapsama: " + (nf.coverage_pct ?? "—") + "%" + (numericValue(nf.coverage_pct) < 100 ? " · KISMİ VERİ" : "") : (nf.error || "Veri yok")]
   ];
   const grid = document.getElementById("healthGrid");
   if (!grid) return;
