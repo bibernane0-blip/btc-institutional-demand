@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
-"""V7.16 experimental server-side paper signal tracker. No order execution."""
+"""V7.16.1 experimental server-side paper signal tracker. No order execution."""
 import json, math, os, time
 from pathlib import Path
 import requests
 
 BASE='https://www.okx.com'; HISTORY=Path('market_history.json'); OUT=Path('signal_history.json')
 H=3600000; M=60000; NOW=int(time.time()*1000)
-S=requests.Session(); S.headers.update({'User-Agent':'BTC-Demand-SignalTracker/7.16'})
+S=requests.Session(); S.headers.update({'User-Agent':'BTC-Demand-SignalTracker/7.16.1'})
 DUR={'1D':24*H,'4H':4*H,'1H':H,'15m':15*M}
 BAR={'1D':'1Dutc','4H':'4H','1H':'1H','15m':'15m'}
 LAG={'1D':48*H,'4H':8*H,'1H':2*H,'15m':30*M}
@@ -159,20 +159,26 @@ def main():
             trends={k:structure(bars[k],k) for k in DUR}
             regimes={k:regime(bars[k],k) for k in DUR}
             result['trends']=trends
-            if any(v is None for v in trends.values()) or any(v is None for v in regimes.values()):result['reason']='Structure/regime unavailable'
-            elif regimes['1D']['volatility']=='HIGH':result['reason']='Daily volatility high'
+            pairs=[(a,b) for a,b in [('1D','4H'),('4H','1H'),('1H','15m')]
+                   if trends[a]==side and trends[b]==side]
+            result['matching_pairs']=pairs
+            result['daily_volatility']=regimes['1D']['volatility'] if regimes['1D'] else None
+            if any(v is None for v in trends.values()) or any(v is None for v in regimes.values()):
+                result['reason']='Structure/regime unavailable'
+            elif not pairs:
+                result['reason']='No adjacent timeframe agreement'
+            elif regimes['1D']['volatility']=='HIGH':
+                result['reason']='Daily volatility high'
             else:
-                pairs=[(a,b) for a,b in [('1D','4H'),('4H','1H'),('1H','15m')] if trends[a]==side and trends[b]==side]
-                if not pairs:result['reason']='No adjacent timeframe agreement'
+                plan=setup(bars['15m'],regimes['15m']['atr_pct'],side)
+                if plan is None:
+                    result['reason']='15m EMA20 setup absent'
                 else:
-                    plan=setup(bars['15m'],regimes['15m']['atr_pct'],side)
-                    if plan is None:result['reason']='15m EMA20 setup absent'
-                    else:
-                        result['status']='SIGNAL';result['pair']=pairs[0]
-                        # Signal confirmed on completed candle, not a real fill. Use next bar OPEN only when observed.
-                        ident=f"{side}-{plan['signal_close']}"
-                        if not any(t['id']==ident for t in trades):
-                            trades.append(dict(id=ident,**plan,status='PENDING',created_at=NOW))
+                    result['status']='SIGNAL';result['pair']=pairs[0]
+                    # Signal confirmed on completed candle, not a real fill.
+                    ident=f"{side}-{plan['signal_close']}"
+                    if not any(t['id']==ident for t in trades):
+                        trades.append(dict(id=ident,**plan,status='PENDING',created_at=NOW))
         # Pending signals: enter only at observed first subsequent closed 15m bar OPEN.
         for t in trades:
             if t['status']!='PENDING':continue
@@ -190,6 +196,6 @@ def main():
         result.update(status='ERROR',reason=str(e))
     checks.append(result);db['checks']=checks[-200:];db['trades']=trades[-500:];db['updated_at']=NOW
     tmp=OUT.with_suffix('.json.tmp');tmp.write_text(json.dumps(db,ensure_ascii=False,separators=(',',':'))+'\n');os.replace(tmp,OUT)
-    print('V7.16:',result,'trades:',len(trades))
+    print('V7.16.1:',result,'trades:',len(trades))
 
 if __name__=='__main__':main()
