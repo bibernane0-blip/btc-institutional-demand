@@ -152,7 +152,7 @@ footer{margin:28px 0 0;padding:18px 0;border-top:1px solid var(--line)}
  </section>
 
  <section class="card" id="paperSection">
-  <div class="top"><h2 style="margin:0">İşlem Simülasyonu (V7.6)</h2><span class="small" id="paperUpdated">Yerel kayıt</span></div>
+  <div class="top"><h2 style="margin:0">İşlem Simülasyonu (V7.7)</h2><span class="small" id="paperUpdated">Yerel kayıt</span></div>
   <div class="grid" id="paperTiles" style="margin-top:12px"></div>
   <p class="small" id="paperSummary">Sanal işlem; gerçek emir gönderilmez. Kayıtlar yalnızca bu tarayıcıda saklanır.</p>
   <button class="btn" id="paperExport" type="button">Kayıtları JSON indir</button>
@@ -999,7 +999,22 @@ function renderPlanner() {
 }
 
 // V7.6: browser-local paper trades. Never submits an order.
-const PAPER_KEY="btc-demand-paper-v76";
+const PAPER_KEY="btc-demand-paper-v76"; // Keep existing records.
+// Research assumptions, NOT observed exchange fills or actual funding.
+const PAPER_COST={feePerSide:0.0005,slippagePerSide:0.0002,fundingPer8h:0.0001};
+function paperNetR(trade,exit,closedAt) {
+  const direction=trade.side==="LONG"?1:-1;
+  const risk=Math.abs(trade.entry-trade.stop);
+  if(!(risk>0)) return null;
+  const gross=direction*(exit-trade.entry)/risk;
+  const fee=(trade.entry+exit)*PAPER_COST.feePerSide;
+  const slip=(trade.entry+exit)*PAPER_COST.slippagePerSide;
+  // Conservative fixed funding debit, prorated by holding duration.
+  const hours=Math.max(0,closedAt-trade.openedAt)/HOUR_MS;
+  const funding=trade.entry*PAPER_COST.fundingPer8h*hours/8;
+  return {grossR:gross,netR:gross-(fee+slip+funding)/risk,
+    feeUsd:fee,slippageUsd:slip,fundingUsd:funding};
+}
 function savePaper() {
   try { localStorage.setItem(PAPER_KEY,JSON.stringify(state.paperTrades.slice(-250))); }
   catch(e) { document.getElementById("paperSummary").textContent="Yerel kayıt başarısız: "+e.message; }
@@ -1024,7 +1039,7 @@ function updatePaper() {
       state.paperTrades.push({id:now,side:plan.side,signalClose:plan.signalClose,openedAt:now,
         entry,stop:plan.stop,tp1:plan.tp1,tp2:plan.tp2,status:"AÇIK",lastCandleTs:plan.signalClose,
         // TP1 is informational; full position exits at TP2 or SL.
-        tp1Touched:false});
+        tp1Touched:false,costModel:"v77"});
       savePaper();
     }
   }
@@ -1033,6 +1048,9 @@ function updatePaper() {
     const candles=state.plannerCandles.filter(c=>c.confirm==="1" && c.ts+900000>trade.openedAt &&
       c.ts+900000<=now && c.ts>trade.lastCandleTs).sort((a,b)=>a.ts-b.ts);
     for(const c of candles) {
+      // Missing candles make the exit sequence unknowable; stop evaluation.
+      if(trade.lastCandleTs && c.ts-trade.lastCandleTs>900000 &&
+          c.ts>=trade.openedAt) {trade.dataGap=true;break;}
       // A candle overlapping the entry moment is skipped: its earlier high/low is unknown.
       if(c.ts<trade.openedAt) {trade.lastCandleTs=c.ts;continue;}
       const long=trade.side==="LONG";
@@ -1045,12 +1063,13 @@ function updatePaper() {
         trade.status=sl?"STOP":"TP2";
         trade.exit=sl?trade.stop:trade.tp2;
         trade.closedAt=c.ts+900000;
-        trade.r=(long?1:-1)*(trade.exit-trade.entry)/Math.abs(trade.entry-trade.stop);
+        Object.assign(trade,paperNetR(trade,trade.exit,trade.closedAt));
+        trade.r=trade.netR;
         break;
       }
       if(c.ts+900000-trade.openedAt>=72*HOUR_MS) {
         trade.status="SÜRE DOLDU";trade.exit=c.close;trade.closedAt=c.ts+900000;
-        trade.r=(long?1:-1)*(trade.exit-trade.entry)/Math.abs(trade.entry-trade.stop);break;
+        Object.assign(trade,paperNetR(trade,trade.exit,trade.closedAt));trade.r=trade.netR;break;
       }
     }
     savePaper();
@@ -1059,23 +1078,25 @@ function updatePaper() {
 }
 function renderPaper() {
   const trades=state.paperTrades, active=trades.find(t=>t.status==="AÇIK");
-  const closed=trades.filter(t=>t.status!=="AÇIK" && Number.isFinite(t.r));
-  const totalR=closed.reduce((sum,t)=>sum+t.r,0);
-  const wins=closed.filter(t=>t.r>0).length;
+  const closed=trades.filter(t=>t.status!=="AÇIK" && Number.isFinite(t.netR));
+  const legacy=trades.filter(t=>t.status!=="AÇIK" && !Number.isFinite(t.netR));
+  const totalR=closed.reduce((sum,t)=>sum+t.netR,0);
+  const wins=closed.filter(t=>t.netR>0).length;
   document.getElementById("paperTiles").innerHTML=[
     createTile("Sanal pozisyon",active?active.side+" · AÇIK":"YOK",active?`Giriş ${fmt(active.entry,1)} · SL ${fmt(active.stop,1)} · TP2 ${fmt(active.tp2,1)}`:"Tarayıcı onayı bekleniyor",active?"blue":"warn"),
-    createTile("Kapanan işlem",String(closed.length),`Toplam kayıt ${trades.length}`),
+    createTile("Kapanan işlem",String(closed.length),`Toplam ${trades.length} · eski/maliyetsiz ${legacy.length}`),
     createTile("Kazanma oranı",closed.length?fmt(wins/closed.length*100,1)+"%":"—","Yalnızca kapanan sanal işlemler"),
-    createTile("Toplam sonuç",closed.length?signed(totalR,2)+" R":"—","Ücret, kayma ve funding hariç"),
-    createTile("Son işlem",trades.length?trades.at(-1).status:"—",trades.length?trTime(trades.at(-1).openedAt):"Henüz işlem kaydı yok")
+    createTile("Toplam sonuç",closed.length?signed(totalR,2)+" R":"—","Tahmini komisyon, kayma ve funding dahil"),
+    createTile("Son işlem",trades.length?trades.at(-1).status:"—",trades.length?trTime(trades.at(-1).openedAt):"Henüz işlem kaydı yok"),
+    createTile("Veri bütünlüğü",active?.dataGap?"BOŞLUK VAR":"İZLENİYOR",active?.dataGap?"Mum eksik; sonuç güvenilir değil":"Kapanmış 15m mumları takip ediliyor",active?.dataGap?"bad":"blue")
   ].join("");
   document.getElementById("paperUpdated").textContent=`${trades.length} yerel kayıt`;
-  document.getElementById("paperSummary").textContent="Yalnızca tarayıcı onayında sanal giriş. Çıkışlar kapanmış 15m mumlarıyla izlenir; aynı mumda SL/TP2 görülürse SL önceliklidir. TP1 bilgi amaçlıdır. Tarayıcı kapalıyken yeni sinyal yakalanmaz; geçmiş mum sınırı nedeniyle sonuçlar eksik kalabilir. Ücret, kayma, funding ve likidasyon dahil değildir.";
+  document.getElementById("paperSummary").textContent="V7.7 varsayımları: komisyon %0,05/işlem tarafı; kayma %0,02/taraf; funding maliyeti %0,01/8 saat (süreye orantılı, tahmini). Net R bu maliyetleri düşer. Eski işlemler net performansa katılmaz. 15m mum boşluğunda sonuç askıya alınır. Aynı mumda SL/TP2: SL önce. Gerçek funding, spread, likidasyon ve tarayıcı kapalıyken kaçan sinyaller modellenmez.";
 }
 function exportPaper() {
   const blob=new Blob([JSON.stringify(state.paperTrades,null,2)],{type:"application/json"});
   const url=URL.createObjectURL(blob),a=document.createElement("a");
-  a.href=url;a.download="btc-paper-trades-v76.json";a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);
+  a.href=url;a.download="btc-paper-trades-v77.json";a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);
 }
 
 function renderStructure() {
