@@ -12,6 +12,8 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
+      - name: Install Python dependencies
+        run: python -m pip install requests
       - name: Run offline backtest
         run: python backtest_v7_19.py
       - uses: actions/upload-artifact@v4
