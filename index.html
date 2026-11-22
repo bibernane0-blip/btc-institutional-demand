@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#080f1c">
 <meta name="description" content="BTC Institutional Demand PRO — Bitcoin piyasa ve kurumsal akış analiz paneli">
-<title>BTC Institutional Demand PRO — V7.2</title>
+<title>BTC Institutional Demand PRO — V7.3</title>
 <style>
 :root{color-scheme:dark;--bg:#0b1220;--panel:#151f31;--panel2:#101a2a;--line:#29384f;--text:#e5e7eb;--muted:#9ca3af;--green:#34d399;--red:#fb7185;--yellow:#fbbf24;--blue:#7dd3fc}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:15px/1.5 system-ui,Segoe UI,Arial}
@@ -132,6 +132,12 @@ footer{margin:28px 0 0;padding:18px 0;border-top:1px solid var(--line)}
   <p class="small" id="structureSummary" aria-live="polite">Zaman dilimleri analiz ediliyor…</p>
  </section>
 
+ <section class="card" id="regimeSection">
+  <div class="top"><h2 style="margin:0">Piyasa Rejimi (V7.3)</h2><span class="small" id="regimeUpdated">Mumlar yükleniyor…</span></div>
+  <div class="grid" id="regimeTiles" style="margin-top:12px"></div>
+  <p class="small" id="regimeSummary">ADX(14) trend gücü, ATR(14) volatilite; yalnızca kapanmış mumlar. Rejim sınıflaması deneysel olup işlem sinyali değildir.</p>
+ </section>
+
  <section class="card" id="liquiditySection">
   <div class="top"><h2 style="margin:0">Likidite Analizi (V7.2)</h2><span class="small" id="liquidityUpdated">Mumlar yükleniyor…</span></div>
   <div class="grid" id="liquidityTiles" style="margin-top:12px"></div>
@@ -172,7 +178,7 @@ const OI_STORAGE_KEY = "btc-demand-oi-history-v4";
 
 const state = {
   structure: {}, structureError: "", structureUpdated: 0,
-  liquidity: {}, liquidityUpdated: 0,
+  liquidity: {}, liquidityUpdated: 0, regime: {}, regimeUpdated: 0,
   price: null, priceTs: 0,
   candles: [], historyError: "",
   oiSamples: new Map(), centralOi: [], oi: null, oiTs: 0, oiHistoryStatus: "",
@@ -650,6 +656,67 @@ const STRUCTURE_FRAMES = [
 ];
 const STRUCTURE_DURATION = {"1D":86400000,"4H":4*HOUR_MS,"1H":HOUR_MS,"15m":15*60000};
 
+// V7.3: independent market regime; Wilder ADX(14), ATR(14), adaptive ATR baseline.
+// Read-only; never changes existing market/institutional scores.
+function analyzeRegime(raw, key) {
+  const duration=STRUCTURE_DURATION[key], now=Date.now();
+  const candles=[...new Map(raw.filter(c=>c && c.confirm==="1" && Number.isInteger(c.ts) &&
+    c.ts>0 && c.ts+duration<=now && [c.open,c.high,c.low,c.close].every(v=>Number.isFinite(v)&&v>0) &&
+    c.high>=Math.max(c.open,c.close,c.low) && c.low<=Math.min(c.open,c.close))
+    .map(c=>[c.ts,c])).values()].sort((a,b)=>a.ts-b.ts).slice(-100);
+  if(candles.length<65) return {status:"Yetersiz mum",detail:`${candles.length}/65 kapanmış mum`};
+  if(candles.some((c,i)=>i && c.ts-candles[i-1].ts!==duration))
+    return {status:"Veri boşluğu",detail:"Mum dizisi kesintisiz değil"};
+  const frame=STRUCTURE_FRAMES.find(f=>f.key===key), last=candles.at(-1);
+  if(now-(last.ts+duration)>frame.maxLag) return {status:"Eski veri",detail:`Son kapanış: ${trTime(last.ts+duration)}`};
+  const tr=[], plus=[], minus=[];
+  for(let i=1;i<candles.length;i++) {
+    const c=candles[i], p=candles[i-1], up=c.high-p.high, down=p.low-c.low;
+    tr.push(Math.max(c.high-c.low,Math.abs(c.high-p.close),Math.abs(c.low-p.close)));
+    plus.push(up>down && up>0?up:0);
+    minus.push(down>up && down>0?down:0);
+  }
+  const n=14;
+  let st=tr.slice(0,n).reduce((a,b)=>a+b,0), sp=plus.slice(0,n).reduce((a,b)=>a+b,0), sm=minus.slice(0,n).reduce((a,b)=>a+b,0);
+  const dx=[], atrPct=[];
+  function record(i) {
+    const pdi=st>0?100*sp/st:0, mdi=st>0?100*sm/st:0;
+    dx.push(pdi+mdi>0?100*Math.abs(pdi-mdi)/(pdi+mdi):0);
+    atrPct.push(100*(st/n)/candles[i+1].close);
+  }
+  record(n-1);
+  for(let i=n;i<tr.length;i++) {
+    st=st-st/n+tr[i]; sp=sp-sp/n+plus[i]; sm=sm-sm/n+minus[i];
+    record(i);
+  }
+  if(dx.length<n+1) return {status:"Yetersiz ADX"};
+  let adx=dx.slice(0,n).reduce((a,b)=>a+b,0)/n;
+  for(let i=n;i<dx.length;i++) adx=(adx*(n-1)+dx[i])/n;
+  const atr=atrPct.at(-1), reference=atrPct.slice(-41,-1).sort((a,b)=>a-b);
+  if(reference.length<30) return {status:"Yetersiz volatilite geçmişi"};
+  const median=(reference[19]+reference[20])/2;
+  const ratio=median>0?atr/median:NaN;
+  if(!Number.isFinite(adx)||!Number.isFinite(ratio)) return {status:"Hesaplama hatası"};
+  const strength=adx>=25?"TREND":adx<18?"YATAY":"GEÇİŞ";
+  const volatility=ratio>=1.5?"YÜKSEK":ratio<=0.7?"DÜŞÜK":"NORMAL";
+  const structure=state.structure[key]?.trend;
+  const direction=strength==="TREND" && (structure==="YÜKSELİŞ"||structure==="DÜŞÜŞ")?structure:"YÖN TEYİTSİZ";
+  return {status:"Hazır",strength,volatility,direction,adx,atr,ratio,
+    detail:`ADX ${fmt(adx,1)} · ATR ${fmt(atr,2)}% · göreli volatilite ${fmt(ratio,2)}×`};
+}
+
+function renderRegime() {
+  const el=document.getElementById("regimeTiles"); if(!el) return;
+  el.innerHTML=STRUCTURE_FRAMES.map(f=>{
+    const a=state.regime[f.key]||{status:"Bekleniyor",detail:"Mumlar yükleniyor"};
+    const label=a.status==="Hazır"?`${a.strength} · ${a.volatility} VOL.`:a.status;
+    const cls=a.status!=="Hazır"?"warn":a.strength==="TREND"?"blue":"warn";
+    return `<div class="tile"><b>${escapeHtml(f.key)} · Rejim</b><div class="state ${cls}">${escapeHtml(label)}</div>`+
+      `<div class="small">${escapeHtml(a.status==="Hazır"?`Yön: ${a.direction} · ${a.detail}`:(a.detail||""))}</div></div>`;
+  }).join("");
+  document.getElementById("regimeUpdated").textContent=state.regimeUpdated?`Son kontrol: ${trTime(state.regimeUpdated)}`:"Mumlar yükleniyor…";
+}
+
 // V7.2: independent liquidity heuristics; no effect on scoring or orders.
 function analyzeLiquidity(raw, key) {
   const duration=STRUCTURE_DURATION[key], now=Date.now();
@@ -786,7 +853,7 @@ async function loadStructure() {
   const results=await Promise.allSettled(STRUCTURE_FRAMES.map(async frame => {
     const rows=await okxGet("/api/v5/market/candles",{instId:"BTC-USDT",bar:frame.bar,limit:"100"});
     const candles=rows.map(parseCandle);
-    return {structure:analyzeStructure(candles,frame.key),liquidity:analyzeLiquidity(candles,frame.key)};
+    return {structure:analyzeStructure(candles,frame.key),liquidity:analyzeLiquidity(candles,frame.key),candles};
   }));
   for (let i=0;i<STRUCTURE_FRAMES.length;i++) {
     const key=STRUCTURE_FRAMES[i].key;
@@ -795,10 +862,17 @@ async function loadStructure() {
     state.liquidity[key]=results[i].status==="fulfilled" ? results[i].value.liquidity :
       {status:"Veri alınamadı"};
   }
+  for (let i=0;i<STRUCTURE_FRAMES.length;i++) {
+    const key=STRUCTURE_FRAMES[i].key;
+    state.regime[key]=results[i].status==="fulfilled" ? analyzeRegime(results[i].value.candles,key) :
+      {status:"Veri alınamadı"};
+  }
+  state.regimeUpdated=Date.now();
   state.structureUpdated=Date.now();
   state.liquidityUpdated=state.structureUpdated;
   renderStructure();
   renderLiquidity();
+  renderRegime();
 }
 
 function renderStructure() {
@@ -929,6 +1003,7 @@ async function init() {
   setInterval(render, 1000);
   renderStructure();
   renderLiquidity();
+  renderRegime();
   document.addEventListener("visibilitychange", () => {
     if (!document.hidden) loadFlowData();
   });
