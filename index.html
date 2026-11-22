@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#080f1c">
 <meta name="description" content="BTC Institutional Demand PRO — Bitcoin piyasa ve kurumsal akış analiz paneli">
-<title>BTC Institutional Demand PRO — V6.1</title>
+<title>BTC Institutional Demand PRO — V6.1.1</title>
 <style>
 :root{color-scheme:dark;--bg:#0b1220;--panel:#151f31;--panel2:#101a2a;--line:#29384f;--text:#e5e7eb;--muted:#9ca3af;--green:#34d399;--red:#fb7185;--yellow:#fbbf24;--blue:#7dd3fc}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:15px/1.5 system-ui,Segoe UI,Arial}
@@ -471,6 +471,7 @@ function computeLiveMarket() {
   const averageVolume = previous20.length === 20
     ? previous20.reduce((sum, candle) => sum + candle.volume, 0) / 20 : null;
   const highVolume = averageVolume === null ? null : lastClosed.volume > averageVolume;
+  const priceComponentReady = ema20 !== null && ema50 !== null && highVolume !== null;
   const currentHour = Math.floor(now / HOUR_MS) * HOUR_MS;
   const candleFresh = lastClosed?.ts === currentHour - HOUR_MS;
 
@@ -491,8 +492,15 @@ function computeLiveMarket() {
   }
   const oiChangePct = oiFresh && baseline ? (state.oi / baseline.oiBtc - 1) * 100 : null;
   const funding = state.fundingPct;
+  let priceScore = null;
+  if (priceComponentReady && candleFresh && priceFresh) {
+    priceScore = 0;
+    if (state.price > ema20 && state.price > ema50 && highVolume) priceScore = 50;
+    else if (state.price > ema20) priceScore = 20;
+    else if (state.price < ema20 && state.price < ema50 && highVolume) priceScore = -50;
+  }
   const metrics = {oiChangePct, priceChange6hPct, fundingPct:funding, ema20, ema50,
-    highVolume, lastClosed, candleFresh, averageVolume, baseline, closedPriceChange6hPct};
+    highVolume, lastClosed, candleFresh, averageVolume, baseline, closedPriceChange6hPct, priceScore};
   const missing = [
     !priceFresh && "güncel fiyat",
     !oiFresh && "güncel OI",
@@ -513,11 +521,6 @@ function computeLiveMarket() {
   else if (funding < -0.01) fundingScore = 12;
   else if (Math.abs(funding) <= 0.01) fundingScore = 20;
   else if (funding >= 0.05) fundingScore = -20;
-
-  let priceScore = 0;
-  if (state.price > ema20 && state.price > ema50 && highVolume) priceScore = 50;
-  else if (state.price > ema20) priceScore = 20;
-  else if (state.price < ema20 && state.price < ema50 && highVolume) priceScore = -50;
 
   return {
     score: Math.max(-100, Math.min(100, oiScore + fundingScore + priceScore)),
@@ -646,8 +649,9 @@ function render() {
     flow.score === null ? (flow.reason || "Kurumsal akış verisi henüz geçerli değil.") :
     `Netflow ${ageText(Date.parse(state.flowData.sources.netflow.latest_bucket_ts))} · Akış dosyası ${ageText(Date.parse(state.flowData.updated_at))}`);
 
-  const priceScore = live.parts ? live.parts["Fiyat & Hacim"].score : null;
-  const priceScoreText = live.parts ? `${signed(priceScore)} puan` : "Bekleniyor";
+  // Fiyat/hacim alt skoru, OI geçmişi eksik olsa bile bağımsız görüntülenir.
+  const priceScore = live.metrics.priceScore;
+  const priceScoreText = priceScore === null ? "Bekleniyor" : `${signed(priceScore)} puan`;
   const liveMetrics = live.metrics;
   const priceChange = liveMetrics.priceChange6hPct ?? liveMetrics.closedPriceChange6hPct;
   const priceReference = liveMetrics.priceChange6hPct !== null ? "Canlı fiyat / saatlik kapanış" :
@@ -671,6 +675,7 @@ function render() {
   ].join("");
 
   const components = [];
+  if (!live.parts && priceScore !== null) components.push(createTile("Live · Fiyat & Hacim", `${signed(priceScore)} puan`, "Bağımsız alt skor · toplam piyasa skoru henüz hesaplanamıyor"));
   if (live.parts) for (const [name,item] of Object.entries(live.parts)) components.push(createTile("Live · "+name,`${signed(item.score)} puan`,`${fmt(item.value,3)} ${item.unit}`));
   if (flow.parts) for (const [name,item] of Object.entries(flow.parts)) components.push(createTile("Flow · "+name,`${signed(item.score)} puan`,`${fmt(item.value,2)} ${item.unit}${item.date?" · "+item.date:""}`));
   document.getElementById("componentTiles").innerHTML = components.length ? components.join("") : createTile("Skor bileşenleri","Bekleniyor","Gerekli veri akışları henüz hazır değil.");
