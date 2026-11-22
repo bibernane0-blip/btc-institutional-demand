@@ -1,4 +1,4 @@
-name: Collect BTC market history V5.2
+name: Collect BTC market history and V7.16 signals
 
 on:
   schedule:
@@ -27,18 +27,20 @@ jobs:
         run: python -m pip install requests
       - name: Collect market data
         run: python collect_market_history.py
-      - name: Commit history when changed
+      - name: Track experimental signals
+        run: python signal_tracker.py
+      - name: Commit history and signals when changed
         shell: bash
         run: |
           set -euo pipefail
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add market_history.json
+          git add market_history.json signal_history.json
           if git diff --cached --quiet; then
             echo "No changes to commit"
             exit 0
           fi
-          git commit -m "Update V5.2 market history [skip ci]"
+          git commit -m "Update market history and V7.16 paper signals [skip ci]"
           for attempt in 1 2 3; do
             if git pull --rebase origin main && git push origin HEAD:main; then
               exit 0
@@ -46,5 +48,5 @@ jobs:
             git rebase --abort 2>/dev/null || true
             sleep $((attempt * 3))
           done
-          echo "Failed to push history after retries" >&2
+          echo "Failed to push after retries" >&2
           exit 1
