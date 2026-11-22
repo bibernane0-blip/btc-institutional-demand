@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#080f1c">
 <meta name="description" content="BTC Institutional Demand PRO — Bitcoin piyasa ve kurumsal akış analiz paneli">
-<title>BTC Institutional Demand PRO — V7.4</title>
+<title>BTC Institutional Demand PRO — V7.5</title>
 <style>
 :root{color-scheme:dark;--bg:#0b1220;--panel:#151f31;--panel2:#101a2a;--line:#29384f;--text:#e5e7eb;--muted:#9ca3af;--green:#34d399;--red:#fb7185;--yellow:#fbbf24;--blue:#7dd3fc}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:15px/1.5 system-ui,Segoe UI,Arial}
@@ -145,6 +145,12 @@ footer{margin:28px 0 0;padding:18px 0;border-top:1px solid var(--line)}
   <p class="small" id="scannerSummary" aria-live="polite">Piyasa yapısı, rejim ve likidite birlikte değerlendiriliyor. İşlem emri veya yatırım sinyali değildir.</p>
  </section>
 
+ <section class="card" id="plannerSection">
+  <div class="top"><h2 style="margin:0">İşlem Planlayıcısı (V7.5)</h2><span class="small" id="plannerUpdated">Veriler bekleniyor…</span></div>
+  <div class="grid" id="plannerTiles" style="margin-top:12px"></div>
+  <p class="small" id="plannerSummary" aria-live="polite">Tarayıcı BEKLE durumundayken işlem planı oluşturulmaz. Seviyeler yalnızca araştırma amaçlıdır.</p>
+ </section>
+
  <section class="card" id="liquiditySection">
   <div class="top"><h2 style="margin:0">Likidite Analizi (V7.2)</h2><span class="small" id="liquidityUpdated">Mumlar yükleniyor…</span></div>
   <div class="grid" id="liquidityTiles" style="margin-top:12px"></div>
@@ -186,6 +192,7 @@ const OI_STORAGE_KEY = "btc-demand-oi-history-v4";
 const state = {
   structure: {}, structureError: "", structureUpdated: 0,
   liquidity: {}, liquidityUpdated: 0, regime: {}, regimeUpdated: 0,
+  scannerVerdict: "BEKLE", plannerCandles: [], plannerCandlesAt: 0,
   price: null, priceTs: 0,
   candles: [], historyError: "",
   oiSamples: new Map(), centralOi: [], oi: null, oiTs: 0, oiHistoryStatus: "",
@@ -874,6 +881,9 @@ async function loadStructure() {
     state.regime[key]=results[i].status==="fulfilled" ? analyzeRegime(results[i].value.candles,key) :
       {status:"Veri alınamadı"};
   }
+  const entryFrame=results[STRUCTURE_FRAMES.findIndex(f=>f.key==="15m")];
+  state.plannerCandles=entryFrame?.status==="fulfilled" ? entryFrame.value.candles : [];
+  state.plannerCandlesAt=entryFrame?.status==="fulfilled" ? Date.now() : 0;
   state.regimeUpdated=Date.now();
   state.structureUpdated=Date.now();
   state.liquidityUpdated=state.structureUpdated;
@@ -913,6 +923,8 @@ function renderScanner() {
       reason="Yapı ve rejim uyumlu; likidite bölgeleri yalnızca bağlam sağlar. Giriş, SL/TP ve R:R doğrulanmadı.";
     }
   }
+  state.scannerVerdict=verdict;
+  renderPlanner();
   const flags=[
     ["Yön uyumu",aligned], ["4H + 1H rejim",regimeOK],
     ["15m teyit",entryOK], ["Risk/veri filtresi",riskOK]
@@ -923,6 +935,55 @@ function renderScanner() {
     `Son kontrol: ${trTime(state.regimeUpdated)}`:"Veriler bekleniyor…";
   document.getElementById("scannerSummary").textContent=
     "Deneysel tarayıcı; geçmiş BOS/CHoCH ve likidite bölgeleri güncel emir akışını kanıtlamaz. Otomatik emir göndermez.";
+}
+
+// V7.5: Conditional, read-only research plan; never creates orders.
+function renderPlanner() {
+  const box=document.getElementById("plannerTiles");
+  if(!box) return;
+  const note=document.getElementById("plannerSummary");
+  const updated=document.getElementById("plannerUpdated");
+  updated.textContent=state.plannerCandlesAt?`Son veri kontrolü: ${trTime(state.plannerCandlesAt)}`:"Mumlar bekleniyor…";
+  const verdict=state.scannerVerdict;
+  if(verdict!=="LONG ADAYI" && verdict!=="SHORT ADAYI") {
+    box.innerHTML=createTile("Plan durumu","BEKLE","Tarayıcı onayı yok; giriş, SL ve TP hesaplanmadı.","warn");
+    note.textContent="Tüm tarama filtreleri sağlanmadan işlem planı üretilmez.";
+    return;
+  }
+  const duration=15*60000, now=Date.now();
+  const candles=[...new Map(state.plannerCandles.filter(c=>c && c.confirm==="1" &&
+    Number.isInteger(c.ts) && c.ts+duration<=now &&
+    [c.open,c.high,c.low,c.close].every(v=>Number.isFinite(v)&&v>0))
+    .map(c=>[c.ts,c])).values()].sort((a,b)=>a.ts-b.ts).slice(-35);
+  const last=candles.at(-1);
+  const contiguous=candles.length>=20 && candles.every((c,i)=>!i||c.ts-candles[i-1].ts===duration);
+  const atrPct=state.regime["15m"]?.atr;
+  const fresh=last && now-(last.ts+duration)<=30*60000 && now-state.plannerCandlesAt<=10*60000;
+  if(!contiguous||!fresh||!Number.isFinite(atrPct)||atrPct<=0) {
+    box.innerHTML=createTile("Plan durumu","BEKLE","15m mumları eski/eksik veya ATR geçersiz.","warn");
+    note.textContent="Eksik veriyle fiyat seviyesi üretilmez.";
+    return;
+  }
+  const isLong=verdict==="LONG ADAYI", entry=last.close;
+  const atr=entry*atrPct/100, recent=candles.slice(-10);
+  const swing=isLong?Math.min(...recent.map(c=>c.low)):Math.max(...recent.map(c=>c.high));
+  const stop=isLong?Math.min(swing-0.25*atr,entry-1.5*atr):Math.max(swing+0.25*atr,entry+1.5*atr);
+  const risk=Math.abs(entry-stop), riskPct=100*risk/entry;
+  if(!Number.isFinite(riskPct)||riskPct<=0||riskPct>3) {
+    box.innerHTML=createTile("Plan durumu","BEKLE",`Stop mesafesi kabul edilmiyor (${fmt(riskPct,2)}%).`,"warn");
+    note.textContent="Deneysel risk filtresi: stop mesafesi %3 üzerindeyse plan engellenir.";
+    return;
+  }
+  const tp1=entry+(isLong?1:-1)*1.5*risk;
+  const tp2=entry+(isLong?1:-1)*2.5*risk;
+  box.innerHTML=[
+    createTile("Aday",verdict,"Kapanmış son 15m mumuna dayalı koşullu senaryo","blue"),
+    createTile("Referans giriş",`$${fmt(entry,1)}`,`15m kapanışı · ${trTime(last.ts+duration)}`),
+    createTile("Stop-loss",`$${fmt(stop,1)}`,`Swing + ATR tamponu · mesafe %${fmt(riskPct,2)}`),
+    createTile("TP1",`$${fmt(tp1,1)}`,"Risk/ödül 1:1,5"),
+    createTile("TP2",`$${fmt(tp2,1)}`,"Risk/ödül 1:2,5")
+  ].join("");
+  note.textContent="Seviyeler teoriktir: spread, kayma, komisyon, funding ve likidasyon dahil değildir. Gerçek zamanlı giriş emri değildir; geriye dönük test edilmemiştir.";
 }
 
 function renderStructure() {
