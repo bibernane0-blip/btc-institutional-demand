@@ -107,6 +107,19 @@ footer{margin:28px 0 0;padding:18px 0;border-top:1px solid var(--line)}
   <p class="small"><b>Deneysel formül:</b> Live Market = Open Interest (30) + Funding (20) + Fiyat/Hacim (50). Institutional Flow = ETF (50) + Exchange Netflow (50). Birleşik skor = %60 Live Market + %40 Institutional Flow. Bu yeni formül eski 55 günlük backtest ile doğrulanmış değildir; bu formül yatırım sinyali olarak doğrulanmış değildir.</p>
  </section>
 
+  <section class="intelligence" aria-label="Piyasa değerlendirmesi ve veri sağlığı">
+   <section class="card">
+    <div class="section-tag">MARKET INTELLIGENCE</div>
+    <h2 id="insightTitle" class="insight-head">Piyasa değerlendirmesi hazırlanıyor</h2>
+    <div id="insightBody" class="insight-body" aria-live="polite">Veri kaynakları kontrol ediliyor…</div>
+   </section>
+   <section class="card">
+    <div class="section-tag">DATA HEALTH</div>
+    <h2>Kaynak durumu</h2>
+    <div id="healthGrid" class="health-grid" aria-live="polite"></div>
+   </section>
+  </section>
+
  <section class="card">
   <h2>Veri tazeliği ve bağlantı durumu</h2>
   <div id="freshness" class="small">Veri durumları hesaplanıyor…</div>
@@ -280,6 +293,7 @@ function connectOkxSocket(kind, url, args, onData) {
   let manuallyClosed = false;
 
   function connect() {
+    pingSentAt = 0;
     state[statusKey] = "connecting";
     setConnection(statusPrefix, "connecting", isPublic ? "OKX market WS: bağlanıyor" : "OKX candle WS: bağlanıyor");
     const ws = new WebSocket(url);
@@ -519,6 +533,7 @@ function renderIntelligence(live, flow) {
     const n = Number(state.flowData.sources.netflow.trailing_24h_btc);
     items.push("Son bildirilen ETF net akışı " + signed(e, 1) + " milyon USD; borsa net akışı " + signed(n, 1) + " BTC. Farklı zaman aralıklarını ve kapsamlarını doğrudan eşdeğer kabul etmeyin.");
   }
+  if (!title || !body) return;
   title.textContent = live.score === null && flow.score === null ? "Kısmi veri · değerlendirme bekleniyor" :
     live.score !== null && flow.score !== null ? "Piyasa ve kurumsal akış görünümü" : "Kısmi piyasa görünümü";
   body.replaceChildren();
@@ -539,6 +554,7 @@ function renderIntelligence(live, flow) {
     ["Exchange Netflow", nf.ok === true && Number.isFinite(flowUpdated) && now-flowUpdated < 90*60000, nf.ok ? "Kapsama: " + (nf.coverage_pct ?? "—") + "%" : (nf.error || "Veri yok")]
   ];
   const grid = document.getElementById("healthGrid");
+  if (!grid) return;
   grid.replaceChildren();
   for (const [name, ok, description] of checks) {
     const node = document.createElement("div"); node.className = "health-item " + (ok ? "ok" : "warn");
