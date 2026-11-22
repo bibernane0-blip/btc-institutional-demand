@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#080f1c">
 <meta name="description" content="BTC Institutional Demand PRO — Bitcoin piyasa ve kurumsal akış analiz paneli">
-<title>BTC Institutional Demand PRO — V7.3</title>
+<title>BTC Institutional Demand PRO — V7.4</title>
 <style>
 :root{color-scheme:dark;--bg:#0b1220;--panel:#151f31;--panel2:#101a2a;--line:#29384f;--text:#e5e7eb;--muted:#9ca3af;--green:#34d399;--red:#fb7185;--yellow:#fbbf24;--blue:#7dd3fc}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:15px/1.5 system-ui,Segoe UI,Arial}
@@ -136,6 +136,13 @@ footer{margin:28px 0 0;padding:18px 0;border-top:1px solid var(--line)}
   <div class="top"><h2 style="margin:0">Piyasa Rejimi (V7.3)</h2><span class="small" id="regimeUpdated">Mumlar yükleniyor…</span></div>
   <div class="grid" id="regimeTiles" style="margin-top:12px"></div>
   <p class="small" id="regimeSummary">ADX(14) trend gücü, ATR(14) volatilite; yalnızca kapanmış mumlar. Rejim sınıflaması deneysel olup işlem sinyali değildir.</p>
+ </section>
+
+
+ <section class="card" id="scannerSection">
+  <div class="top"><h2 style="margin:0">İşlem Fırsatı Tarayıcısı (V7.4)</h2><span class="small" id="scannerUpdated">Veriler bekleniyor…</span></div>
+  <div class="grid" id="scannerTiles" style="margin-top:12px"></div>
+  <p class="small" id="scannerSummary" aria-live="polite">Piyasa yapısı, rejim ve likidite birlikte değerlendiriliyor. İşlem emri veya yatırım sinyali değildir.</p>
  </section>
 
  <section class="card" id="liquiditySection">
@@ -873,6 +880,49 @@ async function loadStructure() {
   renderStructure();
   renderLiquidity();
   renderRegime();
+  renderScanner();
+}
+
+
+// V7.4: Conservative read-only candidate scanner. No execution, no score modification.
+function renderScanner() {
+  const box=document.getElementById("scannerTiles");
+  if (!box) return;
+  const frames=["1D","4H","1H","15m"];
+  const ready=frames.every(k=>state.structure[k]?.trend &&
+    state.regime[k]?.status==="Hazır" && state.liquidity[k]?.status==="Hazır");
+  let verdict="BEKLE", reason="Veri eksik veya eski; yön değerlendirmesi yapılamıyor.";
+  let aligned=false, regimeOK=false, entryOK=false, riskOK=false;
+  if (ready) {
+    const trends=frames.map(k=>state.structure[k].trend);
+    aligned=trends.every(t=>t==="YÜKSELİŞ") || trends.every(t=>t==="DÜŞÜŞ");
+    const direction=trends[0];
+    regimeOK=["4H","1H"].every(k=>state.regime[k].strength==="TREND" &&
+      state.regime[k].direction===direction);
+    entryOK=state.regime["15m"].direction===direction &&
+      state.regime["15m"].strength==="TREND";
+    // High daily volatility and missing OI baseline are explicit caution flags, not bypassed.
+    const oi=computeLiveMarket();
+    riskOK=state.regime["1D"].volatility!=="YÜKSEK" && oi.score!==null;
+    if (!aligned) reason="Dört zaman diliminde yön uyumu yok.";
+    else if (!regimeOK) reason="4H ve 1H trend gücü/yön teyidi eksik.";
+    else if (!entryOK) reason="15m giriş yönü veya trend gücü teyitsiz.";
+    else if (!riskOK) reason="Yüksek günlük volatilite veya eksik canlı piyasa skoru: aday engellendi.";
+    else {
+      verdict=direction==="YÜKSELİŞ"?"LONG ADAYI":"SHORT ADAYI";
+      reason="Yapı ve rejim uyumlu; likidite bölgeleri yalnızca bağlam sağlar. Giriş, SL/TP ve R:R doğrulanmadı.";
+    }
+  }
+  const flags=[
+    ["Yön uyumu",aligned], ["4H + 1H rejim",regimeOK],
+    ["15m teyit",entryOK], ["Risk/veri filtresi",riskOK]
+  ];
+  box.innerHTML=createTile("Tarama sonucu",verdict,reason,verdict==="BEKLE"?"warn":"blue")+
+    flags.map(([label,ok])=>createTile(label,ok?"UYGUN":"TEYİTSİZ",ok?"Koşul sağlandı":"Koşul sağlanmadı veya veri bekleniyor",ok?"ok":"warn")).join("");
+  document.getElementById("scannerUpdated").textContent=state.regimeUpdated?
+    `Son kontrol: ${trTime(state.regimeUpdated)}`:"Veriler bekleniyor…";
+  document.getElementById("scannerSummary").textContent=
+    "Deneysel tarayıcı; geçmiş BOS/CHoCH ve likidite bölgeleri güncel emir akışını kanıtlamaz. Otomatik emir göndermez.";
 }
 
 function renderStructure() {
@@ -1001,9 +1051,11 @@ async function init() {
   setInterval(pollOiRest, 60000);
   setInterval(loadFlowData, FLOW_REFRESH_MS);
   setInterval(render, 1000);
+  setInterval(renderScanner, 10000);
   renderStructure();
   renderLiquidity();
   renderRegime();
+  renderScanner();
   document.addEventListener("visibilitychange", () => {
     if (!document.hidden) loadFlowData();
   });
