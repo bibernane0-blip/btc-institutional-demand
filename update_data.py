@@ -191,21 +191,18 @@ def fetch_kote_netflow() -> dict:
     expected = 288
     coverage = min(100.0, len(buckets) / expected * 100.0)
     missing_buckets = [
-    start + timedelta(minutes=5 * i)
-    for i in range(expected)
-    if start + timedelta(minutes=5 * i) not in buckets
-]
-
-print(json.dumps({
-    "netflow_expected": expected,
-    "netflow_received": len(buckets),
-    "netflow_missing_count": len(missing_buckets),
-    "netflow_missing_first_10": [
-        iso_z(ts) for ts in missing_buckets[:10]
-    ],
-    "netflow_latest_bucket": iso_z(latest),
-    "netflow_requested_end": iso_z(end)
-}, ensure_ascii=False))
+        start + timedelta(minutes=5 * i)
+        for i in range(expected)
+        if start + timedelta(minutes=5 * i) not in buckets
+    ]
+    print(json.dumps({
+        "netflow_expected": expected,
+        "netflow_received": len(buckets),
+        "netflow_missing_count": len(missing_buckets),
+        "netflow_missing_first_10": [iso_z(ts) for ts in missing_buckets[:10]],
+        "netflow_latest_bucket": iso_z(latest),
+        "netflow_requested_end": iso_z(end),
+    }, ensure_ascii=False))
     return {
         "ok": True,
         "trailing_24h_btc": trailing_sum,
