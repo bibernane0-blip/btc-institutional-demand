@@ -210,6 +210,8 @@ def fetch_kote_netflow() -> dict:
         "observations_24h": len(buckets),
         "expected_observations_24h": expected,
         "coverage_pct": round(coverage, 1),
+        "coverage_warning": len(buckets) < expected,
+        "missing_observations_24h": len(missing_buckets),
         "granularity": "5m",
         "source": "Kote Charts",
         "source_url": "https://kotecharts.com/c/exchange-netflow",
@@ -258,7 +260,7 @@ def main() -> None:
             missing.append("ETF günlük verisi eski veya tarihi geçersiz")
         if not timedelta(0) <= netflow_age <= timedelta(minutes=180):
             missing.append("Netflow verisi eski veya zaman damgası geçersiz")
-        if netflow["coverage_pct"] != 100 or netflow["granularity"] != "5m":
+        if netflow["coverage_pct"] < 99 or netflow["granularity"] != "5m":
             missing.append("Netflow için 24 saatlik 5 dakika verisi eksik")
 
     if not data["flow_analysis"]["missing"]:
