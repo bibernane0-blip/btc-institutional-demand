@@ -1,5 +1,5 @@
 {
-  "version": "7.28",
+  "version": "7.29",
   "signals": [
     {
       "id": "SHORT-4H-1795348800000",
@@ -23,14 +23,15 @@
       "ema20": 60618.99,
       "ema50": 63269.48,
       "ema200": 72022.31,
-      "status": "WAITING",
+      "status": "CANCELLED_STRATEGY_CHANGE",
       "note": "MANUAL ONLY. Limit price is a watch level, not an exchange order.",
       "limit_updates": [
         {
           "candle_close": 1795363200000,
           "limit_price": 63269.48
         }
-      ]
+      ],
+      "closed_at": 1795368159612
     },
     {
       "id": "LONG-15m-1795360500000",
@@ -54,7 +55,7 @@
       "ema20": 60871.52,
       "ema50": 60487.45,
       "ema200": 60120.56,
-      "status": "WAITING",
+      "status": "CANCELLED_STRATEGY_CHANGE",
       "note": "MANUAL ONLY. Limit price is a watch level, not an exchange order.",
       "limit_updates": [
         {
@@ -65,7 +66,8 @@
           "candle_close": 1795365900000,
           "limit_price": 60487.45
         }
-      ]
+      ],
+      "closed_at": 1795368159612
     },
     {
       "id": "SHORT-4H-1795363200000",
@@ -89,8 +91,9 @@
       "ema20": 60618.99,
       "ema50": 63269.48,
       "ema200": 71906.79,
-      "status": "WAITING",
-      "note": "MANUAL ONLY. Limit price is a watch level, not an exchange order."
+      "status": "CANCELLED_STRATEGY_CHANGE",
+      "note": "MANUAL ONLY. Limit price is a watch level, not an exchange order.",
+      "closed_at": 1795368159612
     },
     {
       "id": "LONG-15m-1795363200000",
@@ -114,14 +117,15 @@
       "ema20": 60871.52,
       "ema50": 60487.45,
       "ema200": 60137.83,
-      "status": "WAITING",
+      "status": "CANCELLED_STRATEGY_CHANGE",
       "note": "MANUAL ONLY. Limit price is a watch level, not an exchange order.",
       "limit_updates": [
         {
           "candle_close": 1795365900000,
           "limit_price": 60487.45
         }
-      ]
+      ],
+      "closed_at": 1795368159612
     },
     {
       "id": "LONG-15m-1795365900000",
@@ -145,11 +149,39 @@
       "ema20": 60871.52,
       "ema50": 60487.45,
       "ema200": 60181.35,
+      "status": "CANCELLED_STRATEGY_CHANGE",
+      "note": "MANUAL ONLY. Limit price is a watch level, not an exchange order.",
+      "closed_at": 1795368159612
+    },
+    {
+      "id": "LONG-15m-1795367700000",
+      "side": "LONG",
+      "trend_sources": [
+        "1H"
+      ],
+      "entry_timeframe": "15m",
+      "created_at": 1795368159612,
+      "signal_candle_close": 1795367700000,
+      "expires_at": 1795371300000,
+      "strategy_version": "7.29",
+      "limit_valid_bars": 4,
+      "limit_price": 60897.18,
+      "estimated_stop": 60157.62,
+      "estimated_tp1": 62006.52,
+      "estimated_tp2": 62746.08,
+      "estimated_atr": 295.824,
+      "estimate_updated_at": 1795367700000,
+      "last_repriced_candle_close": 1795367700000,
+      "last_checked_ts": 1795368159612,
+      "adx": 30.35,
+      "ema20": 60897.18,
+      "ema50": 60528.39,
+      "ema200": 60198.47,
       "status": "WAITING",
       "note": "MANUAL ONLY. Limit price is a watch level, not an exchange order."
     }
   ],
-  "updated_at": 1795366162255,
+  "updated_at": 1795368159612,
   "trend": {
     "1D": "SHORT",
     "4H": "YATAY",
@@ -161,13 +193,19 @@
     "tp2_r": 2.5,
     "tp1_partial": false,
     "max_hold_hours": 240,
-    "limit_valid_hours": 4,
+    "limit_valid_bars": {
+      "15m": 4,
+      "1H": 16,
+      "4H": 16
+    },
     "cooldown_hours": 0,
     "allow_repeated_same_side": true,
     "score_gate": "disabled for independent opposing trends",
     "paper_only": true,
     "atr_at_fill": "last fully closed entry-timeframe bar",
     "estimate_atr": "mean of ATR14 values on last 10 fully closed entry-timeframe bars",
-    "reprice": "EMA50 on every closed entry-timeframe candle"
+    "reprice": "EMA20 on every closed entry-timeframe candle",
+    "pending_validation": "ADX14>=25, EMA50/EMA200 direction, close relative to EMA50, at least one ORIGINAL parent trend source",
+    "expiry_reset_on_reprice": false
   }
 }
