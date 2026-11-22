@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#080f1c">
 <meta name="description" content="BTC Institutional Demand PRO — Bitcoin piyasa ve kurumsal akış analiz paneli">
-<title>BTC Institutional Demand PRO — V7.5</title>
+<title>BTC Institutional Demand PRO — V7.6</title>
 <style>
 :root{color-scheme:dark;--bg:#0b1220;--panel:#151f31;--panel2:#101a2a;--line:#29384f;--text:#e5e7eb;--muted:#9ca3af;--green:#34d399;--red:#fb7185;--yellow:#fbbf24;--blue:#7dd3fc}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:15px/1.5 system-ui,Segoe UI,Arial}
@@ -151,6 +151,13 @@ footer{margin:28px 0 0;padding:18px 0;border-top:1px solid var(--line)}
   <p class="small" id="plannerSummary" aria-live="polite">Tarayıcı BEKLE durumundayken işlem planı oluşturulmaz. Seviyeler yalnızca araştırma amaçlıdır.</p>
  </section>
 
+ <section class="card" id="paperSection">
+  <div class="top"><h2 style="margin:0">İşlem Simülasyonu (V7.6)</h2><span class="small" id="paperUpdated">Yerel kayıt</span></div>
+  <div class="grid" id="paperTiles" style="margin-top:12px"></div>
+  <p class="small" id="paperSummary">Sanal işlem; gerçek emir gönderilmez. Kayıtlar yalnızca bu tarayıcıda saklanır.</p>
+  <button class="btn" id="paperExport" type="button">Kayıtları JSON indir</button>
+ </section>
+
  <section class="card" id="liquiditySection">
   <div class="top"><h2 style="margin:0">Likidite Analizi (V7.2)</h2><span class="small" id="liquidityUpdated">Mumlar yükleniyor…</span></div>
   <div class="grid" id="liquidityTiles" style="margin-top:12px"></div>
@@ -192,7 +199,7 @@ const OI_STORAGE_KEY = "btc-demand-oi-history-v4";
 const state = {
   structure: {}, structureError: "", structureUpdated: 0,
   liquidity: {}, liquidityUpdated: 0, regime: {}, regimeUpdated: 0,
-  scannerVerdict: "BEKLE", plannerCandles: [], plannerCandlesAt: 0,
+  scannerVerdict: "BEKLE", plannerCandles: [], plannerCandlesAt: 0, paperPlan: null, paperTrades: [],
   price: null, priceTs: 0,
   candles: [], historyError: "",
   oiSamples: new Map(), centralOi: [], oi: null, oiTs: 0, oiHistoryStatus: "",
@@ -925,6 +932,7 @@ function renderScanner() {
   }
   state.scannerVerdict=verdict;
   renderPlanner();
+  updatePaper();
   const flags=[
     ["Yön uyumu",aligned], ["4H + 1H rejim",regimeOK],
     ["15m teyit",entryOK], ["Risk/veri filtresi",riskOK]
@@ -946,6 +954,7 @@ function renderPlanner() {
   updated.textContent=state.plannerCandlesAt?`Son veri kontrolü: ${trTime(state.plannerCandlesAt)}`:"Mumlar bekleniyor…";
   const verdict=state.scannerVerdict;
   if(verdict!=="LONG ADAYI" && verdict!=="SHORT ADAYI") {
+    state.paperPlan=null;
     box.innerHTML=createTile("Plan durumu","BEKLE","Tarayıcı onayı yok; giriş, SL ve TP hesaplanmadı.","warn");
     note.textContent="Tüm tarama filtreleri sağlanmadan işlem planı üretilmez.";
     return;
@@ -960,6 +969,7 @@ function renderPlanner() {
   const atrPct=state.regime["15m"]?.atr;
   const fresh=last && now-(last.ts+duration)<=30*60000 && now-state.plannerCandlesAt<=10*60000;
   if(!contiguous||!fresh||!Number.isFinite(atrPct)||atrPct<=0) {
+    state.paperPlan=null;
     box.innerHTML=createTile("Plan durumu","BEKLE","15m mumları eski/eksik veya ATR geçersiz.","warn");
     note.textContent="Eksik veriyle fiyat seviyesi üretilmez.";
     return;
@@ -970,12 +980,14 @@ function renderPlanner() {
   const stop=isLong?Math.min(swing-0.25*atr,entry-1.5*atr):Math.max(swing+0.25*atr,entry+1.5*atr);
   const risk=Math.abs(entry-stop), riskPct=100*risk/entry;
   if(!Number.isFinite(riskPct)||riskPct<=0||riskPct>3) {
+    state.paperPlan=null;
     box.innerHTML=createTile("Plan durumu","BEKLE",`Stop mesafesi kabul edilmiyor (${fmt(riskPct,2)}%).`,"warn");
     note.textContent="Deneysel risk filtresi: stop mesafesi %3 üzerindeyse plan engellenir.";
     return;
   }
   const tp1=entry+(isLong?1:-1)*1.5*risk;
   const tp2=entry+(isLong?1:-1)*2.5*risk;
+  state.paperPlan={side:isLong?"LONG":"SHORT",reference:entry,stop,tp1,tp2,signalClose:last.ts+duration};
   box.innerHTML=[
     createTile("Aday",verdict,"Kapanmış son 15m mumuna dayalı koşullu senaryo","blue"),
     createTile("Referans giriş",`$${fmt(entry,1)}`,`15m kapanışı · ${trTime(last.ts+duration)}`),
@@ -984,6 +996,86 @@ function renderPlanner() {
     createTile("TP2",`$${fmt(tp2,1)}`,"Risk/ödül 1:2,5")
   ].join("");
   note.textContent="Seviyeler teoriktir: spread, kayma, komisyon, funding ve likidasyon dahil değildir. Gerçek zamanlı giriş emri değildir; geriye dönük test edilmemiştir.";
+}
+
+// V7.6: browser-local paper trades. Never submits an order.
+const PAPER_KEY="btc-demand-paper-v76";
+function savePaper() {
+  try { localStorage.setItem(PAPER_KEY,JSON.stringify(state.paperTrades.slice(-250))); }
+  catch(e) { document.getElementById("paperSummary").textContent="Yerel kayıt başarısız: "+e.message; }
+}
+function restorePaper() {
+  try {
+    const value=JSON.parse(localStorage.getItem(PAPER_KEY)||"[]");
+    if(Array.isArray(value)) state.paperTrades=value.filter(t=>t && Number.isFinite(t.entry) && Number.isFinite(t.stop) && Number.isFinite(t.openedAt)).slice(-250);
+  } catch { state.paperTrades=[]; }
+}
+function updatePaper() {
+  const active=state.paperTrades.find(t=>t.status==="AÇIK");
+  const plan=state.paperPlan, now=Date.now();
+  if(!active && plan && Number.isFinite(state.price) && isFresh(state.priceTs,now,30000) &&
+      now-plan.signalClose<=30*60000 && now>=plan.signalClose &&
+      !state.paperTrades.some(t=>t.signalClose===plan.signalClose && t.side===plan.side)) {
+    // Enter at observed live ticker, not a historical candle close.
+    const entry=state.price, risk=Math.abs(entry-plan.stop);
+    const valid=plan.side==="LONG" ? plan.stop<entry && plan.tp1>entry && plan.tp2>plan.tp1 :
+      plan.stop>entry && plan.tp1<entry && plan.tp2<plan.tp1;
+    if(valid && risk/entry<=0.03 && risk/entry>=0.0001) {
+      state.paperTrades.push({id:now,side:plan.side,signalClose:plan.signalClose,openedAt:now,
+        entry,stop:plan.stop,tp1:plan.tp1,tp2:plan.tp2,status:"AÇIK",lastCandleTs:plan.signalClose,
+        // TP1 is informational; full position exits at TP2 or SL.
+        tp1Touched:false});
+      savePaper();
+    }
+  }
+  const trade=state.paperTrades.find(t=>t.status==="AÇIK");
+  if(trade) {
+    const candles=state.plannerCandles.filter(c=>c.confirm==="1" && c.ts+900000>trade.openedAt &&
+      c.ts+900000<=now && c.ts>trade.lastCandleTs).sort((a,b)=>a.ts-b.ts);
+    for(const c of candles) {
+      // A candle overlapping the entry moment is skipped: its earlier high/low is unknown.
+      if(c.ts<trade.openedAt) {trade.lastCandleTs=c.ts;continue;}
+      const long=trade.side==="LONG";
+      const sl=long?c.low<=trade.stop:c.high>=trade.stop;
+      const tp=long?c.high>=trade.tp2:c.low<=trade.tp2;
+      if(long?c.high>=trade.tp1:c.low<=trade.tp1) trade.tp1Touched=true;
+      trade.lastCandleTs=c.ts;
+      // If both levels hit in the same candle, pessimistically assume stop first.
+      if(sl||tp) {
+        trade.status=sl?"STOP":"TP2";
+        trade.exit=sl?trade.stop:trade.tp2;
+        trade.closedAt=c.ts+900000;
+        trade.r=(long?1:-1)*(trade.exit-trade.entry)/Math.abs(trade.entry-trade.stop);
+        break;
+      }
+      if(c.ts+900000-trade.openedAt>=72*HOUR_MS) {
+        trade.status="SÜRE DOLDU";trade.exit=c.close;trade.closedAt=c.ts+900000;
+        trade.r=(long?1:-1)*(trade.exit-trade.entry)/Math.abs(trade.entry-trade.stop);break;
+      }
+    }
+    savePaper();
+  }
+  renderPaper();
+}
+function renderPaper() {
+  const trades=state.paperTrades, active=trades.find(t=>t.status==="AÇIK");
+  const closed=trades.filter(t=>t.status!=="AÇIK" && Number.isFinite(t.r));
+  const totalR=closed.reduce((sum,t)=>sum+t.r,0);
+  const wins=closed.filter(t=>t.r>0).length;
+  document.getElementById("paperTiles").innerHTML=[
+    createTile("Sanal pozisyon",active?active.side+" · AÇIK":"YOK",active?`Giriş ${fmt(active.entry,1)} · SL ${fmt(active.stop,1)} · TP2 ${fmt(active.tp2,1)}`:"Tarayıcı onayı bekleniyor",active?"blue":"warn"),
+    createTile("Kapanan işlem",String(closed.length),`Toplam kayıt ${trades.length}`),
+    createTile("Kazanma oranı",closed.length?fmt(wins/closed.length*100,1)+"%":"—","Yalnızca kapanan sanal işlemler"),
+    createTile("Toplam sonuç",closed.length?signed(totalR,2)+" R":"—","Ücret, kayma ve funding hariç"),
+    createTile("Son işlem",trades.length?trades.at(-1).status:"—",trades.length?trTime(trades.at(-1).openedAt):"Henüz işlem kaydı yok")
+  ].join("");
+  document.getElementById("paperUpdated").textContent=`${trades.length} yerel kayıt`;
+  document.getElementById("paperSummary").textContent="Yalnızca tarayıcı onayında sanal giriş. Çıkışlar kapanmış 15m mumlarıyla izlenir; aynı mumda SL/TP2 görülürse SL önceliklidir. TP1 bilgi amaçlıdır. Tarayıcı kapalıyken yeni sinyal yakalanmaz; geçmiş mum sınırı nedeniyle sonuçlar eksik kalabilir. Ücret, kayma, funding ve likidasyon dahil değildir.";
+}
+function exportPaper() {
+  const blob=new Blob([JSON.stringify(state.paperTrades,null,2)],{type:"application/json"});
+  const url=URL.createObjectURL(blob),a=document.createElement("a");
+  a.href=url;a.download="btc-paper-trades-v76.json";a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);
 }
 
 function renderStructure() {
@@ -1100,6 +1192,9 @@ async function pollOiRest() {
 }
 
 async function init() {
+  restorePaper();
+  document.getElementById("paperExport").addEventListener("click",exportPaper);
+  renderPaper();
   restoreOiHistory();
   startSockets();
   pollOiRest();
