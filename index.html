@@ -1150,7 +1150,13 @@ function render() {
   document.getElementById("marketTiles").innerHTML = [
     createTile("BTC-USDT fiyatı",state.price===null?"—":"$"+fmt(state.price,1),`OKX ticker · ${ageText(state.priceTs)}`),
     createTile("Open Interest",state.oi===null?"—":fmt(state.oi,2)+" BTC",`OKX BTC-USDT-SWAP · ${ageText(state.oiTs)}`),
-    createTile("OI değişimi (6s)",liveMetrics.oiChangePct===null?"—":signed(liveMetrics.oiChangePct,3)+"%",liveMetrics.baseline ? `Referans: ${trTime(liveMetrics.baseline.ts)}` : "6 saatlik referans için geçmiş yetersiz"),
+    createTile("OI değişimi (6s)",liveMetrics.oiChangePct===null?"—":signed(liveMetrics.oiChangePct,3)+"%",
+      liveMetrics.baseline ? (() => {
+        const referenceGapMin = Math.round((state.oiTs - 6 * HOUR_MS - liveMetrics.baseline.ts) / 60000);
+        const actualSpanMin = Math.round((state.oiTs - liveMetrics.baseline.ts) / 60000);
+        const quality = referenceGapMin <= 15 ? "İYİ" : referenceGapMin <= 35 ? "ORTA" : "DÜŞÜK";
+        return `Referans: ${trTime(liveMetrics.baseline.ts)} · Gerçek süre: ${Math.floor(actualSpanMin/60)}s ${actualSpanMin%60}dk · Sapma: +${referenceGapMin}dk · Kalite: ${quality}`;
+      })() : "6 saatlik referans için geçmiş yetersiz"),
     createTile("Funding Rate",state.fundingPct===null?"—":signed(state.fundingPct,4)+"%",`Mevcut dönem oranı · ${ageText(state.fundingTs)}`),
     createTile("Fiyat değişimi (6s)",priceChange===null?"—":signed(priceChange,3)+"%",`${priceReference} · EMA20 ${fmt(liveMetrics.ema20,1)} · EMA50 ${fmt(liveMetrics.ema50,1)}${liveMetrics.lastClosed && !liveMetrics.candleFresh ? " · eski mum geçmişi" : ""}`),
     createTile("Fiyat & hacim puanı",priceScoreText,liveMetrics.highVolume===null?"Hacim teyidi bekleniyor":`Son kapanan saat: ${fmt(liveMetrics.lastClosed.volume,2)} BTC · Önceki 20 saat ort.: ${fmt(liveMetrics.averageVolume,2)} BTC${liveMetrics.candleFresh ? "" : " · eski mum geçmişi"}`)
