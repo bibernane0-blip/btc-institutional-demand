@@ -172,7 +172,7 @@
       "estimated_atr": 293.0972,
       "estimate_updated_at": 1795368600000,
       "last_repriced_candle_close": 1795368600000,
-      "last_checked_ts": 1795387500000,
+      "last_checked_ts": 1795390200000,
       "adx": 28.58,
       "ema20": 60894.53,
       "ema50": 60541.74,
@@ -251,7 +251,7 @@
       "closed_at": 1795380300000
     }
   ],
-  "updated_at": 1795388625037,
+  "updated_at": 1795391266352,
   "trend": {
     "1D": "SHORT",
     "4H": "YATAY",
