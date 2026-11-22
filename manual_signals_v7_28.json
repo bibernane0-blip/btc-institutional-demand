@@ -1,0 +1,76 @@
+{
+  "version": "7.28",
+  "signals": [
+    {
+      "id": "SHORT-4H-1795348800000",
+      "side": "SHORT",
+      "trend_sources": [
+        "1D"
+      ],
+      "entry_timeframe": "4H",
+      "created_at": 1795360959691,
+      "signal_candle_close": 1795348800000,
+      "expires_at": 1795375359691,
+      "limit_price": 63366.58,
+      "estimated_stop": 67024.38,
+      "estimated_tp1": 57879.89,
+      "estimated_tp2": 54222.09,
+      "estimated_atr": 1463.1184,
+      "estimate_updated_at": 1795348800000,
+      "last_repriced_candle_close": 1795348800000,
+      "last_checked_ts": 1795360059691,
+      "adx": 50.09,
+      "ema20": 60590.41,
+      "ema50": 63366.58,
+      "ema200": 72022.31,
+      "status": "WAITING",
+      "note": "MANUAL ONLY. Limit price is a watch level, not an exchange order."
+    },
+    {
+      "id": "LONG-15m-1795360500000",
+      "side": "LONG",
+      "trend_sources": [
+        "1H"
+      ],
+      "entry_timeframe": "15m",
+      "created_at": 1795360959691,
+      "signal_candle_close": 1795360500000,
+      "expires_at": 1795375359691,
+      "limit_price": 60333.6,
+      "estimated_stop": 59508.43,
+      "estimated_tp1": 61571.35,
+      "estimated_tp2": 62396.52,
+      "estimated_atr": 330.0667,
+      "estimate_updated_at": 1795360500000,
+      "last_repriced_candle_close": 1795360500000,
+      "last_checked_ts": 1795360059691,
+      "adx": 33.0,
+      "ema20": 60705.54,
+      "ema50": 60333.6,
+      "ema200": 60120.56,
+      "status": "WAITING",
+      "note": "MANUAL ONLY. Limit price is a watch level, not an exchange order."
+    }
+  ],
+  "updated_at": 1795360959691,
+  "trend": {
+    "1D": "SHORT",
+    "4H": "SHORT",
+    "1H": "LONG"
+  },
+  "settings": {
+    "stop_atr": 2.5,
+    "tp1_r": 1.5,
+    "tp2_r": 2.5,
+    "tp1_partial": false,
+    "max_hold_hours": 240,
+    "limit_valid_hours": 4,
+    "cooldown_hours": 0,
+    "allow_repeated_same_side": true,
+    "score_gate": "disabled for independent opposing trends",
+    "paper_only": true,
+    "atr_at_fill": "last fully closed entry-timeframe bar",
+    "estimate_atr": "mean of ATR14 values on last 10 fully closed entry-timeframe bars",
+    "reprice": "EMA50 on every closed entry-timeframe candle"
+  }
+}
