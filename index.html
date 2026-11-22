@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#080f1c">
 <meta name="description" content="BTC Institutional Demand PRO — Bitcoin piyasa ve kurumsal akış analiz paneli">
-<title>BTC Institutional Demand PRO — V6.1.1</title>
+<title>BTC Institutional Demand PRO — V7.1</title>
 <style>
 :root{color-scheme:dark;--bg:#0b1220;--panel:#151f31;--panel2:#101a2a;--line:#29384f;--text:#e5e7eb;--muted:#9ca3af;--green:#34d399;--red:#fb7185;--yellow:#fbbf24;--blue:#7dd3fc}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:15px/1.5 system-ui,Segoe UI,Arial}
@@ -155,9 +155,11 @@ const OKX_REST = "https://www.okx.com";
 const HOUR_MS = 3600000;
 const HISTORY_REFRESH_MS = 10 * 60000;
 const FLOW_REFRESH_MS = 60000;
+const STRUCTURE_REFRESH_MS = 5 * 60000;
 const OI_STORAGE_KEY = "btc-demand-oi-history-v4";
 
 const state = {
+  structure: {}, structureError: "", structureUpdated: 0,
   price: null, priceTs: 0,
   candles: [], historyError: "",
   oiSamples: new Map(), centralOi: [], oi: null, oiTs: 0, oiHistoryStatus: "",
@@ -626,6 +628,103 @@ function renderIntelligence(live, flow) {
   }
 }
 
+// V7.1: independent, read-only market structure; existing scoring remains unchanged.
+const STRUCTURE_FRAMES = [
+  {key:"1D", bar:"1Dutc", label:"1D · Ana trend", maxLag: 2 * 86400000},
+  {key:"4H", bar:"4H", label:"4H · Piyasa yapısı", maxLag: 8 * HOUR_MS},
+  {key:"1H", bar:"1H", label:"1H · Fırsat", maxLag: 2 * HOUR_MS},
+  {key:"15m", bar:"15m", label:"15m · Giriş", maxLag: 30 * 60000}
+];
+const STRUCTURE_DURATION = {"1D":86400000,"4H":4*HOUR_MS,"1H":HOUR_MS,"15m":15*60000};
+
+function analyzeStructure(raw, key) {
+  const duration = STRUCTURE_DURATION[key];
+  const now = Date.now();
+  const map = new Map();
+  for (const c of raw) {
+    if (!c || c.confirm !== "1" || !Number.isInteger(c.ts) ||
+        c.ts > now - duration || c.ts <= 0 ||
+        ![c.open,c.high,c.low,c.close].every(v => Number.isFinite(v) && v > 0) ||
+        c.high < Math.max(c.open,c.close,c.low) || c.low > Math.min(c.open,c.close)) continue;
+    map.set(c.ts,c);
+  }
+  const candles = [...map.values()].sort((a,b)=>a.ts-b.ts).slice(-100);
+  if (candles.length < 35) return {status:"Yetersiz mum", detail:`${candles.length}/35 kapanmış mum`};
+  const recent = candles.slice(-35);
+  if (recent.some((c,i) => i && c.ts - recent[i-1].ts !== duration))
+    return {status:"Veri boşluğu", detail:"Son 35 mum kesintisiz değil"};
+  const last = candles.at(-1);
+  const config = STRUCTURE_FRAMES.find(f => f.key === key);
+  if (now - (last.ts + duration) > config.maxLag)
+    return {status:"Eski veri", detail:`Son kapanış: ${trTime(last.ts + duration)}`};
+  const highs = [], lows = [];
+  // A pivot at i is only known after candles i+1 and i+2 have closed.
+  for (let i=2;i<candles.length-2;i++) {
+    const window = candles.slice(i-2,i+3);
+    if (window.every((c,j) => j === 2 || candles[i].high > c.high))
+      highs.push({i,price:candles[i].high});
+    if (window.every((c,j) => j === 2 || candles[i].low < c.low))
+      lows.push({i,price:candles[i].low});
+  }
+  const h1=highs.at(-1), h0=highs.at(-2), l1=lows.at(-1), l0=lows.at(-2);
+  if (!h1 || !h0 || !l1 || !l0) return {status:"Pivot bekleniyor",detail:"Yeterli teyitli tepe/dip yok"};
+  const hh=h1.price>h0.price, hl=l1.price>l0.price;
+  const lh=h1.price<h0.price, ll=l1.price<l0.price;
+  let trend = hh && hl ? "YÜKSELİŞ" : lh && ll ? "DÜŞÜŞ" : "YATAY / KARIŞIK";
+  // Only a close AFTER the pivot has been confirmed can break it.
+  const latestBreak = [];
+  for (let i=4;i<candles.length;i++) {
+    const eligibleH=highs.filter(p=>p.i+2<i).at(-1);
+    const eligibleL=lows.filter(p=>p.i+2<i).at(-1);
+    if (eligibleH && candles[i-1].close <= eligibleH.price && candles[i].close > eligibleH.price)
+      latestBreak.push({i,dir:"YUKARI",level:eligibleH.price});
+    if (eligibleL && candles[i-1].close >= eligibleL.price && candles[i].close < eligibleL.price)
+      latestBreak.push({i,dir:"AŞAĞI",level:eligibleL.price});
+  }
+  const lastBreak=latestBreak.at(-1);
+  let event="—";
+  if (lastBreak) {
+    const previousOpposite=latestBreak.slice(0,-1).reverse().find(b=>b.dir!==lastBreak.dir);
+    // CHoCH requires a confirmed opposing structural break, not merely a pivot.
+    event=previousOpposite && latestBreak.slice(0,-1).at(-1)?.dir!==lastBreak.dir ? "CHoCH" : "BOS";
+    event+=` ${lastBreak.dir}`;
+  }
+  return {status:trend,detail:`${event} · H ${fmt(h1.price,1)} / L ${fmt(l1.price,1)}`,
+    trend, event, lastTs:last.ts, latestBreak:lastBreak};
+}
+
+async function loadStructure() {
+  const results=await Promise.allSettled(STRUCTURE_FRAMES.map(async frame => {
+    const rows=await okxGet("/api/v5/market/candles",{instId:"BTC-USDT",bar:frame.bar,limit:"100"});
+    return analyzeStructure(rows.map(parseCandle),frame.key);
+  }));
+  for (let i=0;i<STRUCTURE_FRAMES.length;i++) {
+    const key=STRUCTURE_FRAMES[i].key;
+    state.structure[key]=results[i].status==="fulfilled" ? results[i].value :
+      {status:"Veri alınamadı",detail:String(results[i].reason?.message||"API hatası")};
+  }
+  state.structureUpdated=Date.now();
+  renderStructure();
+}
+
+function renderStructure() {
+  const tiles=document.getElementById("structureTiles");
+  if (!tiles) return;
+  tiles.innerHTML=STRUCTURE_FRAMES.map(f=>{
+    const a=state.structure[f.key]||{status:"Bekleniyor",detail:"Mumlar yükleniyor"};
+    const cls=a.trend==="YÜKSELİŞ"?"ok":a.trend==="DÜŞÜŞ"?"bad":"warn";
+    return createTile(f.label,a.status,a.detail,cls);
+  }).join("");
+  const d=state.structure["1D"], h4=state.structure["4H"], h1=state.structure["1H"], m15=state.structure["15m"];
+  const aligned=[d,h4,h1,m15].every(x=>x?.trend && x.trend!=="YATAY / KARIŞIK") &&
+    [h4,h1,m15].every(x=>x.trend===d.trend);
+  document.getElementById("structureSummary").textContent=aligned ?
+    `Dört zaman dilimi uyumlu: ${d.trend}. Bu tek başına işlem sinyali değildir.` :
+    "Zaman dilimleri uyumsuz veya veri eksik: yön teyidi yok. BOS/CHoCH geçmişteki son teyitli kırılımı gösterir; güncel sinyal değildir.";
+  document.getElementById("structureUpdated").textContent=state.structureUpdated ?
+    `Son kontrol: ${trTime(state.structureUpdated)}` : "Mumlar yükleniyor…";
+}
+
 function render() {
   const live = computeLiveMarket();
   const flow = calcFlowScore();
@@ -728,10 +827,13 @@ async function init() {
   bootstrapMarket();
   loadMarketHistory();
   loadFlowData();
+  loadStructure();
   setInterval(loadMarketHistory, HISTORY_REFRESH_MS);
+  setInterval(loadStructure, STRUCTURE_REFRESH_MS);
   setInterval(pollOiRest, 60000);
   setInterval(loadFlowData, FLOW_REFRESH_MS);
   setInterval(render, 1000);
+  renderStructure();
   document.addEventListener("visibilitychange", () => {
     if (!document.hidden) loadFlowData();
   });
