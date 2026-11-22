@@ -184,9 +184,9 @@ footer{margin:28px 0 0;padding:18px 0;border-top:1px solid var(--line)}
  </footer>
 
  <!-- V7.28 manual signals add-on: legacy dashboard remains intact -->
- <section class="card" id="manualSignalV728" aria-label="V7.28 manuel işlem sinyalleri">
-  <h2>V7.28 · Manuel işlem sinyalleri</h2>
-  <p class="small">🟡 <strong>LİMİT BEKLİYOR</strong>: EMA50 giriş seviyesi her giriş zaman dilimi mumu kapandığında güncellenir. Stop ve TP değerleri son 10 kapanmış mumun ATR(14) ortalamasına göre <strong>tahminidir</strong>. 🟢 <strong>GİRİŞ TETİKLENDİ</strong>: Fiyat limit seviyesine dokunmuştur; stop ve TP son kapanmış mumun ATR(14) değeriyle sabitlenir. Bu, borsada gerçek emir gerçekleştiği anlamına gelmez.</p>
+ <section class="card" id="manualSignalV728" aria-label="V7.29 manuel işlem sinyalleri">
+  <h2>V7.29 · Manuel işlem sinyalleri</h2>
+  <p class="small">🟡 <strong>LİMİT BEKLİYOR</strong>: EMA20 limit seviyesi her giriş zaman dilimi mumu kapandığında güncellenir; süre sıfırlanmaz. Geçerlilik: 15m için 4 mum (1 saat), 1H ve 4H için 16 mum (16/64 saat). ADX ≥ 25, EMA50/EMA200 yönü, kapanışın EMA50 tarafı ve en az bir ilk üst zaman dilimi trendi korunmalıdır; aksi halde limit iptal edilir. Stop ve TP değerleri son 10 kapanmış mumun ATR(14) ortalamasına göre <strong>tahminidir</strong>. 🟢 <strong>GİRİŞ TETİKLENDİ</strong>: Fiyat limit seviyesine dokunmuştur; stop ve TP son kapanmış mumun ATR(14) değeriyle sabitlenir. Bu, borsada gerçek emir gerçekleştiği anlamına gelmez.</p>
   <div id="manualV728Status" class="small" role="status">Sinyaller yükleniyor…</div>
   <div style="overflow-x:auto;margin-top:12px">
    <table><thead><tr><th>Oluşma</th><th>Yön</th><th>Giriş TF</th><th>Üst trend</th><th>Limit ($)</th><th>Durum</th><th>Stop ($)</th><th>TP1 ($)</th><th>TP2 ($)</th><th>ATR hesabı</th></tr></thead>
@@ -1262,7 +1262,7 @@ init().catch(error => {
  const $=id=>document.getElementById(id);
  const num=v=>v==null||!Number.isFinite(Number(v))?'—':Number(v).toLocaleString('tr-TR',{maximumFractionDigits:2});
  const date=v=>{if(v==null)return '—';const n=Number(v);const d=Number.isFinite(n)?new Date(n):new Date(v);return Number.isNaN(d.getTime())?'—':d.toLocaleString('tr-TR');};
- const statuses={WAITING:'🟡 LİMİT BEKLİYOR',PAPER_OPEN:'🟢 GİRİŞ TETİKLENDİ (simülasyon)',STOP:'🔴 STOP',TP2:'🟢 TP2',TIMEOUT:'⚪ SÜRE DOLDU',EXPIRED:'⚪ LİMİT SÜRESİ DOLDU'};
+ const statuses={WAITING:'🟡 LİMİT BEKLİYOR',PAPER_OPEN:'🟢 GİRİŞ TETİKLENDİ (simülasyon)',STOP:'🔴 STOP',TP2:'🟢 TP2',TIMEOUT:'⚪ SÜRE DOLDU',EXPIRED:'⚪ LİMİT SÜRESİ DOLDU',INVALIDATED:'🟠 KOŞULLAR BOZULDU',INVALIDATED_DATA:'🟠 VERİ YETERSİZ',CANCELLED_STRATEGY_CHANGE:'⚪ ESKİ EMA50 LİMİTİ İPTAL',DATA_GAP:'🟠 VERİ KESİNTİSİ',ATR_MISSING:'🟠 ATR YOK',RISK_REJECT:'🟠 RİSK FİLTRESİ'};
  function td(row,value,css){const cell=document.createElement('td');cell.textContent=value==null?'—':String(value);if(css)cell.className=css;row.appendChild(cell);}
  async function update(){
   try{
