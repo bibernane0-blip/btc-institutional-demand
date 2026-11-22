@@ -1,86 +1,1289 @@
 <!doctype html>
 <html lang="tr">
 <head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>BTC Institutional Demand PRO — Ücretsiz Panel</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#080f1c">
+<meta name="description" content="BTC Institutional Demand PRO — Bitcoin piyasa ve kurumsal akış analiz paneli">
+<title>BTC Institutional Demand PRO — V7.15</title>
 <style>
-:root{color-scheme:dark}*{box-sizing:border-box}body{margin:0;background:#0b1220;color:#e5e7eb;font:15px/1.5 system-ui,Segoe UI,Arial}
-main{max-width:1120px;margin:auto;padding:22px}.top{display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap}
-h1{font-size:clamp(22px,4vw,30px);margin:0}.sub,.muted{color:#9ca3af}.card{background:#151f31;border:1px solid #29384f;border-radius:14px;padding:17px;margin:14px 0}
-.hero{display:grid;grid-template-columns:1.3fr 1fr;gap:14px}.score{font-size:clamp(42px,8vw,64px);font-weight:800;line-height:1.15}.state{font-weight:700;margin-top:8px}
-.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:10px}.tile{background:#111b2b;border:1px solid #2a3950;border-radius:12px;padding:14px}
-.tile b{display:block}.value{font-size:25px;font-weight:700;margin:7px 0}.small{font-size:12px;color:#9ca3af}.ok{color:#34d399}.bad{color:#fb7185}.warn{color:#fbbf24}
-a{color:#7dd3fc}table{width:100%;border-collapse:collapse}td,th{text-align:left;padding:8px;border-bottom:1px solid #2a3950}
-iframe{width:100%;height:490px;border:0;border-radius:10px}.btn{background:#23344d;color:#e5e7eb;border:1px solid #466080;border-radius:9px;padding:9px 12px;cursor:pointer}
-@media(max-width:700px){main{padding:13px}.hero{grid-template-columns:1fr}iframe{height:380px}td,th{font-size:13px}}
+:root{color-scheme:dark;--bg:#0b1220;--panel:#151f31;--panel2:#101a2a;--line:#29384f;--text:#e5e7eb;--muted:#9ca3af;--green:#34d399;--red:#fb7185;--yellow:#fbbf24;--blue:#7dd3fc}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:15px/1.5 system-ui,Segoe UI,Arial}
+main{max-width:1180px;margin:auto;padding:20px}.top{display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap}
+h1{font-size:clamp(22px,4vw,30px);margin:0}.sub,.muted,.small{color:var(--muted)}.small{font-size:12px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:17px;margin:13px 0}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:11px}
+.hero{display:grid;grid-template-columns:1.25fr 1fr 1fr;gap:12px}
+.tile{background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:14px;min-width:0}
+.tile b{display:block;font-size:14px}.value{font-size:25px;font-weight:750;margin:7px 0;overflow-wrap:anywhere}
+.score{font-size:clamp(38px,6vw,58px);font-weight:850;line-height:1.1;margin:10px 0}
+.state{font-weight:750;margin:5px 0}.ok{color:var(--green)}.bad{color:var(--red)}.warn{color:var(--yellow)}.blue{color:var(--blue)}
+.pill{display:inline-flex;align-items:center;gap:7px;border:1px solid var(--line);border-radius:999px;padding:6px 10px;font-size:12px;color:var(--muted);margin:4px 5px 4px 0}
+.dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:#64748b}.dot.ok{background:var(--green)}.dot.bad{background:var(--red)}.dot.warn{background:var(--yellow)}
+.btn{background:#23344d;color:var(--text);border:1px solid #466080;border-radius:9px;padding:9px 12px;cursor:pointer}
+a{color:var(--blue)}table{width:100%;border-collapse:collapse}td,th{text-align:left;padding:8px;border-bottom:1px solid var(--line)}
+iframe{width:100%;height:485px;border:0;border-radius:10px}.source-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+hr{border:0;border-top:1px solid var(--line);margin:13px 0}
+@media(max-width:850px){.hero{grid-template-columns:1fr 1fr}.hero .combined{grid-column:1/-1}}
+@media(max-width:600px){main{padding:11px}.hero{grid-template-columns:1fr}.hero .combined{grid-column:auto}iframe{height:370px}td,th{font-size:12px;padding:6px}}
+
+/* V6.1 — visual system */
+:root{--bg:#080f1c;--panel:#111c2c;--panel2:#0c1726;--line:#263850;--text:#edf4ff;--muted:#9bb0c9;--blue:#73c6ff}
+body{background:radial-gradient(ellipse at 10% -15%,#153450 0%,transparent 45%),var(--bg);letter-spacing:.005em}
+main{max-width:1440px;padding:24px 30px 48px}
+header.brand{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;padding:14px 0 22px;border-bottom:1px solid var(--line)}
+.brand h1{font-size:clamp(22px,3vw,34px);letter-spacing:-.04em;font-weight:800}
+.eyebrow{font-size:11px;font-weight:800;letter-spacing:.17em;text-transform:uppercase;color:var(--blue);margin-bottom:5px}
+.sub{font-size:13px}.source-row{margin:16px 0 20px}.pill{background:#0e1b2c;padding:8px 12px}
+.card{background:linear-gradient(155deg,#142238,#0e1929);border:1px solid #263a54;border-radius:18px;padding:22px;box-shadow:0 8px 30px #0002;margin:0}
+.hero{grid-template-columns:1.3fr 1fr 1fr;margin-bottom:16px}.hero .combined{background:linear-gradient(135deg,#12344a,#102136 70%)}
+.score{letter-spacing:-.06em}.grid{grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
+.tile{background:#0b1727;border:1px solid #253851;border-radius:13px;padding:18px;min-height:118px}
+.tile b{color:#c0d1e5;font-size:12px;font-weight:650}.tile .value{font-size:clamp(21px,2.3vw,29px);letter-spacing:-.035em}
+section.card{margin:16px 0}h2{font-size:18px;letter-spacing:-.025em;margin:0 0 15px}.top h2{margin:0}
+.btn{background:#1d4665;border:1px solid #36749a;font-weight:700;padding:11px 16px}.btn:hover{background:#25577a}
+.section-tag{font-size:11px;letter-spacing:.13em;color:#8cabc8;font-weight:800;margin:0 0 10px}
+.intelligence{display:grid;grid-template-columns:1.2fr 1fr;gap:16px}
+.intelligence .card{margin:0}.insight-head{font-size:20px;font-weight:800;margin:4px 0 10px}
+.insight-body{font-size:14px;color:#c8d6e7;line-height:1.8}.insight-list{padding-left:20px;margin:12px 0 0}.insight-list li{margin:8px 0}
+.health-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px}
+.health-item{padding:13px;border:1px solid var(--line);background:#0b1727;border-radius:12px}
+.health-item strong{display:block;font-size:13px}.health-item span{display:block;color:var(--muted);font-size:12px;margin-top:5px;overflow-wrap:anywhere}
+.health-item.ok{border-color:#215b50}.health-item.bad{border-color:#703546}.health-item.warn{border-color:#66532e}
+footer{margin:28px 0 0;padding:18px 0;border-top:1px solid var(--line)}
+@media(max-width:900px){main{padding:15px}.intelligence{grid-template-columns:1fr}}
+@media(max-width:600px){.hero{grid-template-columns:1fr}.card{padding:17px}.source-row{margin:12px 0}.tile{min-height:100px}iframe{height:360px}}
 </style>
 </head>
-<body><main>
-<div class="top"><div><h1>BTC Institutional Demand PRO</h1><div class="sub">Ücretsiz otomatik veri paneli · kişisel kullanım</div></div><button class="btn" onclick="loadData()">Şimdi yenile</button></div>
-<div class="hero">
-<section class="card"><div class="muted">Kurumsal talep skoru</div><div class="score" id="score">--</div><div class="state" id="label">Veriler yükleniyor…</div><div class="small" id="updated">--</div></section>
-<section class="card"><div class="muted">BTC-USDT spot fiyatı</div><div class="score" style="font-size:38px" id="price">--</div><div class="small" id="price-meta">OKX · 1 saatlik mum verisi</div><hr style="border-color:#29384f"><div class="muted">Veri bütünlüğü</div><div id="integrity" class="state">--</div></section>
-</div>
-<h2>Gösterge özeti</h2><div class="tiles" id="tiles"></div>
-<section class="card"><h2>Kaynakların son durumu</h2><div id="sources" class="small">--</div></section>
-<section class="card"><h2>Bitcoin grafiği</h2><iframe src="https://www.tradingview.com/widgetembed/?symbol=BINANCE%3ABTCUSDT&interval=60&theme=dark&style=1&hide_top_toolbar=false&allow_symbol_change=true"></iframe></section>
-<section class="card"><h2>Skor nasıl okunmalı?</h2>
-<p><b>+60 ile +100:</b> Güçlü pozitif, long fırsatı ara. <b>+30 ile +59:</b> Pozitif, fiyat teyidi bekle.</p>
-<p><b>-29 ile +29:</b> Nötr. <b>-30 ile -59:</b> Negatif, teyit bekle. <b>-60 ile -100:</b> Güçlü negatif, short fırsatı ara.</p>
-<p class="muted">Bu skor emir sinyali değildir. Eşikler prototip varsayımlarıdır ve geçmiş verilerle test edilmemiştir. Herhangi bir kritik kaynak eksik veya hatalıysa skor gösterilmez.</p></section>
-<footer class="small">Veri kaynakları: <a href="https://farside.co.uk/bitcoin-etf-flow-all-data/" target="_blank">Farside Investors</a>, <a href="https://kotecharts.com/c/exchange-netflow" target="_blank">Kote Charts</a>, <a href="https://www.okx.com/docs-v5/en/" target="_blank">OKX</a>. Kote Charts verileri kişisel/ticari olmayan kullanım ve kaynak gösterme koşuluyla kullanılmaktadır.</footer>
+<body>
+<main>
+ <div class="top">
+  <div><h1>BTC Institutional Demand PRO</h1><div class="sub">Canlı piyasa akışı + kurumsal sermaye akışı</div></div>
+  <div><button class="btn" id="refreshBtn">Akış verisini yenile</button></div>
+ </div>
+ <div class="source-row">
+  <span class="pill"><span id="publicDot" class="dot warn"></span><span id="publicStatus">OKX market WS: bağlanıyor</span></span>
+  <span class="pill"><span id="businessDot" class="dot warn"></span><span id="businessStatus">OKX candle WS: bağlanıyor</span></span>
+  <span class="pill"><span id="flowDot" class="dot warn"></span><span id="flowStatus">Kurumsal akış verisi bekleniyor</span></span>
+ </div>
 
-<section class="card" id="manual-signal-card"><h2>V7.28 · Manuel işlem sinyalleri</h2>
-<p class="small">Yalnızca manuel izleme. Bekleyen limit, giriş zaman dilimindeki her kapanmış mumda EMA50 ile güncellenir. Beklerken stop ve TP değerleri son 10 kapanmış mumun ATR(14) ortalamasıyla TAHMİNİ hesaplanır. Giriş tetiklenince son kapanmış mumun ATR(14) değeriyle kesinleşir. Fiyatın limite değmesi gerçek borsa emrinin dolduğu anlamına gelmez.</p>
-<div id="manual-signal-status" class="small">Sinyaller yükleniyor…</div>
-<div style="overflow-x:auto"><table><thead><tr><th>Oluşma</th><th>Yön</th><th>Giriş TF</th><th>Üst trend</th><th>Limit ($)</th><th>Durum</th><th>Stop ($)</th><th>TP1 ($)</th><th>TP2 ($)</th><th>ATR hesabı</th></tr></thead><tbody id="manual-signal-rows"><tr><td colspan="10">—</td></tr></tbody></table></div>
-</section>
-<script>
-async function loadManualSignals(){
- try{
-  const response=await fetch('./manual_signals_v7_28.json?t='+Date.now(),{cache:'no-store'});
-  if(!response.ok)throw Error('Henüz sinyal verisi oluşturulmadı');
-  const db=await response.json();
-  const fmt=n=>n==null?'—':Number(n).toLocaleString('tr-TR',{maximumFractionDigits:2});
-  const date=n=>new Date(Number(n)).toLocaleString('tr-TR');
-  const all=(db.signals||[]).slice().reverse();
-  const statusName={WAITING:'🟡 LİMİT BEKLİYOR',PAPER_OPEN:'🟢 GİRİŞ TETİKLENDİ (simülasyon)',STOP:'🔴 STOP',TP2:'🟢 TP2',TIMEOUT:'⚪ SÜRE DOLDU',EXPIRED:'⚪ LİMİT SÜRESİ DOLDU'};
-  document.getElementById('manual-signal-status').textContent='Güncelleme: '+date(db.updated_at)+' · Toplam '+all.length+' sinyal · Manuel izleme · EMA50 mum kapanışında güncellenir';
-  document.getElementById('manual-signal-rows').innerHTML=all.slice(0,35).map(t=>'<tr><td>'+date(t.created_at)+'</td><td class="'+(t.side==='LONG'?'ok':'bad')+'">'+t.side+'</td><td>'+t.entry_timeframe+'</td><td>'+(t.trend_sources||[]).join(', ')+'</td><td>'+fmt(t.limit_price)+'</td><td>'+(statusName[t.status]||t.status)+'</td><td>'+fmt(t.status==='WAITING'?t.estimated_stop:t.stop)+'</td><td>'+fmt(t.status==='WAITING'?t.estimated_tp1:t.tp1)+'</td><td>'+fmt(t.status==='WAITING'?t.estimated_tp2:t.tp2)+'</td><td>'+(t.status==='WAITING'?'Tahmini · 10 ATR ort.':'Giriş ATR(14)')+'</td></tr>').join('')||'<tr><td colspan="10">Henüz sinyal yok.</td></tr>';
- }catch(err){document.getElementById('manual-signal-status').textContent=err.message;}
-}
-loadManualSignals();setInterval(loadManualSignals,60000);
-</script>
+ <section class="hero">
+  <div class="card combined">
+   <div class="muted">Birleşik talep skoru</div>
+   <div class="score" id="combinedScore">N/A</div>
+   <div class="state" id="combinedLabel">Canlı ve kurumsal veriler bekleniyor</div>
+   <div class="small" id="combinedUpdated">Skor henüz hesaplanmadı.</div>
+   <div class="small">Ağırlık: %60 Live Market · %40 Institutional Flow</div>
+  </div>
+  <div class="card">
+   <div class="muted">Live Market Score</div>
+   <div class="score" id="liveScore">N/A</div>
+   <div class="state" id="liveLabel">OKX bağlantısı bekleniyor</div>
+   <div class="small" id="marketUpdated">—</div>
+  </div>
+  <div class="card">
+   <div class="muted">Institutional Flow Score</div>
+   <div class="score" id="flowScore">N/A</div>
+   <div class="state" id="flowLabel">Akış verisi bekleniyor</div>
+   <div class="small" id="flowUpdated">—</div>
+  </div>
+ </section>
+
+ <section class="card">
+  <div class="top"><h2 style="margin:0">Canlı piyasa verileri</h2><span class="small">OKX public WebSocket · BTC-USDT</span></div>
+  <div class="grid" style="margin-top:12px" id="marketTiles"></div>
+ </section>
+
+ <section class="card">
+  <div class="top"><h2 style="margin:0">Kurumsal sermaye akışı</h2><span class="small">Yavaş değişen veri katmanı</span></div>
+  <div class="grid" style="margin-top:12px" id="flowTiles"></div>
+  <p class="small">ETF akışı günlük yayımlanır. Exchange Netflow, Kote Charts'ın etiketlenmiş borsa cüzdanları üzerinden hesapladığı zincir üstü akıştır; emir defteri veya borsa içi transferleri göstermez.</p>
+ </section>
+
+ <section class="card">
+  <h2>Skor bileşenleri</h2>
+  <div class="grid" id="componentTiles"></div>
+  <hr>
+  <p class="small"><b>Deneysel formül:</b> Live Market = Open Interest (30) + Funding (20) + Fiyat/Hacim (50). Institutional Flow = ETF (50) + Exchange Netflow (50). Birleşik skor = %60 Live Market + %40 Institutional Flow. Bu yeni formül eski 55 günlük backtest ile doğrulanmış değildir; bu formül yatırım sinyali olarak doğrulanmış değildir.</p>
+ </section>
+
+  <section class="intelligence" aria-label="Piyasa değerlendirmesi ve veri sağlığı">
+   <section class="card">
+    <div class="section-tag">MARKET INTELLIGENCE</div>
+    <h2 id="insightTitle" class="insight-head">Piyasa değerlendirmesi hazırlanıyor</h2>
+    <div id="insightBody" class="insight-body" aria-live="polite">Veri kaynakları kontrol ediliyor…</div>
+   </section>
+   <section class="card">
+    <div class="section-tag">DATA HEALTH</div>
+    <h2>Kaynak durumu</h2>
+    <div id="healthGrid" class="health-grid" aria-live="polite"></div>
+   </section>
+  </section>
+
+ <section class="card">
+  <h2>Veri tazeliği ve bağlantı durumu</h2>
+  <div id="freshness" class="small">Veri durumları hesaplanıyor…</div>
+  <div id="wsErrors" class="small warn" style="margin-top:8px"></div>
+ </section>
+
+ <section class="card" id="marketStructureSection">
+  <div class="top"><h2 style="margin:0">Piyasa Yapısı (V7.1)</h2><span class="small" id="structureUpdated">Mumlar yükleniyor…</span></div>
+  <div class="grid" id="structureTiles" style="margin-top:12px"></div>
+  <p class="small" id="structureSummary" aria-live="polite">Zaman dilimleri analiz ediliyor…</p>
+ </section>
+
+ <section class="card" id="regimeSection">
+  <div class="top"><h2 style="margin:0">Piyasa Rejimi (V7.3)</h2><span class="small" id="regimeUpdated">Mumlar yükleniyor…</span></div>
+  <div class="grid" id="regimeTiles" style="margin-top:12px"></div>
+  <p class="small" id="regimeSummary">ADX(14) trend gücü, ATR(14) volatilite; yalnızca kapanmış mumlar. Rejim sınıflaması deneysel olup işlem sinyali değildir.</p>
+ </section>
+
+
+ <section class="card" id="scannerSection">
+  <div class="top"><h2 style="margin:0">İşlem Fırsatı Tarayıcısı (V7.4)</h2><span class="small" id="scannerUpdated">Veriler bekleniyor…</span></div>
+  <div class="grid" id="scannerTiles" style="margin-top:12px"></div>
+  <p class="small" id="scannerSummary" aria-live="polite">Piyasa yapısı, rejim ve likidite birlikte değerlendiriliyor. İşlem emri veya yatırım sinyali değildir.</p>
+ </section>
+
+ <section class="card" id="plannerSection">
+  <div class="top"><h2 style="margin:0">İşlem Planlayıcısı (V7.5)</h2><span class="small" id="plannerUpdated">Veriler bekleniyor…</span></div>
+  <div class="grid" id="plannerTiles" style="margin-top:12px"></div>
+  <p class="small" id="plannerSummary" aria-live="polite">Tarayıcı BEKLE durumundayken işlem planı oluşturulmaz. Seviyeler yalnızca araştırma amaçlıdır.</p>
+ </section>
+
+ <section class="card" id="paperSection">
+  <div class="top"><h2 style="margin:0">İşlem Simülasyonu (V7.7)</h2><span class="small" id="paperUpdated">Yerel kayıt</span></div>
+  <div class="grid" id="paperTiles" style="margin-top:12px"></div>
+  <p class="small" id="paperSummary">Sanal işlem; gerçek emir gönderilmez. Kayıtlar yalnızca bu tarayıcıda saklanır.</p>
+  <button class="btn" id="paperExport" type="button">Kayıtları JSON indir</button>
+ </section>
+
+ <section class="card" id="liquiditySection">
+  <div class="top"><h2 style="margin:0">Likidite Analizi (V7.2)</h2><span class="small" id="liquidityUpdated">Mumlar yükleniyor…</span></div>
+  <div class="grid" id="liquidityTiles" style="margin-top:12px"></div>
+  <p class="small" id="liquiditySummary" aria-live="polite">Yalnızca kapanmış mumlar kullanılır. Bölgeler potansiyeldir; emir yoğunluğu doğrulanmış değildir.</p>
+ </section>
+
+ <section class="card">
+  <h2>OKX BTC-USDT grafiği</h2>
+  <iframe loading="lazy" src="https://www.tradingview.com/widgetembed/?symbol=OKX%3ABTCUSDT&interval=60&theme=dark&style=1&hide_top_toolbar=false&allow_symbol_change=true"></iframe>
+ </section>
+
+ <section class="card">
+  <h2>Skor nasıl okunmalı?</h2>
+  <p><b>+60 ile +100:</b> güçlü pozitif görünüm · <b>+30 ile +59:</b> pozitif görünüm · <b>-29 ile +29:</b> nötr · <b>-30 ile -59:</b> negatif görünüm · <b>-60 ile -100:</b> güçlü negatif görünüm.</p>
+  <p class="small">Bu bir karar destek prototipidir; otomatik emir göndermez. Ağırlıklar ve eşikler deneysel başlangıç varsayımlarıdır. Skor deneysel olup yatırım sinyali olarak kullanılmamalıdır.</p>
+ </section>
+
+ <footer class="small">
+  Kaynaklar:
+  <a href="https://www.okx.com/docs-v5/en/" target="_blank" rel="noopener">OKX API</a> ·
+  <a href="https://farside.co.uk/bitcoin-etf-flow-all-data/" target="_blank" rel="noopener">Farside Investors</a> ·
+  <a href="https://kotecharts.com/c/exchange-netflow" target="_blank" rel="noopener">Kote Charts Exchange Netflow</a>.
+  Kote Charts verileri kişisel/araştırma amaçlı ticari olmayan kullanım ve kaynak gösterme koşuluyla gösterilir.
+ </footer>
+
+ <!-- V7.28 manual signals add-on: legacy dashboard remains intact -->
+ <section class="card" id="manualSignalV728" aria-label="V7.28 manuel işlem sinyalleri">
+  <h2>V7.28 · Manuel işlem sinyalleri</h2>
+  <p class="small">🟡 <strong>LİMİT BEKLİYOR</strong>: EMA50 giriş seviyesi her giriş zaman dilimi mumu kapandığında güncellenir. Stop ve TP değerleri son 10 kapanmış mumun ATR(14) ortalamasına göre <strong>tahminidir</strong>. 🟢 <strong>GİRİŞ TETİKLENDİ</strong>: Fiyat limit seviyesine dokunmuştur; stop ve TP son kapanmış mumun ATR(14) değeriyle sabitlenir. Bu, borsada gerçek emir gerçekleştiği anlamına gelmez.</p>
+  <div id="manualV728Status" class="small" role="status">Sinyaller yükleniyor…</div>
+  <div style="overflow-x:auto;margin-top:12px">
+   <table><thead><tr><th>Oluşma</th><th>Yön</th><th>Giriş TF</th><th>Üst trend</th><th>Limit ($)</th><th>Durum</th><th>Stop ($)</th><th>TP1 ($)</th><th>TP2 ($)</th><th>ATR hesabı</th></tr></thead>
+   <tbody id="manualV728Rows"><tr><td colspan="10">Henüz sinyal yok.</td></tr></tbody></table>
+  </div>
+ </section>
 </main>
+
 <script>
-const fmt=(v,d=2)=>v===null||v===undefined?'—':Number(v).toLocaleString('tr-TR',{maximumFractionDigits:d});
-function status(ok){return ok?'<span class="ok">● Çalışıyor</span>':'<span class="bad">● Veri alınamadı</span>'}
-function tile(title,value,sub,cls=''){return `<div class="tile"><b>${title}</b><div class="value ${cls}">${value}</div><div class="small">${sub||''}</div></div>`}
-async function loadData(){
- try{
-  const r=await fetch('./data.json?ts='+Date.now(),{cache:'no-store'}); if(!r.ok)throw Error('data.json henüz oluşturulmamış'); const d=await r.json();
-  const a=d.analysis||{}, s=d.sources||{}, m=s.market||{}, e=s.etf||{}, n=s.netflow||{};
-  document.getElementById('score').textContent=a.score===null||a.score===undefined?'N/A':(a.score>0?'+':'')+a.score+'/100';
-  document.getElementById('label').textContent=a.label||'Analiz yok';
-  document.getElementById('updated').textContent='Son otomatik veri kontrolü: '+(d.updated_at||'—');
-  document.getElementById('price').textContent=m.ok?'$'+fmt(m.price_usd,0):'—';
-  document.getElementById('price-meta').textContent=m.ok?'OKX · OI '+fmt(m.oi_change_6h_pct)+'% / 6s · Funding '+fmt(m.funding_rate_pct,4)+'%':'OKX verisi alınamadı';
-  document.getElementById('integrity').innerHTML=a.score===null?'<span class="warn">Eksik kaynak var; skor geçersiz.</span>':'<span class="ok">5/5 ana veri bileşeni mevcut.</span>';
-  let t=[];
-  t.push(tile('ETF net akışı',e.ok?(e.flow_usd_m>0?'+':'')+fmt(e.flow_usd_m,1)+' M$':'—',e.ok?e.date+' · Farside':'Hata: '+(e.error||''),e.ok?(e.flow_usd_m>=0?'ok':'bad'):'warn'));
-  t.push(tile('Exchange Netflow',n.ok?(n.mean_3d_btc>0?'+':'')+fmt(n.mean_3d_btc,1)+' BTC':'—',n.ok?'3 günlük ortalama · '+n.date:'Hata: '+(n.error||''),n.ok?(n.mean_3d_btc<0?'ok':'bad'):'warn'));
-  t.push(tile('Open Interest',m.ok?fmt(m.open_interest_btc,0)+' BTC':'—',m.ok?'6 saat değişim: '+fmt(m.oi_change_6h_pct)+'%':'OKX verisi yok'));
-  t.push(tile('Funding Rate',m.ok?fmt(m.funding_rate_pct,4)+'%':'—','OKX BTC-USDT-SWAP perpetual'));
-  t.push(tile('Fiyat / Hacim',m.ok?'EMA20 '+fmt(m.ema20,0)+' · EMA50 '+fmt(m.ema50,0):'—',m.ok?'6 saat fiyat: '+fmt(m.price_change_6h_pct)+'%':'OKX verisi yok'));
-  for(const [k,v] of Object.entries(a.components||{})) t.push(tile(k+' skoru',(v.score>0?'+':'')+v.score,'Ağırlık: '+v.weight));
-  document.getElementById('tiles').innerHTML=t.join('');
-  document.getElementById('sources').innerHTML=[
-   'OKX: '+status(!!m.ok),
-   'Farside ETF: '+status(!!e.ok),
-   'Kote netflow: '+status(!!n.ok),
-   'Eksik bileşen: '+((a.missing||[]).join(', ')||'yok')
-  ].join('<br>');
- }catch(err){document.getElementById('label').textContent='Panel verisi henüz hazır değil: '+err.message}
+"use strict";
+
+const OKX_PUBLIC_WS = "wss://ws.okx.com/ws/v5/public";
+const OKX_BUSINESS_WS = "wss://ws.okx.com/ws/v5/business";
+const OKX_REST = "https://www.okx.com";
+const HOUR_MS = 3600000;
+const HISTORY_REFRESH_MS = 10 * 60000;
+const FLOW_REFRESH_MS = 60000;
+const STRUCTURE_REFRESH_MS = 5 * 60000;
+const OI_STORAGE_KEY = "btc-demand-oi-history-v4";
+
+const state = {
+  structure: {}, structureError: "", structureUpdated: 0,
+  liquidity: {}, liquidityUpdated: 0, regime: {}, regimeUpdated: 0,
+  scannerVerdict: "BEKLE", plannerCandles: [], plannerCandlesAt: 0, paperPlan: null, paperTrades: [],
+  price: null, priceTs: 0,
+  candles: [], historyError: "",
+  oiSamples: new Map(), centralOi: [], oi: null, oiTs: 0, oiHistoryStatus: "",
+  fundingPct: null, fundingTs: 0, fundingTime: null,
+  flowData: null, flowError: "",
+  publicSocket: null, businessSocket: null,
+  publicStatus: "connecting", businessStatus: "connecting",
+  publicError: "", businessError: "",
+  lastPublicMsg: 0, lastBusinessMsg: 0,
+  liveScore: null, liveParts: null, flowScore: null, flowParts: null, combinedScore: null,
+  lastCalculation: 0
+};
+
+const fmt = (value, digits=2) => value === null || value === undefined || !Number.isFinite(Number(value))
+  ? "—" : Number(value).toLocaleString("tr-TR", {maximumFractionDigits: digits});
+const signed = (value, digits=0) => value === null || value === undefined ? "—" : (value > 0 ? "+" : "") + fmt(value, digits);
+const trTime = (ts) => ts ? new Date(ts).toLocaleString("tr-TR", {timeZone:"Europe/Istanbul"}) : "—";
+const ageText = (ts) => {
+  if (!ts) return "zaman damgası yok";
+  const sec = Math.max(0, Math.floor((Date.now()-ts)/1000));
+  if (sec < 60) return `${sec} sn önce`;
+  if (sec < 3600) return `${Math.floor(sec/60)} dk önce`;
+  return `${(sec/3600).toFixed(1)} saat önce`;
+};
+const tone = (score) => score === null ? "warn" : score >= 30 ? "ok" : score <= -30 ? "bad" : "warn";
+const mood = (score) => score === null ? "VERİ BEKLENİYOR" : score >= 60 ? "GÜÇLÜ POZİTİF" : score >= 30 ? "POZİTİF — TEYİT BEKLE" : score <= -60 ? "GÜÇLÜ NEGATİF" : score <= -30 ? "NEGATİF — TEYİT BEKLE" : "NÖTR — BEKLE";
+
+function setConnection(prefix, status, message="") {
+  const dot = document.getElementById(prefix + "Dot");
+  const text = document.getElementById(prefix + "Status");
+  const cls = status === "connected" ? "ok" : status === "error" ? "bad" : "warn";
+  dot.className = "dot " + cls;
+  text.textContent = message || status;
 }
-loadData();setInterval(loadData,60000);
-</script></body></html>
+function escapeHtml(value) {
+  return String(value ?? "").replace(/[&<>"']/g, ch => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"})[ch]);
+}
+function createTile(title, value, note, cls="") {
+  const safeClass = ["ok","bad","warn","blue"].includes(cls) ? cls : "";
+  return `<div class="tile"><b>${escapeHtml(title)}</b><div class="value ${safeClass}">${escapeHtml(value)}</div><div class="small">${escapeHtml(note || "")}</div></div>`;
+}
+function updateScoreCard(id, labelId, score, label, updatedId, updatedText) {
+  const el = document.getElementById(id);
+  el.textContent = score === null ? "N/A" : `${score > 0 ? "+" : ""}${Math.round(score)}/100`;
+  el.className = "score " + tone(score);
+  document.getElementById(labelId).textContent = label;
+  document.getElementById(labelId).className = "state " + tone(score);
+  if (updatedId) document.getElementById(updatedId).textContent = updatedText || "";
+}
+
+async function okxGet(path, params) {
+  const query = new URLSearchParams(params).toString();
+  const response = await fetch(`${OKX_REST}${path}?${query}`, {cache:"no-store"});
+  if (!response.ok) throw new Error(`OKX REST ${response.status} (${path})`);
+  const json = await response.json();
+  if (String(json.code) !== "0" || !Array.isArray(json.data)) throw new Error(`OKX ${path}: ${json.msg || "API yanıtı geçersiz"}`);
+  return json.data;
+}
+
+async function bootstrapMarket() {
+  const results = await Promise.allSettled([
+    okxGet("/api/v5/market/candles", {instId:"BTC-USDT", bar:"1H", limit:"100"}),
+    okxGet("/api/v5/public/funding-rate", {instId:"BTC-USDT-SWAP"})
+  ]);
+
+  if (results[0].status === "fulfilled") {
+    mergeCandles(results[0].value.map(parseCandle));
+  } else {
+    state.publicError = "Başlangıç mum verisi alınamadı: " + results[0].reason.message;
+  }
+
+  if (results[1].status === "fulfilled" && results[1].value.length) {
+    const row = results[1].value[0];
+    updateFunding(row, Date.now());
+  } else if (results[1].status === "rejected") {
+    state.publicError += " Funding başlangıcı: " + results[1].reason.message;
+  }
+  render();
+}
+
+function numericValue(value) {
+  if (typeof value === "number" || (typeof value === "string" && value.trim())) return Number(value);
+  return NaN;
+}
+
+function updateFunding(row, receivedAt) {
+  const rate = numericValue(row.fundingRate);
+  const ts = Number(row.ts ?? receivedAt);
+  if (!Number.isFinite(rate) || !isFresh(ts, receivedAt, 240000) || ts < state.fundingTs) return;
+  state.fundingPct = rate * 100;
+  state.fundingTs = ts;
+  state.fundingTime = Number(row.fundingTime || 0);
+}
+
+function parseCandle(row) {
+  return {ts:Number(row[0]), open:Number(row[1]), high:Number(row[2]), low:Number(row[3]),
+    close:numericValue(row[4]), volume:numericValue(row[5]), confirm:String(row[8] || "0")};
+}
+function mergeCandles(candles) {
+  const merged = new Map(state.candles.map(candle => [candle.ts, candle]));
+  const currentHour = Math.floor(Date.now() / HOUR_MS) * HOUR_MS;
+  for (const candle of candles) {
+    if (!candle || !Number.isInteger(candle.ts) || candle.ts <= 0 ||
+        candle.ts % HOUR_MS || candle.ts > currentHour ||
+        !Number.isFinite(candle.close) || candle.close <= 0 ||
+        !Number.isFinite(candle.volume) || candle.volume < 0 ||
+        !["0", "1"].includes(candle.confirm) ||
+        (candle.confirm === "1" && candle.ts === currentHour)) continue;
+    if (merged.get(candle.ts)?.confirm === "1") continue;
+    merged.set(candle.ts, candle);
+  }
+  state.candles = [...merged.values()].sort((a,b)=>a.ts-b.ts).slice(-160);
+}
+
+function validOi(point, now) {
+  return point && Number.isFinite(point.oiBtc) && point.oiBtc > 0 &&
+    Number.isInteger(point.ts) && point.ts >= now - 48 * HOUR_MS &&
+    point.ts <= now + 60000;
+}
+
+function rememberOi(point) {
+  const minute = Math.floor(point.ts / 60000);
+  if ((state.oiSamples.get(minute)?.ts ?? 0) <= point.ts) state.oiSamples.set(minute, point);
+}
+
+function restoreOiHistory() {
+  try {
+    const raw = JSON.parse(localStorage.getItem(OI_STORAGE_KEY) || "[]");
+    const now = Date.now();
+    for (const point of raw) if (validOi(point, now)) rememberOi(point);
+  } catch { state.oiHistoryStatus = "Tarayıcı geçmiş kaydı kullanılamıyor"; }
+}
+
+function saveOiHistory() {
+  try {
+    const now = Date.now();
+    for (const [minute, point] of state.oiSamples) {
+      if (!validOi(point, now)) state.oiSamples.delete(minute);
+    }
+    localStorage.setItem(OI_STORAGE_KEY, JSON.stringify([...state.oiSamples.values()]));
+  } catch { state.oiHistoryStatus = "Tarayıcı geçmiş kaydı kullanılamıyor"; }
+}
+
+function addOiSample(item) {
+  if (!validOi(item, Date.now())) return;
+  const previousMinute = Math.floor(state.oiTs / 60000);
+  rememberOi(item);
+  if (item.ts >= state.oiTs) {
+    state.oi = item.oiBtc;
+    state.oiTs = item.ts;
+  }
+  if (Math.floor(state.oiTs / 60000) > previousMinute) saveOiHistory();
+}
+
+async function loadMarketHistory() {
+  try {
+    const response = await fetch("./market_history.json", {cache:"no-store"});
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    const history = await response.json();
+    if (!Array.isArray(history?.candles) || !Array.isArray(history.oi)) {
+      throw new Error("Dosya biçimi geçersiz");
+    }
+    mergeCandles(history.candles.map(candle => candle && {...candle, confirm:String(candle.confirm)}));
+    const now = Date.now();
+    state.centralOi = history.oi.filter(point => validOi(point, now));
+    state.historyError = "";
+  } catch (error) {
+    state.historyError = "Merkezi piyasa geçmişi: " + error.message;
+  }
+  render();
+}
+
+function connectOkxSocket(kind, url, args, onData) {
+  const isPublic = kind === "public";
+  const statusKey = isPublic ? "publicStatus" : "businessStatus";
+  const errorKey = isPublic ? "publicError" : "businessError";
+  const msgKey = isPublic ? "lastPublicMsg" : "lastBusinessMsg";
+  const statusPrefix = isPublic ? "public" : "business";
+  let retryMs = 2000;
+  let pingSentAt = 0;
+  let pingTimer = null;
+  let reconnectTimer = null;
+  let manuallyClosed = false;
+
+  function connect() {
+    pingSentAt = 0;
+    state[statusKey] = "connecting";
+    setConnection(statusPrefix, "connecting", isPublic ? "OKX market WS: bağlanıyor" : "OKX candle WS: bağlanıyor");
+    const ws = new WebSocket(url);
+    if (isPublic) state.publicSocket = ws; else state.businessSocket = ws;
+
+    ws.onopen = () => {
+      state[statusKey] = "connected";
+      state[msgKey] = Date.now();
+      setConnection(statusPrefix, "connected", isPublic ? "OKX market WS: bağlı" : "OKX candle WS: bağlı");
+      ws.send(JSON.stringify({op:"subscribe", args}));
+      retryMs = 2000;
+    };
+
+    ws.onmessage = (event) => {
+      state[msgKey] = Date.now();
+      if (event.data === "pong") { pingSentAt = 0; return; }
+      let msg;
+      try { msg = JSON.parse(event.data); } catch { return; }
+      if (msg.event === "error") {
+        state[statusKey] = "error";
+        state[errorKey] = `${msg.code || ""} ${msg.msg || "OKX abonelik hatası"}`;
+        setConnection(statusPrefix, "error", `${isPublic ? "Market" : "Candle"} WS hata`);
+        render();
+        return;
+      }
+      if (msg.event === "subscribe") return;
+      if (msg.arg && Array.isArray(msg.data)) onData(msg.arg.channel, msg.data);
+      render();
+    };
+
+    ws.onerror = () => {
+      state[statusKey] = "error";
+      state[errorKey] = isPublic ? "OKX market WebSocket bağlantı hatası." : "OKX candle WebSocket bağlantı hatası.";
+      setConnection(statusPrefix, "error", "WebSocket bağlantı hatası");
+    };
+
+    ws.onclose = () => {
+      state[statusKey] = "connecting";
+      setConnection(statusPrefix, "connecting", "Bağlantı yeniden kuruluyor…");
+      if (pingTimer) clearInterval(pingTimer);
+      if (!manuallyClosed) {
+        reconnectTimer = setTimeout(connect, retryMs);
+        retryMs = Math.min(30000, retryMs * 1.7);
+      }
+    };
+
+    // OKX drops a WebSocket with no messages for >30 seconds.
+    // Its documented application-level heartbeat is the text "ping"/"pong".
+    pingTimer = setInterval(() => {
+      if (ws.readyState !== WebSocket.OPEN) return;
+      const last = state[msgKey] || Date.now();
+      const idle = Date.now() - last;
+      if (idle > 20000 && !pingSentAt) {
+        try { ws.send("ping"); pingSentAt = Date.now(); } catch {}
+      } else if (pingSentAt && Date.now() - pingSentAt > 10000) {
+        try { ws.close(); } catch {}
+      }
+    }, 5000);
+  }
+
+  connect();
+  return () => {
+    manuallyClosed = true;
+    if (pingTimer) clearInterval(pingTimer);
+    if (reconnectTimer) clearTimeout(reconnectTimer);
+    const socket = isPublic ? state.publicSocket : state.businessSocket;
+    if (socket) socket.close();
+  };
+}
+
+function startSockets() {
+  connectOkxSocket("public", OKX_PUBLIC_WS, [
+    {channel:"tickers", instId:"BTC-USDT"},
+    {channel:"open-interest", instId:"BTC-USDT-SWAP"},
+    {channel:"funding-rate", instId:"BTC-USDT-SWAP"}
+  ], (channel, data) => {
+    for (const row of data) {
+      if (channel === "tickers") {
+        const price = numericValue(row.last);
+        const ts = Number(row.ts ?? Date.now());
+        if (Number.isFinite(price) && price > 0 && isFresh(ts, Date.now(), 30000) && ts >= state.priceTs) {
+          state.price = price;
+          state.priceTs = ts;
+        }
+      } else if (channel === "open-interest") {
+        addOiSample({ts:Number(row.ts || Date.now()), oiBtc:Number(row.oiCcy)});
+      } else if (channel === "funding-rate") {
+        updateFunding(row, Date.now());
+      }
+    }
+  });
+
+  connectOkxSocket("business", OKX_BUSINESS_WS, [
+    {channel:"candle1H", instId:"BTC-USDT"}
+  ], (channel, data) => {
+    if (channel === "candle1H") for (const row of data) mergeCandles([parseCandle(row)]);
+  });
+}
+
+function ema(values, period) {
+  if (!values.length) return null;
+  const alpha = 2 / (period + 1);
+  let result = values[0];
+  for (let i=1;i<values.length;i++) result = alpha * values[i] + (1-alpha) * result;
+  return result;
+}
+
+function isFresh(ts, now, maxAge) {
+  return Number.isFinite(ts) && ts > 0 && now - ts >= -60000 && now - ts <= maxAge;
+}
+
+function computeLiveMarket() {
+  const now = Date.now();
+  const priceFresh = Number.isFinite(state.price) && state.price > 0 && isFresh(state.priceTs, now, 30000);
+  const oiFresh = Number.isFinite(state.oi) && state.oi > 0 && isFresh(state.oiTs, now, 90000);
+  const fundingFresh = Number.isFinite(state.fundingPct) && isFresh(state.fundingTs, now, 240000);
+  const completed = state.candles.filter(candle => candle.confirm === "1");
+  const lastClosed = completed.at(-1);
+  const contiguous = lastClosed ? completed.slice(completed.findLastIndex((candle, index) =>
+    index < completed.length - 1 && completed[index + 1].ts - candle.ts !== HOUR_MS) + 1) : [];
+  const closes = contiguous.map(candle => candle.close);
+  const ema20 = closes.length >= 20 ? ema(closes.slice(-40), 20) : null;
+  const ema50 = closes.length >= 50 ? ema(closes.slice(-80), 50) : null;
+  const previous20 = contiguous.slice(-21, -1);
+  const averageVolume = previous20.length === 20
+    ? previous20.reduce((sum, candle) => sum + candle.volume, 0) / 20 : null;
+  const highVolume = averageVolume === null ? null : lastClosed.volume > averageVolume;
+  const priceComponentReady = ema20 !== null && ema50 !== null && highVolume !== null;
+  const currentHour = Math.floor(now / HOUR_MS) * HOUR_MS;
+  const candleFresh = lastClosed?.ts === currentHour - HOUR_MS;
+
+  const targetPriceTs = Math.floor((state.priceTs - 6 * HOUR_MS) / HOUR_MS) * HOUR_MS - HOUR_MS;
+  const baseCandle = completed.find(candle => candle.ts === targetPriceTs);
+  const priceChange6hPct = priceFresh && baseCandle ? (state.price / baseCandle.close - 1) * 100 : null;
+
+  const historicalBase = contiguous.at(-7);
+  const closedPriceChange6hPct = historicalBase ? (lastClosed.close / historicalBase.close - 1) * 100 : null;
+
+  const baselineTarget = state.oiTs - 6 * HOUR_MS;
+  let baseline = null;
+  for (const samples of [state.centralOi, state.oiSamples.values()]) {
+    for (const point of samples) {
+      if (point.ts <= baselineTarget && point.ts >= baselineTarget - 60 * 60000 &&
+          (!baseline || point.ts > baseline.ts)) baseline = point;
+    }
+  }
+  const oiChangePct = oiFresh && baseline ? (state.oi / baseline.oiBtc - 1) * 100 : null;
+  const funding = state.fundingPct;
+  let priceScore = null;
+  if (priceComponentReady && candleFresh && priceFresh) {
+    priceScore = 0;
+    if (state.price > ema20 && state.price > ema50 && highVolume) priceScore = 50;
+    else if (state.price > ema20) priceScore = 20;
+    else if (state.price < ema20 && state.price < ema50 && highVolume) priceScore = -50;
+  }
+  const metrics = {oiChangePct, priceChange6hPct, fundingPct:funding, ema20, ema50,
+    highVolume, lastClosed, candleFresh, averageVolume, baseline, closedPriceChange6hPct, priceScore};
+  const missing = [
+    !priceFresh && "güncel fiyat",
+    !oiFresh && "güncel OI",
+    !baseline && "6 saatlik OI referansı (yetersiz geçmiş)",
+    !fundingFresh && "güncel Funding",
+    (!candleFresh || ema50 === null || highVolume === null) && "güncel ve kesintisiz saatlik mum geçmişi",
+    priceChange6hPct === null && "6 saatlik fiyat referansı"
+  ].filter(Boolean);
+  if (missing.length) return {score:null, parts:null, missing, metrics};
+
+  let oiScore = 0;
+  if (priceChange6hPct > 0 && oiChangePct > 0.5) oiScore = 30;
+  else if (priceChange6hPct > 0 && Math.abs(oiChangePct) <= 0.5) oiScore = 12;
+  else if (priceChange6hPct < 0 && oiChangePct > 0.5) oiScore = -23;
+
+  let fundingScore = 0;
+  if (funding <= -0.05) fundingScore = 7;
+  else if (funding < -0.01) fundingScore = 12;
+  else if (Math.abs(funding) <= 0.01) fundingScore = 20;
+  else if (funding >= 0.05) fundingScore = -20;
+
+  return {
+    score: Math.max(-100, Math.min(100, oiScore + fundingScore + priceScore)),
+    parts: {
+      "Open Interest": {score:oiScore, value:oiChangePct, unit:"% / son 6 saat"},
+      "Funding": {score:fundingScore, value:funding, unit:"% · mevcut dönem"},
+      "Fiyat & Hacim": {score:priceScore, value:state.price, unit:"USD"}
+    },
+    metrics
+  };
+}
+
+function calcFlowScore() {
+  const flow = state.flowData;
+  if (!flow || !flow.sources) return {score:null, parts:null, reason:"Akış veri dosyası henüz okunamadı."};
+  const etf = flow.sources.etf || {};
+  const nf = flow.sources.netflow || {};
+  if (!etf.ok || !nf.ok) return {score:null, parts:null, reason:[etf.error,nf.error].filter(Boolean).join(" · ") || "ETF veya Netflow verisi eksik."};
+
+  const now = Date.now();
+  const fetchedTs = Date.parse(flow.updated_at || "");
+  const netflowTs = Date.parse(nf.latest_bucket_ts || "");
+  const etfDateValid = typeof etf.date === "string" && /^\d{4}-\d{2}-\d{2}$/.test(etf.date);
+  const etfDay = etfDateValid ? Date.parse(etf.date + "T00:00:00Z") : NaN;
+  if (!isFresh(fetchedTs, now, 90 * 60000)) return {score:null,parts:null,reason:"Akış dosyası eski veya zaman damgası geçersiz."};
+  if (!isFresh(netflowTs, now, 180 * 60000)) return {score:null,parts:null,reason:"Netflow verisi eski veya zaman damgası geçersiz."};
+  if (!isFresh(etfDay, now, 4 * 24 * HOUR_MS) || new Date(etfDay).toISOString().slice(0, 10) !== etf.date) {
+    return {score:null,parts:null,reason:`ETF günlük verisinin tarihi uygun değil (${etf.date || "tarih yok"}).`};
+  }
+  if (nf.granularity !== "5m" || numericValue(nf.coverage_pct) < 99) {
+    return {score:null,parts:null,reason:"Netflow için 24 saatlik 5 dakika verisi eksik."};
+  }
+
+  const etfFlow = numericValue(etf.flow_usd_m);
+  const nf24h = numericValue(nf.trailing_24h_btc);
+  if (!Number.isFinite(etfFlow) || !Number.isFinite(nf24h)) {
+    return {score:null,parts:null,reason:"ETF veya Netflow sayısal değeri geçersiz."};
+  }
+  const etfScore = etfFlow >= 100 ? 50 : etfFlow > 0 ? 25 : etfFlow <= -100 ? -50 : etfFlow < 0 ? -25 : 0;
+  const netflowScore = nf24h <= -500 ? 50 : nf24h < 0 ? 25 : nf24h >= 500 ? -50 : nf24h > 0 ? -25 : 0;
+  return {
+    score:etfScore+netflowScore,
+    parts:{
+      "ETF":{score:etfScore,value:etfFlow,unit:"milyon USD",date:etf.date},
+      "Exchange Netflow":{score:netflowScore,value:nf24h,unit:"BTC / son 24 saat",coverage:nf.coverage_pct}
+    }
+  };
+}
+
+
+function renderIntelligence(live, flow) {
+  const title = document.getElementById("insightTitle");
+  const body = document.getElementById("insightBody");
+  const items = [];
+  if (live.score === null) {
+    items.push("Piyasa skoru henüz hesaplanamıyor: " + (live.missing || []).join(", ") + ".");
+  } else {
+    const m = live.metrics || {};
+    if (Number.isFinite(m.priceChange6hPct) && Number.isFinite(m.oiChangePct)) {
+      if (m.priceChange6hPct > 0 && m.oiChangePct > 0) items.push("Fiyat ve açık pozisyon miktarı birlikte artıyor; yeni kaldıraçlı pozisyonlar birikiyor olabilir. Bu durum tek başına kurumsal alım kanıtı değildir.");
+      else if (m.priceChange6hPct < 0 && m.oiChangePct > 0) items.push("Fiyat düşerken açık pozisyon miktarı artıyor; aşağı yönlü pozisyonlanma veya risk artışı söz konusu olabilir.");
+      else if (m.priceChange6hPct > 0 && m.oiChangePct < 0) items.push("Fiyat artışı açık pozisyon miktarındaki azalışla birlikte görülüyor; pozisyon kapanışları etkili olabilir.");
+      else if (m.priceChange6hPct < 0 && m.oiChangePct < 0) items.push("Fiyat ve açık pozisyon miktarı birlikte düşüyor; pozisyon azaltımı etkili olabilir.");
+      else items.push("Fiyat ve açık pozisyon değişimleri belirgin bir yön göstermiyor.");
+    }
+    if (Number.isFinite(m.fundingPct)) items.push("Funding oranı " + signed(m.fundingPct, 4) + "%. Bu oran pozisyonlanma bağlamı sağlar; tek başına yön tahmini değildir.");
+  }
+  if (flow.score === null) {
+    items.push("Kurumsal akış değerlendirmesi kullanılamıyor: " + (flow.reason || "veri eksik") + ".");
+  } else {
+    const e = Number(state.flowData.sources.etf.flow_usd_m);
+    const n = Number(state.flowData.sources.netflow.trailing_24h_btc);
+    items.push("Son bildirilen ETF net akışı " + signed(e, 1) + " milyon USD; borsa net akışı " + signed(n, 1) + " BTC. Farklı zaman aralıklarını ve kapsamlarını doğrudan eşdeğer kabul etmeyin.");
+  }
+  if (!title || !body) return;
+  title.textContent = live.score === null && flow.score === null ? "Kısmi veri · değerlendirme bekleniyor" :
+    live.score !== null && flow.score !== null ? "Piyasa ve kurumsal akış görünümü" : "Kısmi piyasa görünümü";
+  body.replaceChildren();
+  const list = document.createElement("ul");
+  list.className = "insight-list";
+  for (const message of items) { const li = document.createElement("li"); li.textContent = message; list.append(li); }
+  body.append(list);
+
+  const now = Date.now();
+  const etf = state.flowData?.sources?.etf || {};
+  const nf = state.flowData?.sources?.netflow || {};
+  const flowUpdated = Date.parse(state.flowData?.updated_at || "");
+  const checks = [
+    ["BTC fiyatı", state.priceTs > 0 && now-state.priceTs < 30000, state.priceTs ? ageText(state.priceTs) : "Veri yok"],
+    ["Open Interest", state.oiTs > 0 && now-state.oiTs < 90000, state.oiTs ? ageText(state.oiTs) : "Veri yok"],
+    ["Funding", state.fundingTs > 0 && now-state.fundingTs < 240000, state.fundingTs ? ageText(state.fundingTs) : "Veri yok"],
+    ["ETF akışı", etf.ok === true && isFresh(flowUpdated, now, 90 * 60000) && isFresh(Date.parse(etf.date + "T00:00:00Z"), now, 4 * 24 * HOUR_MS), etf.ok ? "Tarih: " + (etf.date || "belirsiz") : (etf.error || "Veri yok")],
+    ["Exchange Netflow", nf.ok === true && isFresh(flowUpdated, now, 90 * 60000) && isFresh(Date.parse(nf.latest_bucket_ts), now, 180 * 60000) && nf.granularity === "5m" && numericValue(nf.coverage_pct) >= 99, nf.ok ? "Kapsama: " + (nf.coverage_pct ?? "—") + "%" + (numericValue(nf.coverage_pct) < 100 ? " · KISMİ VERİ" : "") : (nf.error || "Veri yok")]
+  ];
+  const grid = document.getElementById("healthGrid");
+  if (!grid) return;
+  grid.replaceChildren();
+  for (const [name, ok, description] of checks) {
+    const node = document.createElement("div"); node.className = "health-item " + (ok ? "ok" : "warn");
+    const strong = document.createElement("strong"); strong.textContent = (ok ? "● " : "○ ") + name;
+    const detail = document.createElement("span"); detail.textContent = description;
+    node.append(strong, detail); grid.append(node);
+  }
+}
+
+// V7.1: independent, read-only market structure; existing scoring remains unchanged.
+const STRUCTURE_FRAMES = [
+  {key:"1D", bar:"1Dutc", label:"1D · Ana trend", maxLag: 2 * 86400000},
+  {key:"4H", bar:"4H", label:"4H · Piyasa yapısı", maxLag: 8 * HOUR_MS},
+  {key:"1H", bar:"1H", label:"1H · Fırsat", maxLag: 2 * HOUR_MS},
+  {key:"15m", bar:"15m", label:"15m · Giriş", maxLag: 30 * 60000}
+];
+const STRUCTURE_DURATION = {"1D":86400000,"4H":4*HOUR_MS,"1H":HOUR_MS,"15m":15*60000};
+
+// V7.3: independent market regime; Wilder ADX(14), ATR(14), adaptive ATR baseline.
+// Read-only; never changes existing market/institutional scores.
+function analyzeRegime(raw, key) {
+  const duration=STRUCTURE_DURATION[key], now=Date.now();
+  const candles=[...new Map(raw.filter(c=>c && c.confirm==="1" && Number.isInteger(c.ts) &&
+    c.ts>0 && c.ts+duration<=now && [c.open,c.high,c.low,c.close].every(v=>Number.isFinite(v)&&v>0) &&
+    c.high>=Math.max(c.open,c.close,c.low) && c.low<=Math.min(c.open,c.close))
+    .map(c=>[c.ts,c])).values()].sort((a,b)=>a.ts-b.ts).slice(-100);
+  if(candles.length<65) return {status:"Yetersiz mum",detail:`${candles.length}/65 kapanmış mum`};
+  if(candles.some((c,i)=>i && c.ts-candles[i-1].ts!==duration))
+    return {status:"Veri boşluğu",detail:"Mum dizisi kesintisiz değil"};
+  const frame=STRUCTURE_FRAMES.find(f=>f.key===key), last=candles.at(-1);
+  if(now-(last.ts+duration)>frame.maxLag) return {status:"Eski veri",detail:`Son kapanış: ${trTime(last.ts+duration)}`};
+  const tr=[], plus=[], minus=[];
+  for(let i=1;i<candles.length;i++) {
+    const c=candles[i], p=candles[i-1], up=c.high-p.high, down=p.low-c.low;
+    tr.push(Math.max(c.high-c.low,Math.abs(c.high-p.close),Math.abs(c.low-p.close)));
+    plus.push(up>down && up>0?up:0);
+    minus.push(down>up && down>0?down:0);
+  }
+  const n=14;
+  let st=tr.slice(0,n).reduce((a,b)=>a+b,0), sp=plus.slice(0,n).reduce((a,b)=>a+b,0), sm=minus.slice(0,n).reduce((a,b)=>a+b,0);
+  const dx=[], atrPct=[];
+  function record(i) {
+    const pdi=st>0?100*sp/st:0, mdi=st>0?100*sm/st:0;
+    dx.push(pdi+mdi>0?100*Math.abs(pdi-mdi)/(pdi+mdi):0);
+    atrPct.push(100*(st/n)/candles[i+1].close);
+  }
+  record(n-1);
+  for(let i=n;i<tr.length;i++) {
+    st=st-st/n+tr[i]; sp=sp-sp/n+plus[i]; sm=sm-sm/n+minus[i];
+    record(i);
+  }
+  if(dx.length<n+1) return {status:"Yetersiz ADX"};
+  let adx=dx.slice(0,n).reduce((a,b)=>a+b,0)/n;
+  for(let i=n;i<dx.length;i++) adx=(adx*(n-1)+dx[i])/n;
+  const atr=atrPct.at(-1), reference=atrPct.slice(-41,-1).sort((a,b)=>a-b);
+  if(reference.length<30) return {status:"Yetersiz volatilite geçmişi"};
+  const median=(reference[19]+reference[20])/2;
+  const ratio=median>0?atr/median:NaN;
+  if(!Number.isFinite(adx)||!Number.isFinite(ratio)) return {status:"Hesaplama hatası"};
+  const strength=adx>=25?"TREND":adx<18?"YATAY":"GEÇİŞ";
+  const volatility=ratio>=1.5?"YÜKSEK":ratio<=0.7?"DÜŞÜK":"NORMAL";
+  const structure=state.structure[key]?.trend;
+  const direction=strength==="TREND" && (structure==="YÜKSELİŞ"||structure==="DÜŞÜŞ")?structure:"YÖN TEYİTSİZ";
+  return {status:"Hazır",strength,volatility,direction,adx,atr,ratio,
+    detail:`ADX ${fmt(adx,1)} · ATR ${fmt(atr,2)}% · göreli volatilite ${fmt(ratio,2)}×`};
+}
+
+function renderRegime() {
+  const el=document.getElementById("regimeTiles"); if(!el) return;
+  el.innerHTML=STRUCTURE_FRAMES.map(f=>{
+    const a=state.regime[f.key]||{status:"Bekleniyor",detail:"Mumlar yükleniyor"};
+    const label=a.status==="Hazır"?`${a.strength} · ${a.volatility} VOL.`:a.status;
+    const cls=a.status!=="Hazır"?"warn":a.strength==="TREND"?"blue":"warn";
+    return `<div class="tile"><b>${escapeHtml(f.key)} · Rejim</b><div class="state ${cls}">${escapeHtml(label)}</div>`+
+      `<div class="small">${escapeHtml(a.status==="Hazır"?`Yön: ${a.direction} · ${a.detail}`:(a.detail||""))}</div></div>`;
+  }).join("");
+  document.getElementById("regimeUpdated").textContent=state.regimeUpdated?`Son kontrol: ${trTime(state.regimeUpdated)}`:"Mumlar yükleniyor…";
+}
+
+// V7.2: independent liquidity heuristics; no effect on scoring or orders.
+function analyzeLiquidity(raw, key) {
+  const duration=STRUCTURE_DURATION[key], now=Date.now();
+  const candles=[...new Map(raw.filter(c=>c && c.confirm==="1" && Number.isInteger(c.ts) &&
+    c.ts>0 && c.ts+duration<=now && [c.open,c.high,c.low,c.close].every(v=>Number.isFinite(v)&&v>0) &&
+    c.high>=Math.max(c.open,c.close,c.low) && c.low<=Math.min(c.open,c.close))
+    .map(c=>[c.ts,c])).values()].sort((a,b)=>a.ts-b.ts).slice(-100);
+  if(candles.length<35) return {status:`Yetersiz mum (${candles.length}/35)`};
+  const recent=candles.slice(-35);
+  if(recent.some((c,i)=>i && c.ts-recent[i-1].ts!==duration)) return {status:"Veri boşluğu"};
+  const last=candles.at(-1), frame=STRUCTURE_FRAMES.find(f=>f.key===key);
+  if(now-(last.ts+duration)>frame.maxLag) return {status:"Eski veri"};
+  const pivots=[];
+  for(let i=2;i<candles.length-2;i++) {
+    const c=candles[i], win=candles.slice(i-2,i+3);
+    if(win.every((v,j)=>j===2 || c.high>v.high)) pivots.push({i,side:"high",price:c.high});
+    if(win.every((v,j)=>j===2 || c.low<v.low)) pivots.push({i,side:"low",price:c.low});
+  }
+  // Equal highs/lows: two confirmed pivots within 0.15%, not already swept by a later close.
+  const zones=[];
+  for(let j=1;j<pivots.length;j++) for(let k=j-1;k>=Math.max(0,j-12);k--) {
+    const a=pivots[k], b=pivots[j];
+    if(a.side!==b.side || Math.abs(a.price/b.price-1)>0.0015) continue;
+    const level=(a.price+b.price)/2;
+    if(candles.slice(b.i+3).some(c=>a.side==="high"?c.close>level:c.close<level)) continue;
+    zones.push({side:a.side,level,i:b.i}); break;
+  }
+  const zone=zones.at(-1);
+  // Sweep: wick through an already confirmed pivot, close back inside on same candle.
+  const sweeps=[];
+  for(let i=Math.max(5,candles.length-20);i<candles.length;i++) {
+    const c=candles[i];
+    const eligible=pivots.filter(p=>p.i+2<i && i-p.i<=40);
+    const high=eligible.filter(p=>p.side==="high").at(-1);
+    const low=eligible.filter(p=>p.side==="low").at(-1);
+    if(high && c.high>high.price && c.close<high.price) sweeps.push({i,dir:"ÜST",level:high.price});
+    if(low && c.low<low.price && c.close>low.price) sweeps.push({i,dir:"ALT",level:low.price});
+  }
+  const sweep=sweeps.at(-1);
+  // FVG: three consecutive closed candles; exclude fully mitigated gaps.
+  const gaps=[];
+  for(let i=2;i<candles.length;i++) {
+    const a=candles[i-2], c=candles[i];
+    if(c.low>a.high) gaps.push({i,dir:"BOĞA",low:a.high,high:c.low});
+    if(c.high<a.low) gaps.push({i,dir:"AYI",low:c.high,high:a.low});
+  }
+  const fvg=gaps.filter(g=>!candles.slice(g.i+1).some(c=>g.dir==="BOĞA"?c.low<=g.low:c.high>=g.high)).at(-1);
+  // Order-block candidate: last opposite candle before a strong displacement close.
+  // This is a heuristic, not verified institutional orders.
+  const blocks=[];
+  for(let i=1;i<candles.length;i++) {
+    const prev=candles[i-1], c=candles[i];
+    const avg=candles.slice(Math.max(0,i-14),i).reduce((a,x)=>a+(x.high-x.low),0)/Math.min(14,i);
+    if(avg<=0 || Math.abs(c.close-c.open)<1.2*avg) continue;
+    if(prev.close<prev.open && c.close>c.open && c.close>prev.high)
+      blocks.push({i,dir:"BOĞA",low:prev.low,high:prev.high});
+    if(prev.close>prev.open && c.close<c.open && c.close<prev.low)
+      blocks.push({i,dir:"AYI",low:prev.low,high:prev.high});
+  }
+  const ob=blocks.filter(b=>!candles.slice(b.i+1).some(c=>b.dir==="BOĞA"?c.close<b.low:c.close>b.high)).at(-1);
+  const range=x=>x?`${fmt(x.low,1)}–${fmt(x.high,1)}`:"—";
+  return {status:"Hazır",zone:zone?`${zone.side==="high"?"Eşit tepe":"Eşit dip"} · ${fmt(zone.level,1)}`:"Yok",
+    sweep:sweep?`${sweep.dir} süpürme · ${fmt(sweep.level,1)} · ${candles.length-1-sweep.i} mum önce`:"Yok (son 20 mum)",
+    fvg:fvg?`${fvg.dir} · ${range(fvg)}`:"Aktif boşluk yok",ob:ob?`${ob.dir} adayı · ${range(ob)}`:"Aday yok"};
+}
+
+function renderLiquidity() {
+  const el=document.getElementById("liquidityTiles"); if(!el) return;
+  el.innerHTML=STRUCTURE_FRAMES.map(f=>{
+    const a=state.liquidity[f.key]||{status:"Bekleniyor"};
+    return `<div class="tile"><b>${escapeHtml(f.key)} · Likidite</b><div class="state ${a.status==="Hazır"?"ok":"warn"}">${escapeHtml(a.status)}</div>`+
+      (a.status==="Hazır"?`<div class="small">Bölge: ${escapeHtml(a.zone)}<br>Süpürme: ${escapeHtml(a.sweep)}<br>FVG: ${escapeHtml(a.fvg)}<br>OB: ${escapeHtml(a.ob)}</div>`:"")+`</div>`;
+  }).join("");
+  document.getElementById("liquidityUpdated").textContent=state.liquidityUpdated?`Son kontrol: ${trTime(state.liquidityUpdated)}`:"Mumlar yükleniyor…";
+}
+
+function analyzeStructure(raw, key) {
+  const duration = STRUCTURE_DURATION[key];
+  const now = Date.now();
+  const map = new Map();
+  for (const c of raw) {
+    if (!c || c.confirm !== "1" || !Number.isInteger(c.ts) ||
+        c.ts > now - duration || c.ts <= 0 ||
+        ![c.open,c.high,c.low,c.close].every(v => Number.isFinite(v) && v > 0) ||
+        c.high < Math.max(c.open,c.close,c.low) || c.low > Math.min(c.open,c.close)) continue;
+    map.set(c.ts,c);
+  }
+  const candles = [...map.values()].sort((a,b)=>a.ts-b.ts).slice(-100);
+  if (candles.length < 35) return {status:"Yetersiz mum", detail:`${candles.length}/35 kapanmış mum`};
+  const recent = candles.slice(-35);
+  if (recent.some((c,i) => i && c.ts - recent[i-1].ts !== duration))
+    return {status:"Veri boşluğu", detail:"Son 35 mum kesintisiz değil"};
+  const last = candles.at(-1);
+  const config = STRUCTURE_FRAMES.find(f => f.key === key);
+  if (now - (last.ts + duration) > config.maxLag)
+    return {status:"Eski veri", detail:`Son kapanış: ${trTime(last.ts + duration)}`};
+  const highs = [], lows = [];
+  // A pivot at i is only known after candles i+1 and i+2 have closed.
+  for (let i=2;i<candles.length-2;i++) {
+    const window = candles.slice(i-2,i+3);
+    if (window.every((c,j) => j === 2 || candles[i].high > c.high))
+      highs.push({i,price:candles[i].high});
+    if (window.every((c,j) => j === 2 || candles[i].low < c.low))
+      lows.push({i,price:candles[i].low});
+  }
+  const h1=highs.at(-1), h0=highs.at(-2), l1=lows.at(-1), l0=lows.at(-2);
+  if (!h1 || !h0 || !l1 || !l0) return {status:"Pivot bekleniyor",detail:"Yeterli teyitli tepe/dip yok"};
+  const hh=h1.price>h0.price, hl=l1.price>l0.price;
+  const lh=h1.price<h0.price, ll=l1.price<l0.price;
+  let trend = hh && hl ? "YÜKSELİŞ" : lh && ll ? "DÜŞÜŞ" : "YATAY / KARIŞIK";
+  // Only a close AFTER the pivot has been confirmed can break it.
+  const latestBreak = [];
+  for (let i=4;i<candles.length;i++) {
+    const eligibleH=highs.filter(p=>p.i+2<i).at(-1);
+    const eligibleL=lows.filter(p=>p.i+2<i).at(-1);
+    if (eligibleH && candles[i-1].close <= eligibleH.price && candles[i].close > eligibleH.price)
+      latestBreak.push({i,dir:"YUKARI",level:eligibleH.price});
+    if (eligibleL && candles[i-1].close >= eligibleL.price && candles[i].close < eligibleL.price)
+      latestBreak.push({i,dir:"AŞAĞI",level:eligibleL.price});
+  }
+  const lastBreak=latestBreak.at(-1);
+  let event="—";
+  if (lastBreak) {
+    const previousOpposite=latestBreak.slice(0,-1).reverse().find(b=>b.dir!==lastBreak.dir);
+    // CHoCH requires a confirmed opposing structural break, not merely a pivot.
+    event=previousOpposite && latestBreak.slice(0,-1).at(-1)?.dir!==lastBreak.dir ? "CHoCH" : "BOS";
+    event+=` ${lastBreak.dir}`;
+  }
+  return {status:trend,detail:`${event} · H ${fmt(h1.price,1)} / L ${fmt(l1.price,1)}`,
+    trend, event, lastTs:last.ts, latestBreak:lastBreak};
+}
+
+async function loadStructure() {
+  const results=await Promise.allSettled(STRUCTURE_FRAMES.map(async frame => {
+    const rows=await okxGet("/api/v5/market/candles",{instId:"BTC-USDT",bar:frame.bar,limit:"100"});
+    const candles=rows.map(parseCandle);
+    return {structure:analyzeStructure(candles,frame.key),liquidity:analyzeLiquidity(candles,frame.key),candles};
+  }));
+  for (let i=0;i<STRUCTURE_FRAMES.length;i++) {
+    const key=STRUCTURE_FRAMES[i].key;
+    state.structure[key]=results[i].status==="fulfilled" ? results[i].value.structure :
+      {status:"Veri alınamadı",detail:String(results[i].reason?.message||"API hatası")};
+    state.liquidity[key]=results[i].status==="fulfilled" ? results[i].value.liquidity :
+      {status:"Veri alınamadı"};
+  }
+  for (let i=0;i<STRUCTURE_FRAMES.length;i++) {
+    const key=STRUCTURE_FRAMES[i].key;
+    state.regime[key]=results[i].status==="fulfilled" ? analyzeRegime(results[i].value.candles,key) :
+      {status:"Veri alınamadı"};
+  }
+  const entryFrame=results[STRUCTURE_FRAMES.findIndex(f=>f.key==="15m")];
+  state.plannerCandles=entryFrame?.status==="fulfilled" ? entryFrame.value.candles : [];
+  state.plannerCandlesAt=entryFrame?.status==="fulfilled" ? Date.now() : 0;
+  state.regimeUpdated=Date.now();
+  state.structureUpdated=Date.now();
+  state.liquidityUpdated=state.structureUpdated;
+  renderStructure();
+  renderLiquidity();
+  renderRegime();
+  renderScanner();
+}
+
+
+// V7.4: Conservative read-only candidate scanner. No execution, no score modification.
+// V7.15: score + adjacent timeframe alignment + confirmed 15m EMA20 breakout.
+function v715Setup(side) {
+  const duration=15*60000, now=Date.now();
+  const cs=[...new Map(state.plannerCandles.filter(c=>c && c.confirm==="1" &&
+    Number.isInteger(c.ts) && c.ts+duration<=now &&
+    [c.open,c.high,c.low,c.close].every(v=>Number.isFinite(v)&&v>0))
+    .map(c=>[c.ts,c])).values()].sort((a,b)=>a.ts-b.ts).slice(-45);
+  if(cs.length<35 || cs.some((c,i)=>i && c.ts-cs[i-1].ts!==duration) ||
+     now-(cs.at(-1).ts+duration)>30*60000 || now-state.plannerCandlesAt>10*60000)
+    return {reason:"15m mumları eksik veya eski."};
+  // EMA20 calculated from closed candles only.
+  const ema=[], k=2/21;
+  cs.forEach((c,i)=>ema.push(i?c.close*k+ema[i-1]*(1-k):c.close));
+  const n=cs.length-1, confirm=cs[n-1], breakout=cs[n];
+  const isLong=side==="LONG";
+  // Confirmation candle must touch EMA20 and close back on trend side.
+  const touched=confirm.low<=ema[n-1] && confirm.high>=ema[n-1];
+  const confirmed=isLong?confirm.close>ema[n-1]:confirm.close<ema[n-1];
+  // The NEXT fully closed candle must break confirmation high/low.
+  const broke=isLong?breakout.high>confirm.high && breakout.close>confirm.high:
+    breakout.low<confirm.low && breakout.close<confirm.low;
+  if(!touched || !confirmed || !broke)
+    return {reason:"15m EMA20 geri çekilme + kapanışlı kırılım henüz yok."};
+  const atrPct=state.regime["15m"]?.atr;
+  if(!Number.isFinite(atrPct)||atrPct<=0) return {reason:"15m ATR mevcut değil."};
+  const entry=breakout.close, atr=entry*atrPct/100;
+  const swingCandles=cs.slice(-10,-1);
+  const swing=isLong?Math.min(...swingCandles.map(c=>c.low)):
+    Math.max(...swingCandles.map(c=>c.high));
+  const stop=isLong?swing-atr:swing+atr;
+  const risk=Math.abs(entry-stop), riskPct=100*risk/entry;
+  if(!(isLong?stop<entry:stop>entry) || riskPct<0.10 || riskPct>3)
+    return {reason:`Stop mesafesi uygun değil (%${fmt(riskPct,2)}).`};
+  return {side,entry,stop,tp1:entry+(isLong?1:-1)*1.5*risk,
+    tp2:entry+(isLong?1:-1)*2.5*risk,signalClose:breakout.ts+duration,
+    riskPct,reason:"EMA20 geri çekilmesi ve sonraki 15m kapanışlı kırılım teyit edildi."};
+}
+function renderScanner() {
+  const box=document.getElementById("scannerTiles"); if(!box)return;
+  const frames=["1D","4H","1H","15m"];
+  const score=computeLiveMarket().score;
+  const scoreSide=score===null?null:score>=30?"LONG":score<=-30?"SHORT":null;
+  const trends=frames.map(k=>state.structure[k]?.trend);
+  const wanted=scoreSide==="LONG"?"YÜKSELİŞ":"DÜŞÜŞ";
+  const pair=scoreSide?frames.slice(0,-1).find((k,i)=>trends[i]===wanted && trends[i+1]===wanted):null;
+  const ready=frames.every(k=>state.structure[k]?.trend &&
+    state.regime[k]?.status==="Hazır");
+  const aligned=!!pair && ready;
+  const scoreOK=!!scoreSide;
+  const riskOK=ready && state.regime["1D"].volatility!=="YÜKSEK";
+  const setup=scoreOK&&aligned&&riskOK?v715Setup(scoreSide):null;
+  const entryOK=!!setup?.entry;
+  const verdict=scoreOK&&aligned&&riskOK&&entryOK?`${scoreSide} ADAYI`:"BEKLE";
+  const reason=!scoreOK?"Skor ±30 eşiğinde değil veya veri eksik.":
+    !ready?"Yapı veya rejim verisi eksik.":
+    !aligned?"Skor yönünde ardışık iki zaman dilimi bulunamadı.":
+    !riskOK?"Günlük volatilite yüksek; işlem engellendi.":
+    setup.reason;
+  state.scannerVerdict=verdict;
+  state.v715Plan=verdict!=="BEKLE"?setup:null;
+  renderPlanner(); updatePaper();
+  const flags=[["Skor yön filtresi",scoreOK],["Ardışık zaman dilimleri",aligned],
+    ["15m EMA20 giriş",entryOK],["Risk/veri filtresi",riskOK]];
+  box.innerHTML=createTile("Tarama sonucu",verdict,
+    `${reason}${pair?` · Eşleşme: ${pair} + ${frames[frames.indexOf(pair)+1]}`:""}`,
+    verdict==="BEKLE"?"warn":"blue")+
+    flags.map(([label,ok])=>createTile(label,ok?"UYGUN":"TEYİTSİZ",
+      ok?"Koşul sağlandı":"Koşul sağlanmadı veya veri bekleniyor",ok?"ok":"warn")).join("");
+  document.getElementById("scannerUpdated").textContent=state.regimeUpdated?
+    `Son kontrol: ${trTime(state.regimeUpdated)}`:"Veriler bekleniyor…";
+  document.getElementById("scannerSummary").textContent=
+    "V7.15 deneysel sinyal: skor ±30, ardışık zaman dilimi ve 15m EMA20 kırılımı. Gerçek emir göndermez.";
+}
+function renderPlanner() {
+  const box=document.getElementById("plannerTiles"); if(!box)return;
+  const note=document.getElementById("plannerSummary");
+  document.getElementById("plannerUpdated").textContent=state.plannerCandlesAt?
+    `Son veri kontrolü: ${trTime(state.plannerCandlesAt)}`:"Mumlar bekleniyor…";
+  const plan=state.v715Plan;
+  if(!plan){state.paperPlan=null;
+    box.innerHTML=createTile("Plan durumu","BEKLE","V7.15 giriş koşulları sağlanmadı.","warn");
+    note.textContent="Skor, zaman dilimi ve 15m kırılım teyidi bekleniyor.";return;}
+  state.paperPlan={side:plan.side,reference:plan.entry,stop:plan.stop,
+    tp1:plan.tp1,tp2:plan.tp2,signalClose:plan.signalClose};
+  box.innerHTML=[
+    createTile("Aday",`${plan.side} ADAYI`,"15m EMA20 geri çekilme + kapanışlı kırılım","blue"),
+    createTile("Referans giriş",`$${fmt(plan.entry,1)}`,`15m kapanışı · ${trTime(plan.signalClose)}`),
+    createTile("Stop-loss",`$${fmt(plan.stop,1)}`,`Son geri çekilme swing ± 1 ATR · %${fmt(plan.riskPct,2)}`),
+    createTile("TP1",`$${fmt(plan.tp1,1)}`,"1,5R"),
+    createTile("TP2",`$${fmt(plan.tp2,1)}`,"2,5R")].join("");
+  note.textContent="Deneysel sanal plan. Giriş canlı fiyatla yapılır; gerçek emir gönderilmez. Maliyetler simülasyonda tahminidir.";
+}
+
+// V7.6: browser-local paper trades. Never submits an order.
+const PAPER_KEY="btc-demand-paper-v76"; // Keep existing records.
+// Research assumptions, NOT observed exchange fills or actual funding.
+const PAPER_COST={feePerSide:0.0005,slippagePerSide:0.0002,fundingPer8h:0.0001};
+function paperNetR(trade,exit,closedAt) {
+  const direction=trade.side==="LONG"?1:-1;
+  const risk=Math.abs(trade.entry-trade.stop);
+  if(!(risk>0)) return null;
+  const gross=direction*(exit-trade.entry)/risk;
+  const fee=(trade.entry+exit)*PAPER_COST.feePerSide;
+  const slip=(trade.entry+exit)*PAPER_COST.slippagePerSide;
+  // Conservative fixed funding debit, prorated by holding duration.
+  const hours=Math.max(0,closedAt-trade.openedAt)/HOUR_MS;
+  const funding=trade.entry*PAPER_COST.fundingPer8h*hours/8;
+  return {grossR:gross,netR:gross-(fee+slip+funding)/risk,
+    feeUsd:fee,slippageUsd:slip,fundingUsd:funding};
+}
+function savePaper() {
+  try { localStorage.setItem(PAPER_KEY,JSON.stringify(state.paperTrades.slice(-250))); }
+  catch(e) { document.getElementById("paperSummary").textContent="Yerel kayıt başarısız: "+e.message; }
+}
+function restorePaper() {
+  try {
+    const value=JSON.parse(localStorage.getItem(PAPER_KEY)||"[]");
+    if(Array.isArray(value)) state.paperTrades=value.filter(t=>t && Number.isFinite(t.entry) && Number.isFinite(t.stop) && Number.isFinite(t.openedAt)).slice(-250);
+  } catch { state.paperTrades=[]; }
+}
+function updatePaper() {
+  const active=state.paperTrades.find(t=>t.status==="AÇIK");
+  const plan=state.paperPlan, now=Date.now();
+  if(!active && plan && Number.isFinite(state.price) && isFresh(state.priceTs,now,30000) &&
+      now-plan.signalClose<=30*60000 && now>=plan.signalClose &&
+      !state.paperTrades.some(t=>t.signalClose===plan.signalClose && t.side===plan.side)) {
+    // Enter at observed live ticker, not a historical candle close.
+    const entry=state.price, risk=Math.abs(entry-plan.stop);
+    const valid=plan.side==="LONG" ? plan.stop<entry && plan.tp1>entry && plan.tp2>plan.tp1 :
+      plan.stop>entry && plan.tp1<entry && plan.tp2<plan.tp1;
+    if(valid && risk/entry<=0.03 && risk/entry>=0.0001) {
+      state.paperTrades.push({id:now,side:plan.side,signalClose:plan.signalClose,openedAt:now,
+        entry,stop:plan.stop,tp1:plan.tp1,tp2:plan.tp2,status:"AÇIK",lastCandleTs:plan.signalClose,
+        // TP1 is informational; full position exits at TP2 or SL.
+        tp1Touched:false,costModel:"v77"});
+      savePaper();
+    }
+  }
+  const trade=state.paperTrades.find(t=>t.status==="AÇIK");
+  if(trade) {
+    const candles=state.plannerCandles.filter(c=>c.confirm==="1" && c.ts+900000>trade.openedAt &&
+      c.ts+900000<=now && c.ts>trade.lastCandleTs).sort((a,b)=>a.ts-b.ts);
+    for(const c of candles) {
+      // Missing candles make the exit sequence unknowable; stop evaluation.
+      if(trade.lastCandleTs && c.ts-trade.lastCandleTs>900000 &&
+          c.ts>=trade.openedAt) {trade.dataGap=true;break;}
+      // A candle overlapping the entry moment is skipped: its earlier high/low is unknown.
+      if(c.ts<trade.openedAt) {trade.lastCandleTs=c.ts;continue;}
+      const long=trade.side==="LONG";
+      const sl=long?c.low<=trade.stop:c.high>=trade.stop;
+      const tp=long?c.high>=trade.tp2:c.low<=trade.tp2;
+      if(long?c.high>=trade.tp1:c.low<=trade.tp1) trade.tp1Touched=true;
+      trade.lastCandleTs=c.ts;
+      // If both levels hit in the same candle, pessimistically assume stop first.
+      if(sl||tp) {
+        trade.status=sl?"STOP":"TP2";
+        trade.exit=sl?trade.stop:trade.tp2;
+        trade.closedAt=c.ts+900000;
+        Object.assign(trade,paperNetR(trade,trade.exit,trade.closedAt));
+        trade.r=trade.netR;
+        break;
+      }
+      if(c.ts+900000-trade.openedAt>=72*HOUR_MS) {
+        trade.status="SÜRE DOLDU";trade.exit=c.close;trade.closedAt=c.ts+900000;
+        Object.assign(trade,paperNetR(trade,trade.exit,trade.closedAt));trade.r=trade.netR;break;
+      }
+    }
+    savePaper();
+  }
+  renderPaper();
+}
+function renderPaper() {
+  const trades=state.paperTrades, active=trades.find(t=>t.status==="AÇIK");
+  const closed=trades.filter(t=>t.status!=="AÇIK" && Number.isFinite(t.netR));
+  const legacy=trades.filter(t=>t.status!=="AÇIK" && !Number.isFinite(t.netR));
+  const totalR=closed.reduce((sum,t)=>sum+t.netR,0);
+  const wins=closed.filter(t=>t.netR>0).length;
+  document.getElementById("paperTiles").innerHTML=[
+    createTile("Sanal pozisyon",active?active.side+" · AÇIK":"YOK",active?`Giriş ${fmt(active.entry,1)} · SL ${fmt(active.stop,1)} · TP2 ${fmt(active.tp2,1)}`:"Tarayıcı onayı bekleniyor",active?"blue":"warn"),
+    createTile("Kapanan işlem",String(closed.length),`Toplam ${trades.length} · eski/maliyetsiz ${legacy.length}`),
+    createTile("Kazanma oranı",closed.length?fmt(wins/closed.length*100,1)+"%":"—","Yalnızca kapanan sanal işlemler"),
+    createTile("Toplam sonuç",closed.length?signed(totalR,2)+" R":"—","Tahmini komisyon, kayma ve funding dahil"),
+    createTile("Son işlem",trades.length?trades.at(-1).status:"—",trades.length?trTime(trades.at(-1).openedAt):"Henüz işlem kaydı yok"),
+    createTile("Veri bütünlüğü",active?.dataGap?"BOŞLUK VAR":"İZLENİYOR",active?.dataGap?"Mum eksik; sonuç güvenilir değil":"Kapanmış 15m mumları takip ediliyor",active?.dataGap?"bad":"blue")
+  ].join("");
+  document.getElementById("paperUpdated").textContent=`${trades.length} yerel kayıt`;
+  document.getElementById("paperSummary").textContent="V7.7 varsayımları: komisyon %0,05/işlem tarafı; kayma %0,02/taraf; funding maliyeti %0,01/8 saat (süreye orantılı, tahmini). Net R bu maliyetleri düşer. Eski işlemler net performansa katılmaz. 15m mum boşluğunda sonuç askıya alınır. Aynı mumda SL/TP2: SL önce. Gerçek funding, spread, likidasyon ve tarayıcı kapalıyken kaçan sinyaller modellenmez.";
+}
+function exportPaper() {
+  const blob=new Blob([JSON.stringify(state.paperTrades,null,2)],{type:"application/json"});
+  const url=URL.createObjectURL(blob),a=document.createElement("a");
+  a.href=url;a.download="btc-paper-trades-v77.json";a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);
+}
+
+function renderStructure() {
+  const tiles=document.getElementById("structureTiles");
+  if (!tiles) return;
+  tiles.innerHTML=STRUCTURE_FRAMES.map(f=>{
+    const a=state.structure[f.key]||{status:"Bekleniyor",detail:"Mumlar yükleniyor"};
+    const cls=a.trend==="YÜKSELİŞ"?"ok":a.trend==="DÜŞÜŞ"?"bad":"warn";
+    return createTile(f.label,a.status,a.detail,cls);
+  }).join("");
+  const d=state.structure["1D"], h4=state.structure["4H"], h1=state.structure["1H"], m15=state.structure["15m"];
+  const aligned=[d,h4,h1,m15].every(x=>x?.trend && x.trend!=="YATAY / KARIŞIK") &&
+    [h4,h1,m15].every(x=>x.trend===d.trend);
+  document.getElementById("structureSummary").textContent=aligned ?
+    `Dört zaman dilimi uyumlu: ${d.trend}. Bu tek başına işlem sinyali değildir.` :
+    "Zaman dilimleri uyumsuz veya veri eksik: yön teyidi yok. BOS/CHoCH geçmişteki son teyitli kırılımı gösterir; güncel sinyal değildir.";
+  document.getElementById("structureUpdated").textContent=state.structureUpdated ?
+    `Son kontrol: ${trTime(state.structureUpdated)}` : "Mumlar yükleniyor…";
+}
+
+function render() {
+  const live = computeLiveMarket();
+  const flow = calcFlowScore();
+  if (state.flowData) {
+    setConnection("flow", flow.score === null ? "error" : "connected",
+      flow.score === null ? "Kurumsal akış: veri eksik/eski" : "Kurumsal akış: güncel");
+  }
+  renderIntelligence(live, flow);
+  state.liveScore = live.score;
+  state.liveParts = live.parts;
+  state.flowScore = flow.score;
+  state.flowParts = flow.parts;
+  state.combinedScore = live.score === null || flow.score === null ? null : Math.round(live.score*0.60 + flow.score*0.40);
+
+  updateScoreCard("combinedScore","combinedLabel",state.combinedScore,mood(state.combinedScore),"combinedUpdated",
+    state.combinedScore === null ? "Canlı piyasa ve kurumsal akış katmanlarının ikisi de güncel olmalı." :
+    `Son hesaplama: ${trTime(Date.now())}`);
+  updateScoreCard("liveScore","liveLabel",live.score,mood(live.score),"marketUpdated",
+    live.score === null ? `Eksik: ${(live.missing||[]).join(", ")}` : `Fiyat ${ageText(state.priceTs)} · OI ${ageText(state.oiTs)} · Funding ${ageText(state.fundingTs)}`);
+  updateScoreCard("flowScore","flowLabel",flow.score,mood(flow.score),"flowUpdated",
+    flow.score === null ? (flow.reason || "Kurumsal akış verisi henüz geçerli değil.") :
+    `Netflow ${ageText(Date.parse(state.flowData.sources.netflow.latest_bucket_ts))} · Akış dosyası ${ageText(Date.parse(state.flowData.updated_at))}`);
+
+  // Fiyat/hacim alt skoru, OI geçmişi eksik olsa bile bağımsız görüntülenir.
+  const priceScore = live.metrics.priceScore;
+  const priceScoreText = priceScore === null ? "Bekleniyor" : `${signed(priceScore)} puan`;
+  const liveMetrics = live.metrics;
+  const priceChange = liveMetrics.priceChange6hPct ?? liveMetrics.closedPriceChange6hPct;
+  const priceReference = liveMetrics.priceChange6hPct !== null ? "Canlı fiyat / saatlik kapanış" :
+    priceChange === null ? "6 saatlik fiyat referansı bekleniyor" : "Son kapanan mum itibarıyla";
+  document.getElementById("marketTiles").innerHTML = [
+    createTile("BTC-USDT fiyatı",state.price===null?"—":"$"+fmt(state.price,1),`OKX ticker · ${ageText(state.priceTs)}`),
+    createTile("Open Interest",state.oi===null?"—":fmt(state.oi,2)+" BTC",`OKX BTC-USDT-SWAP · ${ageText(state.oiTs)}`),
+    createTile("OI değişimi (6s)",liveMetrics.oiChangePct===null?"—":signed(liveMetrics.oiChangePct,3)+"%",
+      liveMetrics.baseline ? (() => {
+        const referenceGapMin = Math.round((state.oiTs - 6 * HOUR_MS - liveMetrics.baseline.ts) / 60000);
+        const actualSpanMin = Math.round((state.oiTs - liveMetrics.baseline.ts) / 60000);
+        const quality = referenceGapMin <= 15 ? "İYİ" : referenceGapMin <= 35 ? "ORTA" : "DÜŞÜK";
+        return `Referans: ${trTime(liveMetrics.baseline.ts)} · Gerçek süre: ${Math.floor(actualSpanMin/60)}s ${actualSpanMin%60}dk · Sapma: +${referenceGapMin}dk · Kalite: ${quality}`;
+      })() : "6 saatlik referans için geçmiş yetersiz"),
+    createTile("Funding Rate",state.fundingPct===null?"—":signed(state.fundingPct,4)+"%",`Mevcut dönem oranı · ${ageText(state.fundingTs)}`),
+    createTile("Fiyat değişimi (6s)",priceChange===null?"—":signed(priceChange,3)+"%",`${priceReference} · EMA20 ${fmt(liveMetrics.ema20,1)} · EMA50 ${fmt(liveMetrics.ema50,1)}${liveMetrics.lastClosed && !liveMetrics.candleFresh ? " · eski mum geçmişi" : ""}`),
+    createTile("Fiyat & hacim puanı",priceScoreText,liveMetrics.highVolume===null?"Hacim teyidi bekleniyor":`Son kapanan saat: ${fmt(liveMetrics.lastClosed.volume,2)} BTC · Önceki 20 saat ort.: ${fmt(liveMetrics.averageVolume,2)} BTC${liveMetrics.candleFresh ? "" : " · eski mum geçmişi"}`)
+  ].join("");
+
+  const etf = state.flowData?.sources?.etf || {};
+  const nf = state.flowData?.sources?.netflow || {};
+  document.getElementById("flowTiles").innerHTML = [
+    createTile("Spot ETF net akışı",etf.ok?(etf.flow_usd_m>0?"+":"")+fmt(etf.flow_usd_m,1)+" M$":"Veri yok",etf.ok?`${etf.date} · Farside günlük veri`:(etf.error||"Bekleniyor"),etf.ok?"":"warn"),
+    createTile("Exchange Netflow (24s)",nf.ok?(nf.trailing_24h_btc>0?"+":"")+fmt(nf.trailing_24h_btc,1)+" BTC":"Veri yok",nf.ok?`5 dk kovalar · ${nf.coverage_pct}% kapsama · ${ageText(Date.parse(nf.latest_bucket_ts))}`:(nf.error||"Bekleniyor"),nf.ok?"":"warn"),
+    createTile("Akış dosyasının yaşı",state.flowData?.updated_at?ageText(Date.parse(state.flowData.updated_at)):"—",`En son kontrol: ${trTime(Date.parse(state.flowData?.updated_at || ""))}`),
+    createTile("ETF tarihi",etf.date||"—",etf.fetched_at?`Çekilme zamanı: ${trTime(Date.parse(etf.fetched_at))}`:"")
+  ].join("");
+
+  const components = [];
+  if (!live.parts && priceScore !== null) components.push(createTile("Live · Fiyat & Hacim", `${signed(priceScore)} puan`, "Bağımsız alt skor · toplam piyasa skoru henüz hesaplanamıyor"));
+  if (live.parts) for (const [name,item] of Object.entries(live.parts)) components.push(createTile("Live · "+name,`${signed(item.score)} puan`,`${fmt(item.value,3)} ${item.unit}`));
+  if (flow.parts) for (const [name,item] of Object.entries(flow.parts)) components.push(createTile("Flow · "+name,`${signed(item.score)} puan`,`${fmt(item.value,2)} ${item.unit}${item.date?" · "+item.date:""}`));
+  document.getElementById("componentTiles").innerHTML = components.length ? components.join("") : createTile("Skor bileşenleri","Bekleniyor","Gerekli veri akışları henüz hazır değil.");
+
+  const freshness = [
+    `Fiyat: ${state.priceTs?ageText(state.priceTs):"bekleniyor"}`,
+    `OI: ${state.oiTs?ageText(state.oiTs):"bekleniyor"}`,
+    `Funding: ${state.fundingTs?ageText(state.fundingTs):"bekleniyor"}`,
+    `Son mum: ${state.candles.length?ageText(state.candles[state.candles.length-1].ts):"bekleniyor"}`,
+    `Flow snapshot: ${state.flowData?.updated_at?ageText(Date.parse(state.flowData.updated_at)):"bekleniyor"}`
+  ];
+  document.getElementById("freshness").textContent = freshness.join("  |  ");
+  document.getElementById("wsErrors").textContent = [state.publicError,state.businessError,state.oiHistoryStatus,state.historyError,state.flowError,flow.reason].filter(Boolean).join(" · ");
+}
+
+async function loadFlowData() {
+  try {
+    const response = await fetch(`./data.json?ts=${Date.now()}`, {cache:"no-store"});
+    if (!response.ok) throw new Error(`data.json HTTP ${response.status}`);
+    state.flowData = await response.json();
+    state.flowError = "";
+    render();
+  } catch (error) {
+    setConnection("flow","error","Kurumsal akış: dosya okunamadı");
+    state.flowError = error.message;
+    state.flowData = null;
+    render();
+  }
+}
+
+document.getElementById("refreshBtn").addEventListener("click", loadFlowData);
+
+async function pollOiRest() {
+  try {
+    const rows = await okxGet("/api/v5/public/open-interest", {instType:"SWAP", instId:"BTC-USDT-SWAP"});
+    if (rows.length) {
+      const row = rows[0];
+      const ts = Number(row.ts || Date.now());
+      addOiSample({ts, oiBtc:Number(row.oiCcy)});
+    }
+  } catch (error) {
+    state.oiHistoryStatus = "OI REST yedeği: " + error.message;
+  }
+}
+
+async function init() {
+  restorePaper();
+  document.getElementById("paperExport").addEventListener("click",exportPaper);
+  renderPaper();
+  restoreOiHistory();
+  startSockets();
+  pollOiRest();
+  bootstrapMarket();
+  loadMarketHistory();
+  loadFlowData();
+  loadStructure();
+  setInterval(loadMarketHistory, HISTORY_REFRESH_MS);
+  setInterval(loadStructure, STRUCTURE_REFRESH_MS);
+  setInterval(pollOiRest, 60000);
+  setInterval(loadFlowData, FLOW_REFRESH_MS);
+  setInterval(render, 1000);
+  setInterval(renderScanner, 10000);
+  renderStructure();
+  renderLiquidity();
+  renderRegime();
+  renderScanner();
+  document.addEventListener("visibilitychange", () => {
+    if (!document.hidden) loadFlowData();
+  });
+}
+init().catch(error => {
+  document.getElementById("combinedLabel").textContent = "Başlatma hatası: " + error.message;
+});
+</script>
+
+<script>
+/* V7.28 is isolated from the original V7.15 scripts and does not alter their data sources. */
+(()=>{
+ const $=id=>document.getElementById(id);
+ const num=v=>v==null||!Number.isFinite(Number(v))?'—':Number(v).toLocaleString('tr-TR',{maximumFractionDigits:2});
+ const date=v=>{if(v==null)return '—';const n=Number(v);const d=Number.isFinite(n)?new Date(n):new Date(v);return Number.isNaN(d.getTime())?'—':d.toLocaleString('tr-TR');};
+ const statuses={WAITING:'🟡 LİMİT BEKLİYOR',PAPER_OPEN:'🟢 GİRİŞ TETİKLENDİ (simülasyon)',STOP:'🔴 STOP',TP2:'🟢 TP2',TIMEOUT:'⚪ SÜRE DOLDU',EXPIRED:'⚪ LİMİT SÜRESİ DOLDU'};
+ function td(row,value,css){const cell=document.createElement('td');cell.textContent=value==null?'—':String(value);if(css)cell.className=css;row.appendChild(cell);}
+ async function update(){
+  try{
+   const r=await fetch('./manual_signals_v7_28.json?t='+Date.now(),{cache:'no-store'});
+   if(!r.ok)throw Error('Sinyal verisi henüz bulunamadı (HTTP '+r.status+')');
+   const db=await r.json(),all=Array.isArray(db.signals)?db.signals.slice().reverse():[];
+   $('manualV728Status').textContent='Son güncelleme: '+date(db.updated_at)+' · Toplam '+all.length+' sinyal · Yalnızca manuel takip';
+   const body=$('manualV728Rows');body.replaceChildren();
+   if(!all.length){const tr=document.createElement('tr');td(tr,'Henüz sinyal oluşmadı.');tr.firstChild.colSpan=10;body.appendChild(tr);return;}
+   for(const t of all.slice(0,35)){
+    const tr=document.createElement('tr'),waiting=t.status==='WAITING';
+    td(tr,date(t.created_at));td(tr,t.side,t.side==='LONG'?'ok':t.side==='SHORT'?'bad':'');
+    td(tr,t.entry_timeframe);td(tr,Array.isArray(t.trend_sources)?t.trend_sources.join(', '):'—');
+    td(tr,num(t.limit_price));td(tr,statuses[t.status]||t.status);
+    td(tr,num(waiting?t.estimated_stop:t.stop));td(tr,num(waiting?t.estimated_tp1:t.tp1));td(tr,num(waiting?t.estimated_tp2:t.tp2));
+    td(tr,waiting?'Tahmini · 10 ATR ort.':'Giriş ATR(14)');body.appendChild(tr);
+   }
+  }catch(e){$('manualV728Status').textContent='Sinyal verisi yüklenemedi: '+e.message;}
+ }
+ update();setInterval(update,60000);
+})();
+</script>
+</body>
+</html>
