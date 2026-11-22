@@ -1,0 +1,37 @@
+{
+  "checked_at": "2026-11-22T13:28:26.601198+00:00",
+  "target_days": 90,
+  "candles_1h": {
+    "count": 2160,
+    "first_utc": "2026-08-24T14:00:00+00:00",
+    "last_utc": "2026-11-22T13:00:00+00:00",
+    "span_days": 89.96
+  },
+  "candles_15m": {
+    "count": 8640,
+    "first_utc": "2026-08-24T13:30:00+00:00",
+    "last_utc": "2026-11-22T13:15:00+00:00",
+    "span_days": 89.99
+  },
+  "oi_btc_swap": {
+    "count": 22,
+    "first_utc": "2026-11-21T22:55:47.993000+00:00",
+    "last_utc": "2026-11-22T13:16:43.518000+00:00",
+    "span_days": 0.6
+  },
+  "funding": {
+    "count": 270,
+    "first_utc": "2026-08-24T16:00:00+00:00",
+    "last_utc": "2026-11-22T08:00:00+00:00",
+    "span_days": 89.67
+  },
+  "funding_pages_requested": 3,
+  "errors": [],
+  "full_v7_16_backtest_ready": false,
+  "reason": "90 günlük aynı enstrümana ait tarihsel oiCcy doğrulanmadan tam skor yeniden üretilemez.",
+  "notes": [
+    "Funding geçmişi yalnızca OKX API tarafından döndürülen aralığı kapsar.",
+    "OI geçmişi başka bir enstrüman/aggregate seriyle otomatik ikame edilmez.",
+    "Fiyat mumları ve OI geçmişi için geleceğe bakma (look-ahead) kontrolü gerekir."
+  ]
+}
