@@ -528,7 +528,7 @@ function computeLiveMarket() {
   let baseline = null;
   for (const samples of [state.centralOi, state.oiSamples.values()]) {
     for (const point of samples) {
-      if (point.ts <= baselineTarget && point.ts >= baselineTarget - 20 * 60000 &&
+      if (point.ts <= baselineTarget && point.ts >= baselineTarget - 35 * 60000 &&
           (!baseline || point.ts > baseline.ts)) baseline = point;
     }
   }
