@@ -1,0 +1,28 @@
+name: BTC Historical Backtest V7.21 Comparison
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  compare:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install dependencies
+        run: python -m pip install requests
+      - name: Compare three filters
+        run: |
+          python backtest_v7_21.py adx
+          python backtest_v7_21.py adx_ema
+          python backtest_v7_21.py adx_ema_cooldown
+      - uses: actions/upload-artifact@v4
+        with:
+          name: backtest-v7-21-comparison
+          path: |
+            backtest_v7_21_*_results.json
+            backtest_v7_21_*_trades.csv
+          if-no-files-found: error
