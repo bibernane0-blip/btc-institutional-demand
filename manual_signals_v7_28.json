@@ -11,20 +11,26 @@
       "created_at": 1795360959691,
       "signal_candle_close": 1795348800000,
       "expires_at": 1795375359691,
-      "limit_price": 63366.58,
-      "estimated_stop": 67024.38,
-      "estimated_tp1": 57879.89,
-      "estimated_tp2": 54222.09,
-      "estimated_atr": 1463.1184,
-      "estimate_updated_at": 1795348800000,
-      "last_repriced_candle_close": 1795348800000,
-      "last_checked_ts": 1795360059691,
+      "limit_price": 63269.48,
+      "estimated_stop": 66977.29,
+      "estimated_tp1": 57707.77,
+      "estimated_tp2": 53999.96,
+      "estimated_atr": 1483.1235,
+      "estimate_updated_at": 1795363200000,
+      "last_repriced_candle_close": 1795363200000,
+      "last_checked_ts": 1795362300001,
       "adx": 50.09,
-      "ema20": 60590.41,
-      "ema50": 63366.58,
+      "ema20": 60618.99,
+      "ema50": 63269.48,
       "ema200": 72022.31,
       "status": "WAITING",
-      "note": "MANUAL ONLY. Limit price is a watch level, not an exchange order."
+      "note": "MANUAL ONLY. Limit price is a watch level, not an exchange order.",
+      "limit_updates": [
+        {
+          "candle_close": 1795363200000,
+          "limit_price": 63269.48
+        }
+      ]
     },
     {
       "id": "LONG-15m-1795360500000",
@@ -36,26 +42,82 @@
       "created_at": 1795360959691,
       "signal_candle_close": 1795360500000,
       "expires_at": 1795375359691,
-      "limit_price": 60333.6,
-      "estimated_stop": 59508.43,
-      "estimated_tp1": 61571.35,
-      "estimated_tp2": 62396.52,
-      "estimated_atr": 330.0667,
-      "estimate_updated_at": 1795360500000,
-      "last_repriced_candle_close": 1795360500000,
-      "last_checked_ts": 1795360059691,
+      "limit_price": 60393.62,
+      "estimated_stop": 59611.02,
+      "estimated_tp1": 61567.52,
+      "estimated_tp2": 62350.12,
+      "estimated_atr": 313.0393,
+      "estimate_updated_at": 1795363200000,
+      "last_repriced_candle_close": 1795363200000,
+      "last_checked_ts": 1795362300001,
       "adx": 33.0,
-      "ema20": 60705.54,
-      "ema50": 60333.6,
+      "ema20": 60746.51,
+      "ema50": 60393.62,
       "ema200": 60120.56,
+      "status": "WAITING",
+      "note": "MANUAL ONLY. Limit price is a watch level, not an exchange order.",
+      "limit_updates": [
+        {
+          "candle_close": 1795363200000,
+          "limit_price": 60393.62
+        }
+      ]
+    },
+    {
+      "id": "SHORT-4H-1795363200000",
+      "side": "SHORT",
+      "trend_sources": [
+        "1D"
+      ],
+      "entry_timeframe": "4H",
+      "created_at": 1795363596296,
+      "signal_candle_close": 1795363200000,
+      "expires_at": 1795377996296,
+      "limit_price": 63269.48,
+      "estimated_stop": 66977.29,
+      "estimated_tp1": 57707.77,
+      "estimated_tp2": 53999.96,
+      "estimated_atr": 1483.1235,
+      "estimate_updated_at": 1795363200000,
+      "last_repriced_candle_close": 1795363200000,
+      "last_checked_ts": 1795362696296,
+      "adx": 47.78,
+      "ema20": 60618.99,
+      "ema50": 63269.48,
+      "ema200": 71906.79,
+      "status": "WAITING",
+      "note": "MANUAL ONLY. Limit price is a watch level, not an exchange order."
+    },
+    {
+      "id": "LONG-15m-1795363200000",
+      "side": "LONG",
+      "trend_sources": [
+        "1H"
+      ],
+      "entry_timeframe": "15m",
+      "created_at": 1795363596296,
+      "signal_candle_close": 1795363200000,
+      "expires_at": 1795377996296,
+      "limit_price": 60393.62,
+      "estimated_stop": 59611.02,
+      "estimated_tp1": 61567.52,
+      "estimated_tp2": 62350.12,
+      "estimated_atr": 313.0393,
+      "estimate_updated_at": 1795363200000,
+      "last_repriced_candle_close": 1795363200000,
+      "last_checked_ts": 1795362696296,
+      "adx": 30.55,
+      "ema20": 60746.51,
+      "ema50": 60393.62,
+      "ema200": 60137.83,
       "status": "WAITING",
       "note": "MANUAL ONLY. Limit price is a watch level, not an exchange order."
     }
   ],
-  "updated_at": 1795360970385,
+  "updated_at": 1795363596296,
   "trend": {
     "1D": "SHORT",
-    "4H": "SHORT",
+    "4H": "YATAY",
     "1H": "LONG"
   },
   "settings": {
