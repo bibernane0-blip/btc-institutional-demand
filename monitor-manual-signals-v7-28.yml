@@ -1,0 +1,34 @@
+name: BTC Manual Signals V7.28
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '*/5 * * * *'
+permissions:
+  contents: write
+concurrency:
+  group: btc-manual-signals-v7-28
+  cancel-in-progress: false
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Dependencies
+        run: pip install requests
+      - name: Update manual signals
+        run: python signal_tracker_v7_28.py
+      - name: Save signal history
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add manual_signals_v7_28.json
+          if ! git diff --cached --quiet; then
+            git commit -m 'Update manual signal watchlist V7.28'
+            git pull --rebase origin "${GITHUB_REF_NAME}"
+            git push origin "HEAD:${GITHUB_REF_NAME}"
+          fi
