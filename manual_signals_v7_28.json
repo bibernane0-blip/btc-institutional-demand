@@ -1248,7 +1248,7 @@
       "estimated_atr": 556.8988,
       "estimate_updated_at": 1795454100000,
       "last_repriced_candle_close": 1795454100000,
-      "last_checked_ts": 1795472400000,
+      "last_checked_ts": 1795472700000,
       "adx": 27.29,
       "ema20": 62447.88,
       "ema50": 62002.99,
@@ -1264,7 +1264,7 @@
       "tp1_touched": false,
       "fill_method": "OKX_TICKER_LAST_AT_SCAN",
       "fill_observed_at": 1795454434967,
-      "last_exit_bar_end": 1795472400000
+      "last_exit_bar_end": 1795472700000
     },
     {
       "id": "SHORT-4H-1795464000000",
@@ -1285,7 +1285,7 @@
       "estimated_atr": 1416.3253,
       "estimate_updated_at": 1795464000000,
       "last_repriced_candle_close": 1795464000000,
-      "last_checked_ts": 1795472400000,
+      "last_checked_ts": 1795472700000,
       "adx": 34.48,
       "ema20": 61085.54,
       "ema50": 62838.7,
@@ -1301,10 +1301,10 @@
       "tp1_touched": false,
       "fill_method": "OKX_TICKER_LAST_AT_SCAN",
       "fill_observed_at": 1795464339665,
-      "last_exit_bar_end": 1795472400000
+      "last_exit_bar_end": 1795472700000
     }
   ],
-  "updated_at": 1795472434994,
+  "updated_at": 1795472733406,
   "trend": {
     "1D": "SHORT",
     "4H": "LONG",
