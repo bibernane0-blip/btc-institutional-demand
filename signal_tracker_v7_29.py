@@ -49,7 +49,7 @@ def levels(entry,side,atr):
     risk=2.5*atr
     return dict(estimated_stop=round(entry-d*risk,2),
                 estimated_tp1=round(entry+d*1.5*risk,2),
-                estimated_tp2=round(entry+d*2.5*risk,2),
+                estimated_tp2=round(entry+d*3.0*risk,2),
                 estimated_atr=round(atr,4))
 
 def latest_closed(cs,tf,now):
@@ -127,11 +127,9 @@ def check_waiting(db,cs,now):
             history=latest_closed_at(BARS[tf],tf,start);atr=atr14(history)
             if atr is None:t.update(status='ATR_MISSING',closed_at=start);break
             risk=2.5*atr
-            if not .001<=risk/t['limit_price']<=.03:
-                t.update(status='RISK_REJECT',closed_at=start);break
             t.update(status='PAPER_OPEN',filled_at=start,entry=t['limit_price'],atr_at_fill=atr,
                      stop=t['limit_price']-d*risk,tp1=t['limit_price']+d*1.5*risk,
-                     tp2=t['limit_price']+d*2.5*risk,tp1_touched=False,
+                     tp2=t['limit_price']+d*3.0*risk,tp1_touched=False,
                      last_checked_ts=start-DUR['15m'])
             break
         if t['status']=='WAITING' and now>=t['expires_at']:
@@ -206,7 +204,7 @@ def main():
                 ema50=round(ix['ema50'],2),ema200=round(ix['ema200'],2),status='WAITING',
                 note='MANUAL ONLY. Limit price is a watch level, not an exchange order.'))
     db['signals']=db['signals'][-1000:]
-    db.update(version='7.29',updated_at=now,trend=trends,settings={'stop_atr':2.5,'tp1_r':1.5,'tp2_r':2.5,
+    db.update(version='7.29',updated_at=now,trend=trends,settings={'stop_atr':2.5,'tp1_r':1.5,'tp2_r':3.0,
       'tp1_partial':False,'max_hold_hours':240,'limit_valid_bars':LIMIT_BARS,'cooldown_hours':0,
       'allow_repeated_same_side':True,'score_gate':'disabled for independent opposing trends',
       'paper_only':True,'atr_at_fill':'last fully closed entry-timeframe bar',
