@@ -1,0 +1,45 @@
+name: Binance Market Data Test
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+
+    steps:
+      - name: Test Binance Futures public market data
+        run: |
+          python3 - <<'PY'
+          import json
+          import urllib.request
+          import urllib.error
+
+          url = (
+              "https://fapi.binance.com/fapi/v1/klines"
+              "?symbol=BTCUSDT&interval=15m&limit=3"
+          )
+
+          try:
+              with urllib.request.urlopen(url, timeout=15) as response:
+                  candles = json.load(response)
+
+              if len(candles) != 3:
+                  raise ValueError("Unexpected candle count")
+
+              print("SUCCESS: Binance Futures market data accessible")
+              print("Symbol: BTCUSDT")
+              print("Candles received:", len(candles))
+
+          except urllib.error.HTTPError as error:
+              print("FAILED: HTTP", error.code)
+              raise SystemExit(1)
+
+          except Exception as error:
+              print("FAILED:", type(error).__name__)
+              raise SystemExit(1)
+          PY
