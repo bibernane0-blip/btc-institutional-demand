@@ -1248,7 +1248,7 @@
       "estimated_atr": 556.8988,
       "estimate_updated_at": 1795454100000,
       "last_repriced_candle_close": 1795454100000,
-      "last_checked_ts": 1795464000000,
+      "last_checked_ts": 1795464300000,
       "adx": 27.29,
       "ema20": 62447.88,
       "ema50": 62002.99,
@@ -1264,7 +1264,7 @@
       "tp1_touched": false,
       "fill_method": "OKX_TICKER_LAST_AT_SCAN",
       "fill_observed_at": 1795454434967,
-      "last_exit_bar_end": 1795464000000
+      "last_exit_bar_end": 1795464300000
     },
     {
       "id": "SHORT-4H-1795464000000",
@@ -1285,16 +1285,25 @@
       "estimated_atr": 1416.3253,
       "estimate_updated_at": 1795464000000,
       "last_repriced_candle_close": 1795464000000,
-      "last_checked_ts": 1795464036851,
+      "last_checked_ts": 1795464339665,
       "adx": 34.48,
       "ema20": 61085.54,
       "ema50": 62838.7,
       "ema200": 71267.5,
-      "status": "WAITING",
-      "note": "MANUAL ONLY. Limit price is a watch level, not an exchange order."
+      "status": "PAPER_OPEN",
+      "note": "MANUAL ONLY. Limit price is a watch level, not an exchange order.",
+      "filled_at": 1795464339665,
+      "entry": 61231.4,
+      "atr_at_fill": 1515.3866122662712,
+      "stop": 65019.86653066568,
+      "tp1": 55548.700204001485,
+      "tp2": 49866.00040800297,
+      "tp1_touched": false,
+      "fill_method": "OKX_TICKER_LAST_AT_SCAN",
+      "fill_observed_at": 1795464339665
     }
   ],
-  "updated_at": 1795464036851,
+  "updated_at": 1795464339376,
   "trend": {
     "1D": "SHORT",
     "4H": "LONG",
