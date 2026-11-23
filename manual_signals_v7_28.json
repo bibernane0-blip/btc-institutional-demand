@@ -1236,7 +1236,7 @@
       "estimated_atr": 556.8988,
       "estimate_updated_at": 1795454100000,
       "last_repriced_candle_close": 1795454100000,
-      "last_checked_ts": 1795461600000,
+      "last_checked_ts": 1795461900000,
       "adx": 27.29,
       "ema20": 62447.88,
       "ema50": 62002.99,
@@ -1252,10 +1252,10 @@
       "tp1_touched": false,
       "fill_method": "OKX_TICKER_LAST_AT_SCAN",
       "fill_observed_at": 1795454434967,
-      "last_exit_bar_end": 1795461600000
+      "last_exit_bar_end": 1795461900000
     }
   ],
-  "updated_at": 1795461648711,
+  "updated_at": 1795461936307,
   "trend": {
     "1D": "SHORT",
     "4H": "LONG",
