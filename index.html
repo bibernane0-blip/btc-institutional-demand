@@ -100,6 +100,40 @@ main{max-width:1480px;padding:0 34px 80px}
 @media(max-width:1000px){.executive-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:650px){main{padding:0 14px 50px}.terminal-masthead{min-height:86px}.brand-symbol{width:40px;height:40px;font-size:26px}.brand-lockup{gap:11px}.brand-lockup h1{font-size:20px}.eyebrow{font-size:8px}.masthead-right{gap:6px}.masthead-date{display:none}.terminal-nav{gap:22px}.terminal-nav a{font-size:9px;padding:15px 0}.terminal-overview{padding-top:29px}.overview-heading{align-items:flex-start;flex-direction:column}.overview-heading h2{font-size:34px}.data-state{font-size:9px}.executive-grid{gap:9px}.executive-card{min-height:135px;padding:17px 15px}.exec-value{font-size:38px}.exec-side{font-size:25px}.exec-time{font-size:22px}.exec-label{font-size:9px}.exec-sub{font-size:10px}.signals-priority h2{font-size:21px}}
 </style>
+<style>
+.terminal-performance{margin:8px 0 22px;padding:26px!important;border-color:#35506a!important}
+.performance-heading{display:flex;justify-content:space-between;gap:15px;align-items:center;margin-bottom:23px}
+.performance-heading h2{font-size:25px;margin:7px 0 5px;letter-spacing:-.04em}
+.performance-heading p{font-size:12px;color:#94a7be;margin:0}
+.performance-actions{font-size:11px;color:#8ca0b8}
+.performance-stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+.perf-stat{background:#0b1421;border:1px solid #283a4f;border-radius:10px;padding:19px 17px;min-height:126px;display:flex;flex-direction:column;gap:8px}
+.perf-stat>span{color:#91a4ba;font-size:10px;font-weight:800;letter-spacing:.1em}
+.perf-stat>strong{font-size:30px;font-weight:800;letter-spacing:-.045em;font-variant-numeric:tabular-nums;color:#f0f6ff}
+.perf-stat>small{font-size:11px;color:#8c9db1}
+.perf-feature{background:linear-gradient(125deg,#193a35,#0c2327);border-color:#356659}
+.perf-feature>strong{color:#4ee1b2;font-size:36px}
+.performance-bottom{display:grid;grid-template-columns:minmax(0,2fr) minmax(240px,1fr);gap:12px;margin-top:13px}
+.perf-chart-wrap,.perf-breakdown{background:#0b1421;border:1px solid #283a4f;border-radius:10px;padding:19px}
+.perf-chart-head{display:flex;justify-content:space-between;gap:12px;align-items:center;font-size:12px;color:#d9e4f1}
+.perf-chart-head span{color:#8c9fb5;font-size:11px}
+#perfEquity{width:100%;height:170px;display:block;margin-top:16px}
+.perf-breakdown>strong{font-size:12px}
+.perf-meter{height:9px;border-radius:9px;overflow:hidden;display:flex;background:#253348;margin-top:24px}
+.perf-meter i{display:block;height:100%;width:0;transition:width .3s}
+#perfWinBar{background:#3dd8a6}#perfStopBar{background:#ff6f86}#perfTimeBar{background:#8295ad}
+.perf-legend{display:flex;gap:13px;flex-wrap:wrap;margin:13px 0 20px;font-size:10px;color:#a6b6c9}
+.perf-legend span{display:flex;align-items:center;gap:5px}
+.perf-legend b{width:7px;height:7px;border-radius:50%;display:inline-block}
+.dot-green{background:#3dd8a6}.dot-red{background:#ff6f86}.dot-gray{background:#8295ad}
+.perf-secondary{border-top:1px solid #27394d;padding-top:11px}
+.perf-secondary div{display:flex;justify-content:space-between;padding:8px 0;font-size:11px;color:#91a5ba}
+.perf-secondary b{color:#e6eff9;font-size:14px;font-variant-numeric:tabular-nums}
+.performance-note{font-size:11px;color:#8497ae;line-height:1.7;margin:17px 0 0}
+#perfError{color:#f1b77b;margin-top:8px}
+@media(max-width:950px){.performance-stats{grid-template-columns:repeat(2,minmax(0,1fr))}.performance-bottom{grid-template-columns:1fr}}
+@media(max-width:550px){.terminal-performance{padding:17px!important}.performance-heading{align-items:flex-start;flex-direction:column}.performance-heading h2{font-size:21px}.perf-stat{padding:14px;min-height:116px}.perf-stat>strong{font-size:26px}.perf-feature>strong{font-size:31px}.perf-stat>span{font-size:9px}.perf-stat>small{font-size:10px}}
+</style>
 </head>
 <body>
 <main>
@@ -249,6 +283,23 @@ main{max-width:1480px;padding:0 34px 80px}
   <a href="https://kotecharts.com/c/exchange-netflow" target="_blank" rel="noopener">Kote Charts Exchange Netflow</a>.
   Kote Charts verileri kişisel/araştırma amaçlı ticari olmayan kullanım ve kaynak gösterme koşuluyla gösterilir.
  </footer>
+
+<section class="card terminal-performance" id="terminalPerformance" aria-label="V7.29 işlem performansı">
+ <div class="performance-heading"><div><div class="section-kicker">PERFORMANCE ANALYTICS / V7.29</div><h2>İşlem performansı <span class="header-accent">PAPER</span></h2><p>Yalnızca V7.29 JSON kayıtları · Gerçek para getirisi değildir</p></div><div class="performance-actions"><span id="perfUpdated">Veri bekleniyor</span></div></div>
+ <div class="performance-stats">
+  <div class="perf-stat perf-feature"><span>TOPLAM NET R*</span><strong id="perfTotalR">—</strong><small>STOP / TP2 / TIMEOUT kapanışları</small></div>
+  <div class="perf-stat"><span>BAŞARILI · TP2</span><strong id="perfWins">—</strong><small id="perfWinsPct">—</small></div>
+  <div class="perf-stat"><span>STOP</span><strong id="perfStops">—</strong><small id="perfStopsPct">—</small></div>
+  <div class="perf-stat"><span>KAZANMA ORANI</span><strong id="perfWinRate">—</strong><small>TP2 / (TP2 + STOP)</small></div>
+  <div class="perf-stat"><span>KAPANAN İŞLEM</span><strong id="perfClosed">—</strong><small id="perfTimeouts">—</small></div>
+  <div class="perf-stat"><span>ORTALAMA R</span><strong id="perfAvgR">—</strong><small>Kapanan işlem başına</small></div>
+  <div class="perf-stat"><span>KÂR FAKTÖRÜ</span><strong id="perfFactor">—</strong><small>Pozitif R / |negatif R|</small></div>
+  <div class="perf-stat"><span>MAKS. GERİ ÇEKİLME</span><strong id="perfDrawdown">—</strong><small>Kümülatif R üzerinden</small></div>
+ </div>
+ <div class="performance-bottom"><div class="perf-chart-wrap"><div class="perf-chart-head"><strong>Kümülatif R eğrisi</strong><span id="perfChartLabel">Kapanan işlemler</span></div><svg id="perfEquity" viewBox="0 0 800 170" preserveAspectRatio="none" role="img" aria-label="Kümülatif R grafiği"><text x="20" y="90" fill="#879bb5" font-size="16">Veri bekleniyor</text></svg></div><div class="perf-breakdown"><strong>İşlem dağılımı</strong><div class="perf-meter"><i id="perfWinBar"></i><i id="perfStopBar"></i><i id="perfTimeBar"></i></div><div class="perf-legend"><span><b class="dot-green"></b>TP2</span><span><b class="dot-red"></b>STOP</span><span><b class="dot-gray"></b>TIMEOUT</span></div><div class="perf-secondary"><div><span>Açık simülasyon</span><b id="perfOpen">—</b></div><div><span>Bekleyen limit</span><b id="perfPending">—</b></div><div><span>En uzun kazanç serisi</span><b id="perfStreak">—</b></div></div></div></div>
+ <p class="performance-note">* R = (çıkış − giriş) / başlangıç stop mesafesi; SHORT için yön ters çevrilir. TP2 = +3R, STOP = −1R (kayıtlı gerçek seviyeler esas alınır). TIMEOUT işlemleri kayıtlı çıkış fiyatından hesaplanır. Komisyon, kayma ve funding düşülmez. Aynı yönde tekrarlanan sinyaller ayrı sayılır; R toplamı sermaye getirisi değildir. Açık ve bekleyen işlemler toplam R'ye katılmaz.</p>
+ <div id="perfError" class="small" role="status"></div>
+</section>
 
  <!-- V7.28 manual signals add-on: legacy dashboard remains intact -->
  <section class="card signals-priority" id="manualSignalV728" aria-label="V7.31 manuel işlem sinyalleri">
@@ -1358,7 +1409,7 @@ init().catch(error => {
 (()=>{
  const $=id=>document.getElementById(id);
  const main=document.querySelector('main'), signals=$('manualSignalV728'), hero=document.querySelector('.hero');
- if(main&&signals&&hero)main.insertBefore(signals,hero);
+ if(main&&signals&&hero){main.insertBefore(signals,hero);const perf=$('terminalPerformance');if(perf)main.insertBefore(perf,signals)}
  const research=$('liquiditySection');
  if(research){const label=document.createElement('div');label.id='terminalResearch';label.className='research-title';label.textContent='ARAŞTIRMA & DERİN ANALİZ';research.parentNode.insertBefore(label,research)}
  const tick=()=>{$('terminalClock').textContent=new Intl.DateTimeFormat('tr-TR',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit',timeZone:'Europe/Istanbul'}).format(new Date())+' · TR'};
@@ -1389,6 +1440,70 @@ init().catch(error => {
   }
  }
  summary();setInterval(summary,60000);
+})();
+</script>
+<script>
+/* V7.29 performance dashboard — reads the same JSON as the manual signal table. */
+(()=>{
+ const $=id=>document.getElementById(id);
+ const f=(v,d=2)=>Number.isFinite(v)?v.toLocaleString('tr-TR',{minimumFractionDigits:d,maximumFractionDigits:d}):'—';
+ const signed=v=>Number.isFinite(v)?(v>0?'+':'')+f(v)+'R':'—';
+ const fmtTime=v=>v?new Date(Number(v)).toLocaleString('tr-TR',{timeZone:'Europe/Istanbul',day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}):'—';
+ const rOf=t=>{
+  const e=Number(t.entry),stop=Number(t.stop),ex=Number(t.exit),side=t.side==='LONG'?1:t.side==='SHORT'?-1:0;
+  const risk=Math.abs(e-stop);
+  if(!side||!Number.isFinite(e)||!Number.isFinite(stop)||risk<=0)return null;
+  if(t.status==='STOP')return -1;
+  if(t.status==='TP2'){const tp=Number(t.tp2);return Number.isFinite(tp)?side*(tp-e)/risk:3;}
+  if(t.status==='TIMEOUT'&&Number.isFinite(ex))return side*(ex-e)/risk;
+  return null;
+ };
+ const svgEl=(name,attrs)=>{const e=document.createElementNS('http://www.w3.org/2000/svg',name);for(const [k,v] of Object.entries(attrs))e.setAttribute(k,String(v));return e};
+ function chart(returns){
+  const svg=$('perfEquity');svg.replaceChildren();
+  if(!returns.length){const t=svgEl('text',{x:24,y:85,fill:'#91a4ba','font-size':15});t.textContent='Kapanan işlem bulunmuyor';svg.append(t);return}
+  const sums=[0];for(const x of returns)sums.push(sums.at(-1)+x);
+  let lo=Math.min(...sums),hi=Math.max(...sums);if(hi===lo){hi++;lo--}
+  const x=i=>28+i/(sums.length-1)*742,y=v=>145-(v-lo)/(hi-lo)*115;
+  for(let i=0;i<4;i++){const gy=20+i*125/3;svg.append(svgEl('line',{x1:28,y1:gy,x2:772,y2:gy,stroke:'#26374a','stroke-width':1}))}
+  const path=sums.map((v,i)=>(i?'L':'M')+x(i).toFixed(2)+' '+y(v).toFixed(2)).join(' ');
+  svg.append(svgEl('path',{d:path,stroke:'#42dbab','stroke-width':2.8,fill:'none','stroke-linejoin':'round','stroke-linecap':'round'}));
+  const last=sums.at(-1);svg.append(svgEl('circle',{cx:x(sums.length-1),cy:y(last),r:4.2,fill:'#4ce5b5'}));
+  const lab=svgEl('text',{x:28,y:164,fill:'#8194ac','font-size':11});lab.textContent='İlk kapanış';svg.append(lab);
+  const end=svgEl('text',{x:772,y:164,fill:'#8194ac','font-size':11,'text-anchor':'end'});end.textContent='Son kapanış';svg.append(end);
+ }
+ async function render(){
+  try{
+   const resp=await fetch('./manual_signals_v7_28.json?performance='+Date.now(),{cache:'no-store'});
+   if(!resp.ok)throw Error('HTTP '+resp.status);
+   const db=await resp.json(),all=Array.isArray(db.signals)?db.signals:[];
+   // Historical legacy rows may be present. Only completed entries with valid risk can contribute.
+   const closed=all.filter(t=>['STOP','TP2','TIMEOUT'].includes(t.status)).map(t=>({t,r:rOf(t)})).filter(x=>x.r!==null).sort((a,b)=>(a.t.closed_at||0)-(b.t.closed_at||0));
+   const wins=closed.filter(x=>x.t.status==='TP2').length,stops=closed.filter(x=>x.t.status==='STOP').length,timeouts=closed.filter(x=>x.t.status==='TIMEOUT').length;
+   const returns=closed.map(x=>x.r),total=returns.reduce((a,b)=>a+b,0),positive=returns.filter(x=>x>0).reduce((a,b)=>a+b,0),negative=-returns.filter(x=>x<0).reduce((a,b)=>a+b,0);
+   let equity=0,peak=0,maxDD=0,streak=0,maxStreak=0;
+   for(const x of closed){equity+=x.r;peak=Math.max(peak,equity);maxDD=Math.max(maxDD,peak-equity);streak=x.t.status==='TP2'?streak+1:0;maxStreak=Math.max(maxStreak,streak)}
+   $('perfTotalR').textContent=closed.length?signed(total):'—';
+   $('perfTotalR').style.color=total<0?'#ff8094':'#4ee1b2';
+   $('perfWins').textContent=wins;$('perfStops').textContent=stops;$('perfClosed').textContent=closed.length;
+   $('perfWinsPct').textContent=closed.length?f(wins/closed.length*100,1)+'% kapanan işlemler':'—';
+   $('perfStopsPct').textContent=closed.length?f(stops/closed.length*100,1)+'% kapanan işlemler':'—';
+   $('perfWinRate').textContent=wins+stops?f(wins/(wins+stops)*100,1)+'%':'—';
+   $('perfTimeouts').textContent=timeouts+' TIMEOUT · '+(all.length-closed.length)+' diğer kayıt';
+   $('perfAvgR').textContent=closed.length?signed(total/closed.length):'—';
+   $('perfFactor').textContent=negative?f(positive/negative):positive?'∞':'—';
+   $('perfDrawdown').textContent=closed.length?f(maxDD)+'R':'—';
+   $('perfOpen').textContent=all.filter(x=>x.status==='PAPER_OPEN').length;
+   $('perfPending').textContent=all.filter(x=>x.status==='WAITING').length;
+   $('perfStreak').textContent=maxStreak;
+   $('perfUpdated').textContent='Son kayıt: '+fmtTime(db.updated_at);
+   $('perfChartLabel').textContent=closed.length+' kapanmış işlem';
+   for(const [id,count] of [['perfWinBar',wins],['perfStopBar',stops],['perfTimeBar',timeouts]])$(id).style.width=(closed.length?count/closed.length*100:0)+'%';
+   chart(returns);
+   $('perfError').textContent='';
+  }catch(e){$('perfError').textContent='Performans verisi alınamadı: '+e.message}
+ }
+ render();setInterval(render,60000);
 })();
 </script>
 </body>
