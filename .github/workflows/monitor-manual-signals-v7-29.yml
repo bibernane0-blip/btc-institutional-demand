@@ -2,11 +2,10 @@ name: BTC Manual Signals V7.29
 
 on:
   workflow_dispatch:
-  schedule:
-    - cron: '*/5 * * * *'
 
 permissions:
   contents: write
+  actions: write
 
 concurrency:
   group: btc-manual-signals-v7-29
@@ -16,40 +15,67 @@ jobs:
   scan:
     runs-on: ubuntu-latest
     timeout-minutes: 10
+
     steps:
       - uses: actions/checkout@v4
         with:
           persist-credentials: true
           fetch-depth: 0
+
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
+
       - name: Dependencies
         run: pip install requests
+
       - name: Update and save manual signals safely
+        id: signals
         shell: bash
         run: |
           set -euo pipefail
+
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+
           branch="${GITHUB_REF_NAME}"
+
           for attempt in 1 2 3 4 5; do
-            echo "Attempt $attempt: fetch latest state, recalculate, push"
+            echo "Attempt $attempt: fetch, calculate, push"
+
             git fetch origin "$branch"
             git reset --hard "origin/$branch"
+
             python signal_tracker_v7_29.py
+
             git add manual_signals_v7_28.json
+
             if git diff --cached --quiet; then
-              echo 'No signal changes to publish.'
+              echo "No signal changes to publish."
+              echo "published=false" >> "$GITHUB_OUTPUT"
               exit 0
             fi
+
             git commit -m 'Update manual signal watchlist V7.29'
+
             if git push origin "HEAD:$branch"; then
-              echo 'Signal history successfully published.'
+              echo "Signal history successfully published."
+              echo "published=true" >> "$GITHUB_OUTPUT"
               exit 0
             fi
-            echo 'Push rejected because remote changed; recomputing from latest JSON.'
+
+            echo "Push rejected. Retrying..."
             sleep $((attempt * 3))
           done
-          echo 'ERROR: Could not publish after five attempts.' >&2
+
+          echo "ERROR: Could not publish after five attempts." >&2
           exit 1
+
+      - name: Trigger dashboard deployment
+        if: steps.signals.outputs.published == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh workflow run update-data.yml \
+            --ref main \
+            -f refresh_data=false
