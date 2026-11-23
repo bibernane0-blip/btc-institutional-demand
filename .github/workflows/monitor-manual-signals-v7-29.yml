@@ -46,7 +46,7 @@ jobs:
             git fetch origin "$branch"
             git reset --hard "origin/$branch"
 
-            python signal_tracker_v7_29.py
+            python signal_tracker_v7_30.py
 
             git add manual_signals_v7_28.json
 
