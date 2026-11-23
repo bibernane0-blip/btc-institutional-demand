@@ -771,9 +771,36 @@
       "ema200": 60813.82,
       "status": "WAITING",
       "note": "MANUAL ONLY. Limit price is a watch level, not an exchange order."
+    },
+    {
+      "id": "LONG-15m-1795445100000",
+      "side": "LONG",
+      "trend_sources": [
+        "4H"
+      ],
+      "entry_timeframe": "15m",
+      "created_at": 1795445136834,
+      "signal_candle_close": 1795445100000,
+      "expires_at": 1795448700000,
+      "strategy_version": "7.29",
+      "limit_valid_bars": 4,
+      "limit_price": 62155.2,
+      "estimated_stop": 61380.44,
+      "estimated_tp1": 63317.34,
+      "estimated_tp2": 64479.49,
+      "estimated_atr": 309.9051,
+      "estimate_updated_at": 1795445100000,
+      "last_repriced_candle_close": 1795445100000,
+      "last_checked_ts": 1795445136834,
+      "adx": 28.81,
+      "ema20": 62155.2,
+      "ema50": 61669.25,
+      "ema200": 60819.38,
+      "status": "WAITING",
+      "note": "MANUAL ONLY. Limit price is a watch level, not an exchange order."
     }
   ],
-  "updated_at": 1795444833904,
+  "updated_at": 1795445136834,
   "trend": {
     "1D": "SHORT",
     "4H": "LONG",
