@@ -27,7 +27,7 @@ hr{border:0;border-top:1px solid var(--line);margin:13px 0}
 @media(max-width:850px){.hero{grid-template-columns:1fr 1fr}.hero .combined{grid-column:1/-1}}
 @media(max-width:600px){main{padding:11px}.hero{grid-template-columns:1fr}.hero .combined{grid-column:auto}iframe{height:370px}td,th{font-size:12px;padding:6px}}
 
-/* V6.1 — visual system */
+/* — visual system */
 :root{--bg:#080f1c;--panel:#111c2c;--panel2:#0c1726;--line:#263850;--text:#edf4ff;--muted:#9bb0c9;--blue:#73c6ff}
 body{background:radial-gradient(ellipse at 10% -15%,#153450 0%,transparent 45%),var(--bg);letter-spacing:.005em}
 main{max-width:1440px;padding:24px 30px 48px}
@@ -134,6 +134,16 @@ main{max-width:1480px;padding:0 34px 80px}
 @media(max-width:950px){.performance-stats{grid-template-columns:repeat(2,minmax(0,1fr))}.performance-bottom{grid-template-columns:1fr}}
 @media(max-width:550px){.terminal-performance{padding:17px!important}.performance-heading{align-items:flex-start;flex-direction:column}.performance-heading h2{font-size:21px}.perf-stat{padding:14px;min-height:116px}.perf-stat>strong{font-size:26px}.perf-feature>strong{font-size:31px}.perf-stat>span{font-size:9px}.perf-stat>small{font-size:10px}}
 </style>
+<style>
+.signal-pagination{display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:7px;margin-top:18px}
+.page-btn{border:1px solid #34485e;background:#142235;color:#b8c9dc;border-radius:8px;min-width:37px;height:37px;padding:0 11px;cursor:pointer;font-weight:750;font-size:12px}
+.page-btn.current{background:#e6b761;color:#14202c;border-color:#e6b761}
+.page-btn:disabled{opacity:.35;cursor:not-allowed}
+.page-btn:not(:disabled):hover{border-color:#d9ae65}
+.page-ellipsis{padding:0 4px;color:#8da1b7}
+.signal-overdue{background:#503c2020}
+.signal-overdue td:nth-child(6){color:#f4c276;font-weight:700}
+</style>
 </head>
 <body>
 <main>
@@ -149,10 +159,10 @@ main{max-width:1480px;padding:0 34px 80px}
    <a href="#terminalResearch">ARAŞTIRMA</a>
  </nav>
  <section class="terminal-overview" id="terminalOverview">
-  <div class="overview-heading"><div><span class="eyebrow">TRADING INTELLIGENCE / V7.29</span><h2>Karar merkezi<span class="accent-dot">.</span></h2><p>Canlı piyasa, manuel sinyaller ve veri güvenilirliği tek ekranda.</p></div><div class="data-state" id="terminalDataHealth">SİNYAL VERİSİ KONTROL EDİLİYOR</div></div>
+  <div class="overview-heading"><div><span class="eyebrow">TRADING INTELLIGENCE</span><h2>Karar merkezi<span class="accent-dot">.</span></h2><p>Canlı piyasa, manuel sinyaller ve veri güvenilirliği tek ekranda.</p></div><div class="data-state" id="terminalDataHealth">SİNYAL VERİSİ KONTROL EDİLİYOR</div></div>
   <div class="executive-grid">
    <article class="executive-card executive-primary"><div class="exec-label">AKTİF SİMÜLASYON</div><div class="exec-value" id="termOpen">—</div><div class="exec-sub">Açık PAPER pozisyonu</div></article>
-   <article class="executive-card"><div class="exec-label">BEKLEYEN LİMİT</div><div class="exec-value" id="termWaiting">—</div><div class="exec-sub">Aktif izleme sinyali</div></article>
+   <article class="executive-card"><div class="exec-label">BEKLEYEN LİMİT</div><div class="exec-value" id="termWaiting">—</div><div class="exec-sub">Süresi geçmemiş bekleyen sinyal</div></article>
    <article class="executive-card"><div class="exec-label">SON SİNYAL</div><div class="exec-value exec-side" id="termLastSide">—</div><div class="exec-sub" id="termLastMeta">Veri bekleniyor</div></article>
    <article class="executive-card"><div class="exec-label">SİNYAL MOTORU</div><div class="exec-value exec-time" id="termUpdated">—</div><div class="exec-sub" id="termUpdatedAgo">Son JSON güncellemesi</div></article>
   </div>
@@ -205,7 +215,6 @@ main{max-width:1480px;padding:0 34px 80px}
   <h2>Skor bileşenleri</h2>
   <div class="grid" id="componentTiles"></div>
   <hr>
-  <p class="small"><b>Deneysel formül:</b> Live Market = Open Interest (30) + Funding (20) + Fiyat/Hacim (50). Institutional Flow = ETF (50) + Exchange Netflow (50). Birleşik skor = %60 Live Market + %40 Institutional Flow. Bu yeni formül eski 55 günlük backtest ile doğrulanmış değildir; bu formül yatırım sinyali olarak doğrulanmış değildir.</p>
  </section>
 
   <section class="intelligence" aria-label="Piyasa değerlendirmesi ve veri sağlığı">
@@ -228,39 +237,39 @@ main{max-width:1480px;padding:0 34px 80px}
  </section>
 
  <section class="card" id="marketStructureSection">
-  <div class="top"><h2 style="margin:0">Piyasa Yapısı (V7.1)</h2><span class="small" id="structureUpdated">Mumlar yükleniyor…</span></div>
+  <div class="top"><h2 style="margin:0">Piyasa Yapısı</h2><span class="small" id="structureUpdated">Mumlar yükleniyor…</span></div>
   <div class="grid" id="structureTiles" style="margin-top:12px"></div>
   <p class="small" id="structureSummary" aria-live="polite">Zaman dilimleri analiz ediliyor…</p>
  </section>
 
  <section class="card" id="regimeSection">
-  <div class="top"><h2 style="margin:0">Piyasa Rejimi (V7.3)</h2><span class="small" id="regimeUpdated">Mumlar yükleniyor…</span></div>
+  <div class="top"><h2 style="margin:0">Piyasa Rejimi</h2><span class="small" id="regimeUpdated">Mumlar yükleniyor…</span></div>
   <div class="grid" id="regimeTiles" style="margin-top:12px"></div>
   <p class="small" id="regimeSummary">ADX(14) trend gücü, ATR(14) volatilite; yalnızca kapanmış mumlar. Rejim sınıflaması deneysel olup işlem sinyali değildir.</p>
  </section>
 
 
  <section class="card" id="scannerSection">
-  <div class="top"><h2 style="margin:0">İşlem Fırsatı Tarayıcısı (V7.4)</h2><span class="small" id="scannerUpdated">Veriler bekleniyor…</span></div>
+  <div class="top"><h2 style="margin:0">İşlem Fırsatı Tarayıcısı</h2><span class="small" id="scannerUpdated">Veriler bekleniyor…</span></div>
   <div class="grid" id="scannerTiles" style="margin-top:12px"></div>
-  <p class="small" id="scannerSummary" aria-live="polite">Piyasa yapısı, rejim ve likidite birlikte değerlendiriliyor. İşlem emri veya yatırım sinyali değildir.</p>
+  <p id="scannerSummary" hidden></p>
  </section>
 
  <section class="card" id="plannerSection">
-  <div class="top"><h2 style="margin:0">İşlem Planlayıcısı (V7.5)</h2><span class="small" id="plannerUpdated">Veriler bekleniyor…</span></div>
+  <div class="top"><h2 style="margin:0">İşlem Planlayıcısı</h2><span class="small" id="plannerUpdated">Veriler bekleniyor…</span></div>
   <div class="grid" id="plannerTiles" style="margin-top:12px"></div>
-  <p class="small" id="plannerSummary" aria-live="polite">Tarayıcı BEKLE durumundayken işlem planı oluşturulmaz. Seviyeler yalnızca araştırma amaçlıdır.</p>
+  <p id="plannerSummary" hidden></p>
  </section>
 
  <section class="card" id="paperSection">
-  <div class="top"><h2 style="margin:0">İşlem Simülasyonu (V7.7)</h2><span class="small" id="paperUpdated">Yerel kayıt</span></div>
+  <div class="top"><h2 style="margin:0">İşlem Simülasyonu</h2><span class="small" id="paperUpdated">Yerel kayıt</span></div>
   <div class="grid" id="paperTiles" style="margin-top:12px"></div>
-  <p class="small" id="paperSummary">Sanal işlem; gerçek emir gönderilmez. Kayıtlar yalnızca bu tarayıcıda saklanır.</p>
   <button class="btn" id="paperExport" type="button">Kayıtları JSON indir</button>
+  <p id="paperSummary" hidden></p>
  </section>
 
- <section class="card" id="liquiditySection">
-  <div class="top"><h2 style="margin:0">Likidite Analizi (V7.2)</h2><span class="small" id="liquidityUpdated">Mumlar yükleniyor…</span></div>
+ <section class="card" id="terminalResearch">
+  <div class="top"><h2 style="margin:0">Likidite Analizi</h2><span class="small" id="liquidityUpdated">Mumlar yükleniyor…</span></div>
   <div class="grid" id="liquidityTiles" style="margin-top:12px"></div>
   <p class="small" id="liquiditySummary" aria-live="polite">Yalnızca kapanmış mumlar kullanılır. Bölgeler potansiyeldir; emir yoğunluğu doğrulanmış değildir.</p>
  </section>
@@ -284,8 +293,8 @@ main{max-width:1480px;padding:0 34px 80px}
   Kote Charts verileri kişisel/araştırma amaçlı ticari olmayan kullanım ve kaynak gösterme koşuluyla gösterilir.
  </footer>
 
-<section class="card terminal-performance" id="terminalPerformance" aria-label="V7.29 işlem performansı">
- <div class="performance-heading"><div><div class="section-kicker">PERFORMANCE ANALYTICS / V7.29</div><h2>İşlem performansı <span class="header-accent">PAPER</span></h2><p>Yalnızca V7.29 JSON kayıtları · Gerçek para getirisi değildir</p></div><div class="performance-actions"><span id="perfUpdated">Veri bekleniyor</span></div></div>
+<section class="card terminal-performance" id="terminalPerformance" aria-label="İşlem performansı">
+ <div class="performance-heading"><div><div class="section-kicker">PERFORMANCE ANALYTICS</div><h2>İşlem performansı <span class="header-accent">PAPER</span></h2></div><div class="performance-actions"><span id="perfUpdated">Veri bekleniyor</span></div></div>
  <div class="performance-stats">
   <div class="perf-stat perf-feature"><span>TOPLAM NET R*</span><strong id="perfTotalR">—</strong><small>STOP / TP2 / TIMEOUT kapanışları</small></div>
   <div class="perf-stat"><span>BAŞARILI · TP2</span><strong id="perfWins">—</strong><small id="perfWinsPct">—</small></div>
@@ -297,19 +306,18 @@ main{max-width:1480px;padding:0 34px 80px}
   <div class="perf-stat"><span>MAKS. GERİ ÇEKİLME</span><strong id="perfDrawdown">—</strong><small>Kümülatif R üzerinden</small></div>
  </div>
  <div class="performance-bottom"><div class="perf-chart-wrap"><div class="perf-chart-head"><strong>Kümülatif R eğrisi</strong><span id="perfChartLabel">Kapanan işlemler</span></div><svg id="perfEquity" viewBox="0 0 800 170" preserveAspectRatio="none" role="img" aria-label="Kümülatif R grafiği"><text x="20" y="90" fill="#879bb5" font-size="16">Veri bekleniyor</text></svg></div><div class="perf-breakdown"><strong>İşlem dağılımı</strong><div class="perf-meter"><i id="perfWinBar"></i><i id="perfStopBar"></i><i id="perfTimeBar"></i></div><div class="perf-legend"><span><b class="dot-green"></b>TP2</span><span><b class="dot-red"></b>STOP</span><span><b class="dot-gray"></b>TIMEOUT</span></div><div class="perf-secondary"><div><span>Açık simülasyon</span><b id="perfOpen">—</b></div><div><span>Bekleyen limit</span><b id="perfPending">—</b></div><div><span>En uzun kazanç serisi</span><b id="perfStreak">—</b></div></div></div></div>
- <p class="performance-note">* R = (çıkış − giriş) / başlangıç stop mesafesi; SHORT için yön ters çevrilir. TP2 = +3R, STOP = −1R (kayıtlı gerçek seviyeler esas alınır). TIMEOUT işlemleri kayıtlı çıkış fiyatından hesaplanır. Komisyon, kayma ve funding düşülmez. Aynı yönde tekrarlanan sinyaller ayrı sayılır; R toplamı sermaye getirisi değildir. Açık ve bekleyen işlemler toplam R'ye katılmaz.</p>
  <div id="perfError" class="small" role="status"></div>
 </section>
 
- <!-- V7.28 manual signals add-on: legacy dashboard remains intact -->
- <section class="card signals-priority" id="manualSignalV728" aria-label="V7.31 manuel işlem sinyalleri">
-  <div class="section-kicker">EXECUTION WATCHLIST / PAPER ONLY</div><h2>Manuel sinyal merkezi <span class="header-accent">V7.29</span></h2>
-  <p class="small">🟡 <strong>LİMİT BEKLİYOR</strong>: EMA20 limit seviyesi her giriş zaman dilimi mumu kapandığında güncellenir; temas, kapanmış 15 dakikalık mumlarla kontrol edilir (1m EMA20 kullanılmaz); süre sıfırlanmaz. Geçerlilik: 15m için 4 mum (1 saat), 1H ve 4H için 16 mum (16/64 saat). ADX ≥ 25, EMA50/EMA200 yönü, kapanışın EMA50 tarafı ve en az bir ilk üst zaman dilimi trendi korunmalıdır; aksi halde limit iptal edilir. Stop ve TP değerleri son 10 kapanmış mumun ATR(14) ortalamasına göre <strong>tahminidir</strong>. 🟢 <strong>GİRİŞ TETİKLENDİ</strong>: Fiyat limit seviyesine dokunmuştur; stop ve TP son kapanmış mumun ATR(14) değeriyle sabitlenir. Bu, borsada gerçek emir gerçekleştiği anlamına gelmez.</p>
+ <!-- manual signals add-on: legacy dashboard remains intact -->
+ <section class="card signals-priority" id="manualSignalV728" aria-label="Manuel işlem sinyalleri">
+  <div class="section-kicker">EXECUTION WATCHLIST / PAPER ONLY</div><h2>Manuel sinyal merkezi </h2>
   <div id="manualV728Status" class="small" role="status">Sinyaller yükleniyor…</div>
   <div style="overflow-x:auto;margin-top:12px">
    <table><thead><tr><th>Oluşma</th><th>Yön</th><th>Giriş TF</th><th>Üst trend</th><th>Limit ($)</th><th>Durum</th><th>Stop ($)</th><th>TP1 ($)</th><th>TP2 ($)</th><th>ATR hesabı</th></tr></thead>
    <tbody id="manualV728Rows"><tr><td colspan="10">Henüz sinyal yok.</td></tr></tbody></table>
   </div>
+  <nav id="manualPagination" class="signal-pagination" aria-label="Sinyal sayfaları"></nav>
  </section>
 </main>
 
@@ -797,7 +805,7 @@ function renderIntelligence(live, flow) {
   }
 }
 
-// V7.1: independent, read-only market structure; existing scoring remains unchanged.
+// independent, read-only market structure; existing scoring remains unchanged.
 const STRUCTURE_FRAMES = [
   {key:"1D", bar:"1Dutc", label:"1D · Ana trend", maxLag: 2 * 86400000},
   {key:"4H", bar:"4H", label:"4H · Piyasa yapısı", maxLag: 8 * HOUR_MS},
@@ -806,7 +814,7 @@ const STRUCTURE_FRAMES = [
 ];
 const STRUCTURE_DURATION = {"1D":86400000,"4H":4*HOUR_MS,"1H":HOUR_MS,"15m":15*60000};
 
-// V7.3: independent market regime; Wilder ADX(14), ATR(14), adaptive ATR baseline.
+// independent market regime; Wilder ADX(14), ATR(14), adaptive ATR baseline.
 // Read-only; never changes existing market/institutional scores.
 function analyzeRegime(raw, key) {
   const duration=STRUCTURE_DURATION[key], now=Date.now();
@@ -867,7 +875,7 @@ function renderRegime() {
   document.getElementById("regimeUpdated").textContent=state.regimeUpdated?`Son kontrol: ${trTime(state.regimeUpdated)}`:"Mumlar yükleniyor…";
 }
 
-// V7.2: independent liquidity heuristics; no effect on scoring or orders.
+// independent liquidity heuristics; no effect on scoring or orders.
 function analyzeLiquidity(raw, key) {
   const duration=STRUCTURE_DURATION[key], now=Date.now();
   const candles=[...new Map(raw.filter(c=>c && c.confirm==="1" && Number.isInteger(c.ts) &&
@@ -1030,8 +1038,8 @@ async function loadStructure() {
 }
 
 
-// V7.4: Conservative read-only candidate scanner. No execution, no score modification.
-// V7.15: score + adjacent timeframe alignment + confirmed 15m EMA20 breakout.
+// Conservative read-only candidate scanner. No execution, no score modification.
+// score + adjacent timeframe alignment + confirmed 15m EMA20 breakout.
 function v715Setup(side) {
   const duration=15*60000, now=Date.now();
   const cs=[...new Map(state.plannerCandles.filter(c=>c && c.confirm==="1" &&
@@ -1102,7 +1110,7 @@ function renderScanner() {
   document.getElementById("scannerUpdated").textContent=state.regimeUpdated?
     `Son kontrol: ${trTime(state.regimeUpdated)}`:"Veriler bekleniyor…";
   document.getElementById("scannerSummary").textContent=
-    "V7.15 deneysel sinyal: skor ±30, ardışık zaman dilimi ve 15m EMA20 kırılımı. Gerçek emir göndermez.";
+    " deneysel sinyal: skor ±30, ardışık zaman dilimi ve 15m EMA20 kırılımı. Gerçek emir göndermez.";
 }
 function renderPlanner() {
   const box=document.getElementById("plannerTiles"); if(!box)return;
@@ -1111,7 +1119,7 @@ function renderPlanner() {
     `Son veri kontrolü: ${trTime(state.plannerCandlesAt)}`:"Mumlar bekleniyor…";
   const plan=state.v715Plan;
   if(!plan){state.paperPlan=null;
-    box.innerHTML=createTile("Plan durumu","BEKLE","V7.15 giriş koşulları sağlanmadı.","warn");
+    box.innerHTML=createTile("Plan durumu","BEKLE"," giriş koşulları sağlanmadı.","warn");
     note.textContent="Skor, zaman dilimi ve 15m kırılım teyidi bekleniyor.";return;}
   state.paperPlan={side:plan.side,reference:plan.entry,stop:plan.stop,
     tp1:plan.tp1,tp2:plan.tp2,signalClose:plan.signalClose};
@@ -1124,7 +1132,7 @@ function renderPlanner() {
   note.textContent="Deneysel sanal plan. Giriş canlı fiyatla yapılır; gerçek emir gönderilmez. Maliyetler simülasyonda tahminidir.";
 }
 
-// V7.6: browser-local paper trades. Never submits an order.
+// browser-local paper trades. Never submits an order.
 const PAPER_KEY="btc-demand-paper-v76"; // Keep existing records.
 // Research assumptions, NOT observed exchange fills or actual funding.
 const PAPER_COST={feePerSide:0.0005,slippagePerSide:0.0002,fundingPer8h:0.0001};
@@ -1217,7 +1225,7 @@ function renderPaper() {
     createTile("Veri bütünlüğü",active?.dataGap?"BOŞLUK VAR":"İZLENİYOR",active?.dataGap?"Mum eksik; sonuç güvenilir değil":"Kapanmış 15m mumları takip ediliyor",active?.dataGap?"bad":"blue")
   ].join("");
   document.getElementById("paperUpdated").textContent=`${trades.length} yerel kayıt`;
-  document.getElementById("paperSummary").textContent="V7.7 varsayımları: komisyon %0,05/işlem tarafı; kayma %0,02/taraf; funding maliyeti %0,01/8 saat (süreye orantılı, tahmini). Net R bu maliyetleri düşer. Eski işlemler net performansa katılmaz. 15m mum boşluğunda sonuç askıya alınır. Aynı mumda SL/TP2: SL önce. Gerçek funding, spread, likidasyon ve tarayıcı kapalıyken kaçan sinyaller modellenmez.";
+  document.getElementById("paperSummary").textContent=" varsayımları: komisyon %0,05/işlem tarafı; kayma %0,02/taraf; funding maliyeti %0,01/8 saat (süreye orantılı, tahmini). Net R bu maliyetleri düşer. Eski işlemler net performansa katılmaz. 15m mum boşluğunda sonuç askıya alınır. Aynı mumda SL/TP2: SL önce. Gerçek funding, spread, likidasyon ve tarayıcı kapalıyken kaçan sinyaller modellenmez.";
 }
 function exportPaper() {
   const blob=new Blob([JSON.stringify(state.paperTrades,null,2)],{type:"application/json"});
@@ -1375,32 +1383,46 @@ init().catch(error => {
 </script>
 
 <script>
-/* V7.28 is isolated from the original V7.15 scripts and does not alter their data sources. */
+/* is isolated from the original scripts and does not alter their data sources. */
 (()=>{
  const $=id=>document.getElementById(id);
  const num=v=>v==null||!Number.isFinite(Number(v))?'—':Number(v).toLocaleString('tr-TR',{maximumFractionDigits:2});
  const date=v=>{if(v==null)return '—';const n=Number(v);const d=Number.isFinite(n)?new Date(n):new Date(v);return Number.isNaN(d.getTime())?'—':d.toLocaleString('tr-TR');};
  const statuses={WAITING:'🟡 LİMİT BEKLİYOR',PAPER_OPEN:'🟢 GİRİŞ TETİKLENDİ (simülasyon)',STOP:'🔴 STOP',TP2:'🟢 TP2',TIMEOUT:'⚪ SÜRE DOLDU',EXPIRED:'⚪ LİMİT SÜRESİ DOLDU',INVALIDATED:'🟠 KOŞULLAR BOZULDU',INVALIDATED_DATA:'🟠 VERİ YETERSİZ',CANCELLED_STRATEGY_CHANGE:'⚪ ESKİ EMA50 LİMİTİ İPTAL',DATA_GAP:'🟠 VERİ KESİNTİSİ',ATR_MISSING:'🟠 ATR YOK',RISK_REJECT:'🟠 RİSK FİLTRESİ'};
  function td(row,value,css){const cell=document.createElement('td');cell.textContent=value==null?'—':String(value);if(css)cell.className=css;row.appendChild(cell);}
+ let page=1,records=[],updatedAt=null;
+ const pageSize=20;
+ const expired=t=>t.status==='WAITING'&&Number.isFinite(Number(t.expires_at))&&Number(t.expires_at)>0&&Date.now()>=Number(t.expires_at);
+ function render(){
+   const all=records, pages=Math.max(1,Math.ceil(all.length/pageSize));page=Math.min(page,pages);
+   const stale=all.filter(expired).length;
+   $('manualV728Status').textContent='Son güncelleme: '+date(updatedAt)+' · Toplam '+all.length+' sinyal · '+(stale?stale+' bekleyen sinyalin süresi geçmiş (motor onayı bekleniyor) · ':'')+'Sayfa '+page+'/'+pages;
+   const body=$('manualV728Rows');body.replaceChildren();
+   if(!all.length){const tr=document.createElement('tr');td(tr,'Henüz sinyal oluşmadı.');tr.firstChild.colSpan=10;body.appendChild(tr);}
+   for(const t of all.slice((page-1)*pageSize,page*pageSize)){
+    const tr=document.createElement('tr'),waiting=t.status==='WAITING',overdue=expired(t);
+    if(overdue)tr.classList.add('signal-overdue');
+    td(tr,date(t.created_at));td(tr,t.side,t.side==='LONG'?'ok':t.side==='SHORT'?'bad':'');
+    td(tr,t.entry_timeframe);td(tr,Array.isArray(t.trend_sources)?t.trend_sources.join(', '):'—');
+    td(tr,num(t.limit_price));td(tr,overdue?'⚠️ LİMİT SÜRESİ GEÇTİ · KAYIT BEKLİYOR':(statuses[t.status]||t.status));
+    td(tr,num(waiting?t.estimated_stop:t.stop));td(tr,num(waiting?t.estimated_tp1:t.tp1));td(tr,num(waiting?t.estimated_tp2:t.tp2));
+    td(tr,waiting?'Tahmini · 10 ATR ort.':'Giriş ATR(14)');body.appendChild(tr);
+   }
+   const nav=$('manualPagination');nav.replaceChildren();if(pages<=1)return;
+   const add=(label,to,disabled,active=false)=>{const b=document.createElement('button');b.type='button';b.textContent=label;b.disabled=disabled;b.className='page-btn'+(active?' current':'');b.setAttribute('aria-label',label==='‹'?'Önceki sayfa':label==='›'?'Sonraki sayfa':'Sayfa '+label);if(active)b.setAttribute('aria-current','page');b.addEventListener('click',()=>{page=to;render();});nav.appendChild(b)};
+   add('‹',page-1,page===1);
+   const shown=new Set([1,pages,page-1,page,page+1].filter(n=>n>=1&&n<=pages));let previous=0;
+   for(const n of [...shown].sort((a,b)=>a-b)){if(n-previous>1){const dots=document.createElement('span');dots.textContent='…';dots.className='page-ellipsis';nav.appendChild(dots)}add(String(n),n,false,n===page);previous=n}
+   add('›',page+1,page===pages);
+ }
  async function update(){
   try{
    const r=await fetch('./manual_signals_v7_28.json?t='+Date.now(),{cache:'no-store'});
    if(!r.ok)throw Error('Sinyal verisi henüz bulunamadı (HTTP '+r.status+')');
-   const db=await r.json(),all=Array.isArray(db.signals)?db.signals.slice().reverse():[];
-   $('manualV728Status').textContent='Son güncelleme: '+date(db.updated_at)+' · Toplam '+all.length+' sinyal · Yalnızca manuel takip';
-   const body=$('manualV728Rows');body.replaceChildren();
-   if(!all.length){const tr=document.createElement('tr');td(tr,'Henüz sinyal oluşmadı.');tr.firstChild.colSpan=10;body.appendChild(tr);return;}
-   for(const t of all.slice(0,35)){
-    const tr=document.createElement('tr'),waiting=t.status==='WAITING';
-    td(tr,date(t.created_at));td(tr,t.side,t.side==='LONG'?'ok':t.side==='SHORT'?'bad':'');
-    td(tr,t.entry_timeframe);td(tr,Array.isArray(t.trend_sources)?t.trend_sources.join(', '):'—');
-    td(tr,num(t.limit_price));td(tr,statuses[t.status]||t.status);
-    td(tr,num(waiting?t.estimated_stop:t.stop));td(tr,num(waiting?t.estimated_tp1:t.tp1));td(tr,num(waiting?t.estimated_tp2:t.tp2));
-    td(tr,waiting?'Tahmini · 10 ATR ort.':'Giriş ATR(14)');body.appendChild(tr);
-   }
+   const db=await r.json();records=Array.isArray(db.signals)?db.signals.slice().sort((a,b)=>Number(b.created_at||0)-Number(a.created_at||0)):[];updatedAt=db.updated_at;render();
   }catch(e){$('manualV728Status').textContent='Sinyal verisi yüklenemedi: '+e.message;}
  }
- update();setInterval(update,60000);
+ update();setInterval(update,60000);setInterval(()=>{if(records.some(t=>t.status==='WAITING'))render()},30000);
 })();
 </script>
 
@@ -1410,8 +1432,8 @@ init().catch(error => {
  const $=id=>document.getElementById(id);
  const main=document.querySelector('main'), signals=$('manualSignalV728'), hero=document.querySelector('.hero');
  if(main&&signals&&hero){main.insertBefore(signals,hero);const perf=$('terminalPerformance');if(perf)main.insertBefore(perf,signals)}
- const research=$('liquiditySection');
- if(research){const label=document.createElement('div');label.id='terminalResearch';label.className='research-title';label.textContent='ARAŞTIRMA & DERİN ANALİZ';research.parentNode.insertBefore(label,research)}
+ const research=$('terminalResearch');
+ if(research){const label=document.createElement('div');label.className='research-title';label.textContent='ARAŞTIRMA & DERİN ANALİZ';research.parentNode.insertBefore(label,research)}
  const tick=()=>{$('terminalClock').textContent=new Intl.DateTimeFormat('tr-TR',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit',timeZone:'Europe/Istanbul'}).format(new Date())+' · TR'};
  tick();setInterval(tick,30000);
  const fmt=t=>new Intl.DateTimeFormat('tr-TR',{hour:'2-digit',minute:'2-digit',timeZone:'Europe/Istanbul'}).format(new Date(t));
@@ -1420,12 +1442,12 @@ init().catch(error => {
    const response=await fetch('./manual_signals_v7_28.json?dashboard='+Date.now(),{cache:'no-store'});
    if(!response.ok)throw Error('HTTP '+response.status);
    const db=await response.json(),items=Array.isArray(db.signals)?db.signals:[];
-   const active=items.filter(x=>x.status==='PAPER_OPEN'),waiting=items.filter(x=>x.status==='WAITING');
+   const active=items.filter(x=>x.status==='PAPER_OPEN'),waiting=items.filter(x=>x.status==='WAITING'&&(!Number.isFinite(Number(x.expires_at))||Date.now()<Number(x.expires_at))); 
    $('termOpen').textContent=active.length;$('termWaiting').textContent=waiting.length;
    const last=items.slice().sort((a,b)=>(b.created_at||0)-(a.created_at||0))[0];
    $('termLastSide').textContent=last?last.side==='LONG'?'↗ LONG':last.side==='SHORT'?'↘ SHORT':last.side:'—';
    $('termLastSide').style.color=last?.side==='LONG'?'#48dcb0':last?.side==='SHORT'?'#ff8094':'#f4f8fc';
-   $('termLastMeta').textContent=last?`${last.entry_timeframe||'—'} · ${fmt(last.created_at)} · ${last.status||'—'}`:'Henüz sinyal yok';
+   $('termLastMeta').textContent=last?`${last.entry_timeframe||'—'} · ${fmt(last.created_at)} · ${(last.status==='WAITING'&&Number(last.expires_at)>0&&Date.now()>=Number(last.expires_at)?'LİMİT SÜRESİ GEÇTİ · MOTOR ONAYI BEKLENİYOR':last.status||'—')}`:'Henüz sinyal yok';
    const age=Date.now()-Number(db.updated_at||0),mins=Math.max(0,Math.floor(age/60000));
    $('termUpdated').textContent=db.updated_at?fmt(db.updated_at):'—';
    $('termUpdatedAgo').textContent=db.updated_at?`${mins} dakika önce · JSON`:'Güncelleme zamanı yok';
@@ -1443,7 +1465,7 @@ init().catch(error => {
 })();
 </script>
 <script>
-/* V7.29 performance dashboard — reads the same JSON as the manual signal table. */
+/* performance dashboard — reads the same JSON as the manual signal table. */
 (()=>{
  const $=id=>document.getElementById(id);
  const f=(v,d=2)=>Number.isFinite(v)?v.toLocaleString('tr-TR',{minimumFractionDigits:d,maximumFractionDigits:d}):'—';
@@ -1494,7 +1516,7 @@ init().catch(error => {
    $('perfFactor').textContent=negative?f(positive/negative):positive?'∞':'—';
    $('perfDrawdown').textContent=closed.length?f(maxDD)+'R':'—';
    $('perfOpen').textContent=all.filter(x=>x.status==='PAPER_OPEN').length;
-   $('perfPending').textContent=all.filter(x=>x.status==='WAITING').length;
+   $('perfPending').textContent=all.filter(x=>x.status==='WAITING'&&(!Number.isFinite(Number(x.expires_at))||Date.now()<Number(x.expires_at))).length;
    $('perfStreak').textContent=maxStreak;
    $('perfUpdated').textContent='Son kayıt: '+fmtTime(db.updated_at);
    $('perfChartLabel').textContent=closed.length+' kapanmış işlem';
