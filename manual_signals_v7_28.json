@@ -1,5 +1,5 @@
 {
-  "version": "7.29",
+  "version": "7.30",
   "signals": [
     {
       "id": "SHORT-4H-1795348800000",
@@ -1185,8 +1185,9 @@
       "ema20": 62515.04,
       "ema50": 61990.93,
       "ema200": 61000.69,
-      "status": "WAITING",
-      "note": "MANUAL ONLY. Limit price is a watch level, not an exchange order."
+      "status": "CANCELLED_STRATEGY_CHANGE",
+      "note": "MANUAL ONLY. Limit price is a watch level, not an exchange order.",
+      "closed_at": 1795453836025
     },
     {
       "id": "LONG-15m-1795453200000",
@@ -1212,11 +1213,12 @@
       "ema20": 62489.85,
       "ema50": 62001.11,
       "ema200": 61022.3,
-      "status": "WAITING",
-      "note": "MANUAL ONLY. Limit price is a watch level, not an exchange order."
+      "status": "CANCELLED_STRATEGY_CHANGE",
+      "note": "MANUAL ONLY. Limit price is a watch level, not an exchange order.",
+      "closed_at": 1795453836025
     }
   ],
-  "updated_at": 1795453542737,
+  "updated_at": 1795453836025,
   "trend": {
     "1D": "SHORT",
     "4H": "LONG",
@@ -1237,6 +1239,8 @@
     "allow_repeated_same_side": true,
     "score_gate": "disabled for independent opposing trends",
     "paper_only": true,
+    "entry_execution": "observed OKX ticker last price on 5-minute scan",
+    "exit_execution": "closed 1m OHLC + observed ticker",
     "atr_at_fill": "last fully closed entry-timeframe bar",
     "estimate_atr": "mean of ATR14 values on last 10 fully closed entry-timeframe bars",
     "reprice": "EMA20 on every closed entry-timeframe candle",
