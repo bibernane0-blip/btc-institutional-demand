@@ -1,3 +1,4 @@
+```
 <!doctype html>
 <html lang="tr">
 <head>
@@ -90,7 +91,7 @@ main{max-width:1480px;padding:0 34px 80px}
 .signals-priority{margin:8px 0 22px;border-color:#36516a;background:linear-gradient(150deg,#142335,#101a29)}
 .signals-priority h2{font-size:25px;margin:6px 0 12px}.header-accent{font-size:11px;letter-spacing:.1em;font-weight:800;color:#f4c26d;border:1px solid #66553a;padding:5px 8px;border-radius:5px;vertical-align:middle}
 .signals-priority p.small{color:#93a5b9;max-width:1150px;line-height:1.65}
-.signals-priority table{font-size:13px;min-width:1030px}
+.signals-priority table{font-size:13px;min-width:1130px}
 .signals-priority th{font-size:10px;letter-spacing:.07em;color:#95a8c0;text-transform:uppercase;background:#162436;padding:14px 12px}
 .signals-priority td{padding:14px 12px;border-color:#27394d;font-variant-numeric:tabular-nums}
 .signals-priority tbody tr:hover{background:#1d2c3c}
@@ -314,8 +315,8 @@ main{max-width:1480px;padding:0 34px 80px}
   <div class="section-kicker">EXECUTION WATCHLIST / PAPER ONLY</div><h2>Manuel sinyal merkezi </h2>
   <div id="manualV728Status" class="small" role="status">Sinyaller yükleniyor…</div>
   <div style="overflow-x:auto;margin-top:12px">
-   <table><thead><tr><th>Oluşma</th><th>Yön</th><th>Giriş TF</th><th>Üst trend</th><th>Limit ($)</th><th>Durum</th><th>Stop ($)</th><th>TP1 ($)</th><th>TP2 ($)</th><th>ATR hesabı</th></tr></thead>
-   <tbody id="manualV728Rows"><tr><td colspan="10">Henüz sinyal yok.</td></tr></tbody></table>
+   <table><thead><tr><th>Oluşma</th><th>Yön</th><th>Giriş TF</th><th>Üst trend</th><th>Limit ($)</th><th>PAPER Giriş ($)</th><th>Durum</th><th>Stop ($)</th><th>TP1 ($)</th><th>TP2 ($)</th><th>ATR hesabı</th></tr></thead>
+   <tbody id="manualV728Rows"><tr><td colspan="11">Henüz sinyal yok.</td></tr></tbody></table>
   </div>
   <nav id="manualPagination" class="signal-pagination" aria-label="Sinyal sayfaları"></nav>
  </section>
@@ -1398,13 +1399,13 @@ init().catch(error => {
    const stale=all.filter(expired).length;
    $('manualV728Status').textContent='Son güncelleme: '+date(updatedAt)+' · Toplam '+all.length+' sinyal · '+(stale?stale+' bekleyen sinyalin süresi geçmiş (motor onayı bekleniyor) · ':'')+'Sayfa '+page+'/'+pages;
    const body=$('manualV728Rows');body.replaceChildren();
-   if(!all.length){const tr=document.createElement('tr');td(tr,'Henüz sinyal oluşmadı.');tr.firstChild.colSpan=10;body.appendChild(tr);}
+   if(!all.length){const tr=document.createElement('tr');td(tr,'Henüz sinyal oluşmadı.');tr.firstChild.colSpan=11;body.appendChild(tr);}
    for(const t of all.slice((page-1)*pageSize,page*pageSize)){
     const tr=document.createElement('tr'),waiting=t.status==='WAITING',overdue=expired(t);
     if(overdue)tr.classList.add('signal-overdue');
     td(tr,date(t.created_at));td(tr,t.side,t.side==='LONG'?'ok':t.side==='SHORT'?'bad':'');
     td(tr,t.entry_timeframe);td(tr,Array.isArray(t.trend_sources)?t.trend_sources.join(', '):'—');
-    td(tr,num(t.limit_price));td(tr,overdue?'⚠️ LİMİT SÜRESİ GEÇTİ · KAYIT BEKLİYOR':(statuses[t.status]||t.status));
+    td(tr,num(t.limit_price));td(tr,t.entry==null?'—':num(t.entry));td(tr,overdue?'⚠️ LİMİT SÜRESİ GEÇTİ · KAYIT BEKLİYOR':(statuses[t.status]||t.status));
     td(tr,num(waiting?t.estimated_stop:t.stop));td(tr,num(waiting?t.estimated_tp1:t.tp1));td(tr,num(waiting?t.estimated_tp2:t.tp2));
     td(tr,waiting?'Tahmini · 10 ATR ort.':'Giriş ATR(14)');body.appendChild(tr);
    }
@@ -1530,3 +1531,4 @@ init().catch(error => {
 </script>
 </body>
 </html>
+```
