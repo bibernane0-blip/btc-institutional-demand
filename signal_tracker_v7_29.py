@@ -102,38 +102,64 @@ def validate_and_reprice(t,at):
     t.setdefault('limit_updates',[]).append({'candle_close':at,'limit_price':price})
     t['limit_updates']=t['limit_updates'][-30:]
 
-def check_waiting(db,cs,now):
-    """Replay closed 15m bars chronologically; recheck and reprice at entry-TF boundaries."""
+def check_waiting(db, cs, now):
+    """Replay contiguous closed 15m candles; distinguish missing bars from scan delays.
+
+    last_checked_ts for WAITING is the end of the last checked candle, or the
+    creation timestamp before the first eligible 15m candle.
+    """
+    step = DUR['15m']
+    bars = {c['ts']: c for c in cs if c['ts'] + step <= now}
+    if not bars:
+        raise RuntimeError('No closed 15m candles available; retaining WAITING states')
+    latest_start = max(bars)
     for t in db['signals']:
-        if t['status']!='WAITING':continue
-        tf=t['entry_timeframe'];d=1 if t['side']=='LONG' else -1
-        cursor=t.get('last_checked_ts',t['created_at'])
-        for c in cs:
-            start=c['ts'];end=start+DUR['15m']
-            if end>now or start<cursor or start<t['created_at']:continue
-            if start>=t['expires_at']:
-                t.update(status='EXPIRED',closed_at=t['expires_at']);break
-            if start>cursor and start-cursor>DUR['15m']*2:
-                t.update(status='DATA_GAP',closed_at=start);break
-            # The EMA20 update and validity check apply at the START of a new 15m candle,
-            # using the most recently completed entry-TF candle only.
-            last_boundary=(start//DUR[tf])*DUR[tf]
-            if last_boundary>t.get('last_repriced_candle_close',t['signal_candle_close']):
-                validate_and_reprice(t,last_boundary)
-                if t['status']!='WAITING':break
-            t['last_checked_ts']=end
-            hit=(c['low']<=t['limit_price'] if d==1 else c['high']>=t['limit_price'])
-            if not hit:continue
-            history=latest_closed_at(BARS[tf],tf,start);atr=atr14(history)
-            if atr is None:t.update(status='ATR_MISSING',closed_at=start);break
-            risk=2.5*atr
-            t.update(status='PAPER_OPEN',filled_at=start,entry=t['limit_price'],atr_at_fill=atr,
-                     stop=t['limit_price']-d*risk,tp1=t['limit_price']+d*1.5*risk,
-                     tp2=t['limit_price']+d*3.0*risk,tp1_touched=False,
-                     last_checked_ts=start-DUR['15m'])
-            break
-        if t['status']=='WAITING' and now>=t['expires_at']:
-            t.update(status='EXPIRED',closed_at=t['expires_at'])
+        if t['status'] != 'WAITING':
+            continue
+        tf = t['entry_timeframe']
+        d = 1 if t['side'] == 'LONG' else -1
+        created = int(t['created_at'])
+        cursor = int(t.get('last_checked_ts', created))
+        # The first eligible candle must START at or after signal creation.
+        first_start = ((created + step - 1) // step) * step
+        # After replay, cursor points to the END of the last checked candle.
+        # Older records can have cursor=creation timestamp instead.
+        next_start = max(first_start, ((cursor + step - 1) // step) * step)
+        expiry = int(t['expires_at'])
+        while next_start <= latest_start and next_start < expiry:
+            c = bars.get(next_start)
+            if c is None:
+                # Missing OHLC bar, not merely a delayed GitHub Actions run.
+                t.update(status='DATA_GAP', closed_at=next_start,
+                         data_gap_expected_ts=next_start,
+                         data_gap_last_checked_ts=cursor,
+                         data_gap_reason='Missing confirmed 15m candle in API history')
+                break
+            last_boundary = (next_start // DUR[tf]) * DUR[tf]
+            if last_boundary > t.get('last_repriced_candle_close', t['signal_candle_close']):
+                validate_and_reprice(t, last_boundary)
+                if t['status'] != 'WAITING':
+                    break
+            t['last_checked_ts'] = next_start + step
+            hit = (c['low'] <= t['limit_price'] if d == 1 else c['high'] >= t['limit_price'])
+            if hit:
+                history = latest_closed_at(BARS[tf], tf, next_start)
+                atr = atr14(history)
+                if atr is None:
+                    t.update(status='ATR_MISSING', closed_at=next_start)
+                    break
+                risk = 2.5 * atr
+                t.update(status='PAPER_OPEN', filled_at=next_start,
+                         entry=t['limit_price'], atr_at_fill=atr,
+                         stop=t['limit_price'] - d * risk,
+                         tp1=t['limit_price'] + d * 1.5 * risk,
+                         tp2=t['limit_price'] + d * 3.0 * risk,
+                         tp1_touched=False,
+                         last_checked_ts=next_start-step)
+                break
+            next_start += step
+        if t['status'] == 'WAITING' and now >= expiry:
+            t.update(status='EXPIRED', closed_at=expiry)
 
 def check_exits(db,cs,now):
     """Paper positions only. Ambiguous OHLC candles assume STOP before TP2."""
