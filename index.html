@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#080f1c">
 <meta name="description" content="BTC Institutional Demand PRO — Bitcoin piyasa ve kurumsal akış analiz paneli">
-<title>BTC Institutional Demand PRO — V7.15</title>
+<title>BTC | Institutional Terminal</title>
 <style>
 :root{color-scheme:dark;--bg:#0b1220;--panel:#151f31;--panel2:#101a2a;--line:#29384f;--text:#e5e7eb;--muted:#9ca3af;--green:#34d399;--red:#fb7185;--yellow:#fbbf24;--blue:#7dd3fc}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:15px/1.5 system-ui,Segoe UI,Arial}
@@ -54,10 +54,77 @@ footer{margin:28px 0 0;padding:18px 0;border-top:1px solid var(--line)}
 @media(max-width:900px){main{padding:15px}.intelligence{grid-template-columns:1fr}}
 @media(max-width:600px){.hero{grid-template-columns:1fr}.card{padding:17px}.source-row{margin:12px 0}.tile{min-height:100px}iframe{height:360px}}
 </style>
+
+<style>
+:root{--bg:#070b12;--panel:#101925;--panel2:#0d1520;--line:#233044;--text:#edf2f8;--muted:#8291a6;--green:#35d6a3;--red:#ff647d;--yellow:#f6c55c;--blue:#83b8ff}
+html{scroll-behavior:smooth}
+body{background:radial-gradient(ellipse 85% 42% at 50% -10%,#18273b 0%,#080d16 64%,#070b12 100%);color:#eaf0f7;font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;letter-spacing:-.012em}
+main{max-width:1480px;padding:0 34px 80px}
+.terminal-masthead{min-height:110px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #233145;gap:16px}
+.brand-lockup{display:flex;gap:17px;align-items:center}.brand-symbol{width:52px;height:52px;display:grid;place-items:center;background:#f4b74d;color:#111720;border-radius:15px;font-size:34px;font-weight:800;box-shadow:0 8px 30px #f4b74d20}
+.eyebrow,.section-kicker{color:#879bb5;font-size:10px;font-weight:800;letter-spacing:.19em}
+.brand-lockup h1{font-size:25px;font-weight:850;letter-spacing:-.055em;line-height:1.15;margin:6px 0 0}.brand-thin{color:#9fb1c9;font-weight:400}
+.masthead-right{display:flex;align-items:center;gap:20px;font-size:12px;color:#a3b2c5}.live-indicator{display:flex;align-items:center;gap:8px;color:#4ce0ae;font-weight:800;font-size:10px;letter-spacing:.12em}
+.live-pulse{height:7px;width:7px;border-radius:50%;background:#40dfa5;box-shadow:0 0 0 4px #40dfa51b}
+.terminal-nav{display:flex;align-items:center;gap:30px;overflow:auto;border-bottom:1px solid #243044;white-space:nowrap;scrollbar-width:none}
+.terminal-nav a{display:block;text-decoration:none;padding:18px 1px 16px;color:#8e9db2;font-size:10px;letter-spacing:.13em;font-weight:800;border-bottom:2px solid transparent}
+.terminal-nav a:hover,.terminal-nav .nav-active{color:#edf5ff;border-bottom-color:#f2bc64}
+.terminal-overview{padding:42px 0 25px}.overview-heading{display:flex;justify-content:space-between;align-items:center;gap:16px;margin-bottom:25px}
+.overview-heading h2{font-size:clamp(29px,4vw,43px);letter-spacing:-.055em;margin:5px 0 4px;font-weight:800}.accent-dot{color:#f3be67}.overview-heading p{margin:0;color:#8c9aaf;font-size:13px}
+.data-state{font-size:10px;letter-spacing:.08em;font-weight:800;padding:10px 13px;border:1px solid #3c4b61;border-radius:8px;color:#b5c4d6;max-width:300px;text-align:center}
+.data-state.good{border-color:#245c4d;color:#50d8aa;background:#123a302e}.data-state.warn{border-color:#795637;color:#f3c37b;background:#3e2b172a}
+.executive-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px}
+.executive-card{min-height:160px;padding:23px 24px;background:linear-gradient(145deg,#131f2e,#0f1825);border:1px solid #26374b;border-radius:13px;position:relative;overflow:hidden}
+.executive-card:before{content:"";position:absolute;inset:0 0 auto;height:2px;background:#34475e}.executive-primary{background:linear-gradient(130deg,#193c36,#112329 75%);border-color:#31574f}.executive-primary:before{background:#3bd4a5}
+.exec-label{color:#91a3b9;font-size:10px;letter-spacing:.14em;font-weight:800}.exec-value{font-size:48px;font-weight:760;line-height:1.35;letter-spacing:-.07em;margin:10px 0 0;color:#f5f8fd;font-variant-numeric:tabular-nums}.executive-primary .exec-value{color:#52e0b0}
+.exec-side{font-size:30px;letter-spacing:-.03em;padding-top:8px}.exec-time{font-size:27px;letter-spacing:-.03em;padding-top:11px}
+.exec-sub{color:#9cabc0;font-size:12px;line-height:1.5}
+.terminal-alert{border:1px solid #2b3c50;background:#101c2b;padding:12px 17px;border-radius:9px;color:#a8b8ca;font-size:12px;margin-top:14px}
+.terminal-alert.warning{color:#f4c87f;border-color:#655139;background:#261f1a}
+.legacy-top{margin-top:22px;padding:14px 18px;border:1px solid #263548;border-radius:10px;background:#101925}
+.legacy-top h1{font-size:15px;letter-spacing:0}.legacy-top .sub{font-size:12px}
+.source-row{margin:16px 0 22px}
+.card{background:linear-gradient(155deg,#121d2c,#0e1724);border:1px solid #26374a;border-radius:13px;box-shadow:none}
+.card h2{letter-spacing:-.03em}
+.hero{margin-bottom:18px}.hero .card{border-color:#2c3c51}
+.signals-priority{margin:8px 0 22px;border-color:#36516a;background:linear-gradient(150deg,#142335,#101a29)}
+.signals-priority h2{font-size:25px;margin:6px 0 12px}.header-accent{font-size:11px;letter-spacing:.1em;font-weight:800;color:#f4c26d;border:1px solid #66553a;padding:5px 8px;border-radius:5px;vertical-align:middle}
+.signals-priority p.small{color:#93a5b9;max-width:1150px;line-height:1.65}
+.signals-priority table{font-size:13px;min-width:1030px}
+.signals-priority th{font-size:10px;letter-spacing:.07em;color:#95a8c0;text-transform:uppercase;background:#162436;padding:14px 12px}
+.signals-priority td{padding:14px 12px;border-color:#27394d;font-variant-numeric:tabular-nums}
+.signals-priority tbody tr:hover{background:#1d2c3c}
+#manualV728Status{margin-top:15px;color:#9cb0c7}
+.research-title{font-size:12px;letter-spacing:.16em;color:#8fa3bc;font-weight:800;margin:36px 0 15px;padding-top:20px;border-top:1px solid #2a3b4d}
+#terminalResearch{scroll-margin-top:20px}
+@media(max-width:1000px){.executive-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:650px){main{padding:0 14px 50px}.terminal-masthead{min-height:86px}.brand-symbol{width:40px;height:40px;font-size:26px}.brand-lockup{gap:11px}.brand-lockup h1{font-size:20px}.eyebrow{font-size:8px}.masthead-right{gap:6px}.masthead-date{display:none}.terminal-nav{gap:22px}.terminal-nav a{font-size:9px;padding:15px 0}.terminal-overview{padding-top:29px}.overview-heading{align-items:flex-start;flex-direction:column}.overview-heading h2{font-size:34px}.data-state{font-size:9px}.executive-grid{gap:9px}.executive-card{min-height:135px;padding:17px 15px}.exec-value{font-size:38px}.exec-side{font-size:25px}.exec-time{font-size:22px}.exec-label{font-size:9px}.exec-sub{font-size:10px}.signals-priority h2{font-size:21px}}
+</style>
 </head>
 <body>
 <main>
- <div class="top">
+ <div class="terminal-masthead">
+   <div class="brand-lockup"><span class="brand-symbol">₿</span><div><div class="eyebrow">INSTITUTIONAL RESEARCH TERMINAL</div><h1>BTC <span class="brand-thin">/ DEMAND</span></h1></div></div>
+   <div class="masthead-right"><span class="live-indicator"><span class="live-pulse"></span> LIVE DATA</span><span class="masthead-date" id="terminalClock">—</span></div>
+ </div>
+ <nav class="terminal-nav" aria-label="Panel bölümleri">
+   <a href="#terminalOverview" class="nav-active">GENEL BAKIŞ</a>
+   <a href="#manualSignalV728">SİNYALLER</a>
+   <a href="#marketStructureSection">PİYASA YAPISI</a>
+   <a href="#regimeSection">REJİM</a>
+   <a href="#terminalResearch">ARAŞTIRMA</a>
+ </nav>
+ <section class="terminal-overview" id="terminalOverview">
+  <div class="overview-heading"><div><span class="eyebrow">TRADING INTELLIGENCE / V7.29</span><h2>Karar merkezi<span class="accent-dot">.</span></h2><p>Canlı piyasa, manuel sinyaller ve veri güvenilirliği tek ekranda.</p></div><div class="data-state" id="terminalDataHealth">SİNYAL VERİSİ KONTROL EDİLİYOR</div></div>
+  <div class="executive-grid">
+   <article class="executive-card executive-primary"><div class="exec-label">AKTİF SİMÜLASYON</div><div class="exec-value" id="termOpen">—</div><div class="exec-sub">Açık PAPER pozisyonu</div></article>
+   <article class="executive-card"><div class="exec-label">BEKLEYEN LİMİT</div><div class="exec-value" id="termWaiting">—</div><div class="exec-sub">Aktif izleme sinyali</div></article>
+   <article class="executive-card"><div class="exec-label">SON SİNYAL</div><div class="exec-value exec-side" id="termLastSide">—</div><div class="exec-sub" id="termLastMeta">Veri bekleniyor</div></article>
+   <article class="executive-card"><div class="exec-label">SİNYAL MOTORU</div><div class="exec-value exec-time" id="termUpdated">—</div><div class="exec-sub" id="termUpdatedAgo">Son JSON güncellemesi</div></article>
+  </div>
+  <div class="terminal-alert" id="terminalAlert" role="status">Sinyal verisi kontrol ediliyor…</div>
+ </section>
+ <div class="top legacy-top">
   <div><h1>BTC Institutional Demand PRO</h1><div class="sub">Canlı piyasa akışı + kurumsal sermaye akışı</div></div>
   <div><button class="btn" id="refreshBtn">Akış verisini yenile</button></div>
  </div>
@@ -184,9 +251,9 @@ footer{margin:28px 0 0;padding:18px 0;border-top:1px solid var(--line)}
  </footer>
 
  <!-- V7.28 manual signals add-on: legacy dashboard remains intact -->
- <section class="card" id="manualSignalV728" aria-label="V7.31 manuel işlem sinyalleri">
-  <h2>V7.31 · Manuel işlem sinyalleri · TP2 3R</h2>
-  <p class="small">🟡 <strong>LİMİT BEKLİYOR</strong>: EMA20 limit seviyesi her giriş zaman dilimi mumu kapandığında güncellenir; temas, kapanmış 1 dakikalık mumlarla kontrol edilir (1m EMA20 kullanılmaz); süre sıfırlanmaz. Geçerlilik: 15m için 4 mum (1 saat), 1H ve 4H için 16 mum (16/64 saat). ADX ≥ 25, EMA50/EMA200 yönü, kapanışın EMA50 tarafı ve en az bir ilk üst zaman dilimi trendi korunmalıdır; aksi halde limit iptal edilir. Stop ve TP değerleri son 10 kapanmış mumun ATR(14) ortalamasına göre <strong>tahminidir</strong>. 🟢 <strong>GİRİŞ TETİKLENDİ</strong>: Fiyat limit seviyesine dokunmuştur; stop ve TP son kapanmış mumun ATR(14) değeriyle sabitlenir. Bu, borsada gerçek emir gerçekleştiği anlamına gelmez.</p>
+ <section class="card signals-priority" id="manualSignalV728" aria-label="V7.31 manuel işlem sinyalleri">
+  <div class="section-kicker">EXECUTION WATCHLIST / PAPER ONLY</div><h2>Manuel sinyal merkezi <span class="header-accent">V7.29</span></h2>
+  <p class="small">🟡 <strong>LİMİT BEKLİYOR</strong>: EMA20 limit seviyesi her giriş zaman dilimi mumu kapandığında güncellenir; temas, kapanmış 15 dakikalık mumlarla kontrol edilir (1m EMA20 kullanılmaz); süre sıfırlanmaz. Geçerlilik: 15m için 4 mum (1 saat), 1H ve 4H için 16 mum (16/64 saat). ADX ≥ 25, EMA50/EMA200 yönü, kapanışın EMA50 tarafı ve en az bir ilk üst zaman dilimi trendi korunmalıdır; aksi halde limit iptal edilir. Stop ve TP değerleri son 10 kapanmış mumun ATR(14) ortalamasına göre <strong>tahminidir</strong>. 🟢 <strong>GİRİŞ TETİKLENDİ</strong>: Fiyat limit seviyesine dokunmuştur; stop ve TP son kapanmış mumun ATR(14) değeriyle sabitlenir. Bu, borsada gerçek emir gerçekleştiği anlamına gelmez.</p>
   <div id="manualV728Status" class="small" role="status">Sinyaller yükleniyor…</div>
   <div style="overflow-x:auto;margin-top:12px">
    <table><thead><tr><th>Oluşma</th><th>Yön</th><th>Giriş TF</th><th>Üst trend</th><th>Limit ($)</th><th>Durum</th><th>Stop ($)</th><th>TP1 ($)</th><th>TP2 ($)</th><th>ATR hesabı</th></tr></thead>
@@ -1283,6 +1350,45 @@ init().catch(error => {
   }catch(e){$('manualV728Status').textContent='Sinyal verisi yüklenemedi: '+e.message;}
  }
  update();setInterval(update,60000);
+})();
+</script>
+
+<script>
+/* Presentation layer only. Does not write to GitHub or alter trading logic. */
+(()=>{
+ const $=id=>document.getElementById(id);
+ const main=document.querySelector('main'), signals=$('manualSignalV728'), hero=document.querySelector('.hero');
+ if(main&&signals&&hero)main.insertBefore(signals,hero);
+ const research=$('liquiditySection');
+ if(research){const label=document.createElement('div');label.id='terminalResearch';label.className='research-title';label.textContent='ARAŞTIRMA & DERİN ANALİZ';research.parentNode.insertBefore(label,research)}
+ const tick=()=>{$('terminalClock').textContent=new Intl.DateTimeFormat('tr-TR',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit',timeZone:'Europe/Istanbul'}).format(new Date())+' · TR'};
+ tick();setInterval(tick,30000);
+ const fmt=t=>new Intl.DateTimeFormat('tr-TR',{hour:'2-digit',minute:'2-digit',timeZone:'Europe/Istanbul'}).format(new Date(t));
+ async function summary(){
+  try{
+   const response=await fetch('./manual_signals_v7_28.json?dashboard='+Date.now(),{cache:'no-store'});
+   if(!response.ok)throw Error('HTTP '+response.status);
+   const db=await response.json(),items=Array.isArray(db.signals)?db.signals:[];
+   const active=items.filter(x=>x.status==='PAPER_OPEN'),waiting=items.filter(x=>x.status==='WAITING');
+   $('termOpen').textContent=active.length;$('termWaiting').textContent=waiting.length;
+   const last=items.slice().sort((a,b)=>(b.created_at||0)-(a.created_at||0))[0];
+   $('termLastSide').textContent=last?last.side==='LONG'?'↗ LONG':last.side==='SHORT'?'↘ SHORT':last.side:'—';
+   $('termLastSide').style.color=last?.side==='LONG'?'#48dcb0':last?.side==='SHORT'?'#ff8094':'#f4f8fc';
+   $('termLastMeta').textContent=last?`${last.entry_timeframe||'—'} · ${fmt(last.created_at)} · ${last.status||'—'}`:'Henüz sinyal yok';
+   const age=Date.now()-Number(db.updated_at||0),mins=Math.max(0,Math.floor(age/60000));
+   $('termUpdated').textContent=db.updated_at?fmt(db.updated_at):'—';
+   $('termUpdatedAgo').textContent=db.updated_at?`${mins} dakika önce · JSON`:'Güncelleme zamanı yok';
+   const health=$('terminalDataHealth'),alert=$('terminalAlert');
+   health.className='data-state '+(age>15*60000?'warn':'good');
+   health.textContent=age>15*60000?'● VERİ GECİKMESİ':'● VERİ GÜNCEL';
+   alert.className='terminal-alert'+(age>15*60000?' warning':'');
+   alert.textContent=age>15*60000?`Dikkat: Sinyal dosyası ${mins} dakikadır güncellenmedi. Görünen WAITING / PAPER_OPEN durumları güncel olmayabilir.`:`Sinyal kaydı ${mins} dakika önce güncellendi. İşlemler simülasyondur; gerçek borsa emri gönderilmez.`;
+  }catch(err){
+   $('terminalDataHealth').className='data-state warn';$('terminalDataHealth').textContent='● VERİ ALINAMIYOR';
+   $('terminalAlert').className='terminal-alert warning';$('terminalAlert').textContent='Sinyal JSON verisi yüklenemedi: '+err.message;
+  }
+ }
+ summary();setInterval(summary,60000);
 })();
 </script>
 </body>
