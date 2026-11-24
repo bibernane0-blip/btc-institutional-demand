@@ -1,9 +1,9 @@
 name: BTC Manual Signals V7.29
 
 on:
+  workflow_dispatch:
   schedule:
     - cron: '*/5 * * * *'
-  workflow_dispatch:
 
 permissions:
   contents: write
@@ -50,7 +50,7 @@ jobs:
 
             python signal_tracker_v7_30.py
 
-            git add binance_manual_signals.json
+            git add manual_signals_v7_28.json
 
             if git diff --cached --quiet; then
               echo "No signal changes to publish."
