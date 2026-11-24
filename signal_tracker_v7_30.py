@@ -7,7 +7,7 @@ import signal_tracker as legacy
 from backtest_v7_21 import adx14
 
 ROOT=Path(__file__).resolve().parent
-OUT=ROOT/'binance_manual_signals.json'
+OUT=ROOT/'manual_signals_v7_28.json'
 DUR=legacy.DUR
 MAP={'1D':('4H','1H','15m'),'4H':('1H','15m'),'1H':('15m',)}
 LIMIT_BARS={"15m":4,"1H":16,"4H":16}  # Expiry is anchored to the original signal candle close.
@@ -15,36 +15,25 @@ HOLD_MS=240*3600000
 SESSION=requests.Session()
 SESSION.headers['User-Agent']='BTC-Manual-Watchlist-V7.30'
 
-BASE = 'https://fapi.binance.com'
-SYMBOL = 'BTCUSDT'
-INTERVALS = {'1Dutc': '1d', '4H': '4h', '1H': '1h', '15m': '15m', '1m': '1m'}
-
-def api(bar, now, limit=300):
-    response = SESSION.get(f'{BASE}/fapi/v1/klines', params={
-        'symbol': SYMBOL, 'interval': INTERVALS[bar], 'limit': limit + 1,
-        'endTime': now,
-    }, timeout=25)
-    response.raise_for_status()
-    candles = []
-    for row in response.json():
-        if int(row[6]) >= now:
-            continue
-        values = [float(value) for value in row[1:6]]
-        if not all(math.isfinite(value) for value in values) or min(values[:4]) <= 0:
-            raise ValueError('Invalid Binance candle')
-        candles.append(dict(zip(('open','high','low','close','volume'), values),
-                            ts=int(row[0]), confirm='1'))
-    return candles[-limit:]
+def api(bar,limit=300):
+    r=SESSION.get('https://www.okx.com/api/v5/market/candles',params={'instId':'BTC-USDT','bar':bar,'limit':str(limit)},timeout=25)
+    r.raise_for_status();body=r.json()
+    if body.get('code')!='0':raise RuntimeError(str(body.get('msg')))
+    return sorted([legacy.candle(row) for row in body['data'] if str(row[8])=='1'],key=lambda x:x['ts'])
 
 def ticker_snapshot(now):
-    response = SESSION.get(f'{BASE}/fapi/v2/ticker/price',
-                           params={'symbol': SYMBOL}, timeout=25)
-    response.raise_for_status()
-    row = response.json()
-    price, observed = float(row['price']), int(row['time'])
-    if row['symbol'] != SYMBOL or not math.isfinite(price) or price <= 0 or abs(now-observed)>120000:
-        raise RuntimeError('Invalid or stale Binance ticker')
-    return price, observed
+    """Single observed BTC-USDT last trade, not an assumed limit fill."""
+    r=SESSION.get('https://www.okx.com/api/v5/market/ticker',
+                  params={'instId':'BTC-USDT'},timeout=25)
+    r.raise_for_status();body=r.json()
+    if body.get('code')!='0' or not body.get('data'):
+        raise RuntimeError('OKX ticker unavailable')
+    row=body['data'][0]
+    price=float(row['last']);observed=int(row['ts'])
+    if not math.isfinite(price) or price<=0 or abs(now-observed)>120000:
+        raise RuntimeError('Invalid or stale OKX ticker; no paper fills')
+    return price,observed
+
 
 def ema_series(values,n):
     alpha=2/(n+1);v=values[0];out=[]
@@ -219,7 +208,7 @@ def check_waiting_live(db, price, observed, now):
                  entry=price,atr_at_fill=atr,
                  stop=price-d*risk,tp1=price+d*1.5*risk,
                  tp2=price+d*3*risk,tp1_touched=False,
-                 fill_method='BINANCE_USDM_TICKER_LAST_AT_SCAN',
+                 fill_method='OKX_TICKER_LAST_AT_SCAN',
                  fill_observed_at=observed,
                  last_checked_ts=observed)
 
@@ -282,7 +271,7 @@ def check_exits_live(db, candles, price, observed, now):
         tp=(price>=t['tp2'] if d==1 else price<=t['tp2'])
         if stop or tp:
             t.update(status='STOP' if stop else 'TP2',closed_at=observed,
-                     exit=price,exit_method='BINANCE_USDM_TICKER_LAST_AT_SCAN')
+                     exit=price,exit_method='OKX_TICKER_LAST_AT_SCAN')
 
 
 def check_exits(db,cs,now):
@@ -311,8 +300,8 @@ def main():
     global BARS
     now=int(time.time()*1000)
     # For EMA200 on 1D, 300 daily candles are required.
-    BARS={tf:api(bar,now) for tf,bar in legacy.BAR.items()}
-    minute_bars=api('1m',now)
+    BARS={tf:api(bar) for tf,bar in legacy.BAR.items()}
+    minute_bars=api('1m')
     price,observed=ticker_snapshot(now)
     clean={tf:latest_closed(BARS[tf],tf,now) for tf in DUR}
     if any(not v for v in clean.values()):raise RuntimeError('Insufficient/stale candles; no signals issued')
@@ -357,10 +346,10 @@ def main():
                 ema50=round(ix['ema50'],2),ema200=round(ix['ema200'],2),status='WAITING',
                 note='MANUAL ONLY. Limit price is a watch level, not an exchange order.'))
     db['signals']=db['signals'][-1000:]
-    db.update(market='BINANCE_USDM_BTCUSDT',version='7.30',updated_at=now,trend=trends,settings={'stop_atr':2.5,'tp1_r':1.5,'tp2_r':3.0,
+    db.update(version='7.30',updated_at=now,trend=trends,settings={'stop_atr':2.5,'tp1_r':1.5,'tp2_r':3.0,
       'tp1_partial':False,'max_hold_hours':240,'limit_valid_bars':LIMIT_BARS,'cooldown_hours':0,
       'allow_repeated_same_side':True,'score_gate':'disabled for independent opposing trends',
-      'paper_only':True,'entry_execution':'observed BINANCE_USDM ticker last price on 5-minute scan','exit_execution':'closed 1m OHLC + observed ticker', 'atr_at_fill':'last fully closed entry-timeframe bar',
+      'paper_only':True,'entry_execution':'observed OKX ticker last price on 5-minute scan','exit_execution':'closed 1m OHLC + observed ticker', 'atr_at_fill':'last fully closed entry-timeframe bar',
       'estimate_atr':'mean of ATR14 values on last 10 fully closed entry-timeframe bars',
       'reprice':'EMA20 on every closed entry-timeframe candle',
       'pending_validation':'ADX14>=25, EMA50/EMA200 direction, close relative to EMA50, at least one ORIGINAL parent trend source',
