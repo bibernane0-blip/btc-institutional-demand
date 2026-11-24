@@ -1248,12 +1248,12 @@
       "estimated_atr": 556.8988,
       "estimate_updated_at": 1795454100000,
       "last_repriced_candle_close": 1795454100000,
-      "last_checked_ts": 1795486800000,
+      "last_checked_ts": 1795486980000,
       "adx": 27.29,
       "ema20": 62447.88,
       "ema50": 62002.99,
       "ema200": 61000.73,
-      "status": "PAPER_OPEN",
+      "status": "STOP",
       "note": "MANUAL ONLY. Limit price is a watch level, not an exchange order.",
       "filled_at": 1795454434967,
       "entry": 61949.2,
@@ -1264,7 +1264,10 @@
       "tp1_touched": false,
       "fill_method": "OKX_TICKER_LAST_AT_SCAN",
       "fill_observed_at": 1795454434967,
-      "last_exit_bar_end": 1795486800000
+      "last_exit_bar_end": 1795486980000,
+      "closed_at": 1795486980000,
+      "exit": 60594.48745355814,
+      "exit_method": "1M_OHLC_STOP_FIRST"
     },
     {
       "id": "SHORT-4H-1795464000000",
@@ -1285,7 +1288,7 @@
       "estimated_atr": 1416.3253,
       "estimate_updated_at": 1795464000000,
       "last_repriced_candle_close": 1795464000000,
-      "last_checked_ts": 1795486800000,
+      "last_checked_ts": 1795487100000,
       "adx": 34.48,
       "ema20": 61085.54,
       "ema50": 62838.7,
@@ -1301,7 +1304,7 @@
       "tp1_touched": false,
       "fill_method": "OKX_TICKER_LAST_AT_SCAN",
       "fill_observed_at": 1795464339665,
-      "last_exit_bar_end": 1795486800000
+      "last_exit_bar_end": 1795487100000
     },
     {
       "id": "SHORT-4H-1795478400000",
@@ -1322,7 +1325,7 @@
       "estimated_atr": 1419.4142,
       "estimate_updated_at": 1795478400000,
       "last_repriced_candle_close": 1795478400000,
-      "last_checked_ts": 1795486800000,
+      "last_checked_ts": 1795487100000,
       "adx": 33.31,
       "ema20": 61103.37,
       "ema50": 62777.29,
@@ -1338,7 +1341,7 @@
       "tp1_touched": false,
       "fill_method": "OKX_TICKER_LAST_AT_SCAN",
       "fill_observed_at": 1795478734372,
-      "last_exit_bar_end": 1795486800000
+      "last_exit_bar_end": 1795487100000
     },
     {
       "id": "SHORT-1H-1795485600000",
@@ -1359,7 +1362,7 @@
       "estimated_atr": 751.1573,
       "estimate_updated_at": 1795485600000,
       "last_repriced_candle_close": 1795485600000,
-      "last_checked_ts": 1795486840067,
+      "last_checked_ts": 1795487134661,
       "adx": 29.52,
       "ema20": 61475.69,
       "ema50": 61163.83,
@@ -1368,7 +1371,7 @@
       "note": "MANUAL ONLY. Limit price is a watch level, not an exchange order."
     }
   ],
-  "updated_at": 1795486839556,
+  "updated_at": 1795487134866,
   "trend": {
     "1D": "SHORT",
     "4H": "LONG",
