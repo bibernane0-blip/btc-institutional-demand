@@ -1028,7 +1028,7 @@
       "estimated_atr": 1410.1719,
       "estimate_updated_at": 1795449600000,
       "last_repriced_candle_close": 1795449600000,
-      "last_checked_ts": 1795498200000,
+      "last_checked_ts": 1795499100000,
       "adx": 35.75,
       "ema20": 61066.39,
       "ema50": 62902.83,
@@ -1288,7 +1288,7 @@
       "estimated_atr": 1416.3253,
       "estimate_updated_at": 1795464000000,
       "last_repriced_candle_close": 1795464000000,
-      "last_checked_ts": 1795499700000,
+      "last_checked_ts": 1795500000000,
       "adx": 34.48,
       "ema20": 61085.54,
       "ema50": 62838.7,
@@ -1304,7 +1304,7 @@
       "tp1_touched": false,
       "fill_method": "OKX_TICKER_LAST_AT_SCAN",
       "fill_observed_at": 1795464339665,
-      "last_exit_bar_end": 1795499700000
+      "last_exit_bar_end": 1795500000000
     },
     {
       "id": "SHORT-4H-1795478400000",
@@ -1325,7 +1325,7 @@
       "estimated_atr": 1419.4142,
       "estimate_updated_at": 1795478400000,
       "last_repriced_candle_close": 1795478400000,
-      "last_checked_ts": 1795499700000,
+      "last_checked_ts": 1795500000000,
       "adx": 33.31,
       "ema20": 61103.37,
       "ema50": 62777.29,
@@ -1341,7 +1341,7 @@
       "tp1_touched": false,
       "fill_method": "OKX_TICKER_LAST_AT_SCAN",
       "fill_observed_at": 1795478734372,
-      "last_exit_bar_end": 1795499700000
+      "last_exit_bar_end": 1795500000000
     },
     {
       "id": "SHORT-1H-1795485600000",
@@ -1367,7 +1367,7 @@
       "ema20": 61164.27,
       "ema50": 61062.56,
       "ema200": 62318.47,
-      "status": "WAITING",
+      "status": "INVALIDATED",
       "note": "MANUAL ONLY. Limit price is a watch level, not an exchange order.",
       "limit_updates": [
         {
@@ -1382,7 +1382,9 @@
           "candle_close": 1795496400000,
           "limit_price": 61164.27
         }
-      ]
+      ],
+      "invalidated_at": 1795500000000,
+      "invalidated_reason": "ADX / EMA50-EMA200 / close-EMA50 / original parent trend"
     },
     {
       "id": "SHORT-1H-1795489200000",
@@ -1408,7 +1410,7 @@
       "ema20": 61164.27,
       "ema50": 61062.56,
       "ema200": 62318.47,
-      "status": "WAITING",
+      "status": "INVALIDATED",
       "note": "MANUAL ONLY. Limit price is a watch level, not an exchange order.",
       "limit_updates": [
         {
@@ -1419,7 +1421,9 @@
           "candle_close": 1795496400000,
           "limit_price": 61164.27
         }
-      ]
+      ],
+      "invalidated_at": 1795500000000,
+      "invalidated_reason": "ADX / EMA50-EMA200 / close-EMA50 / original parent trend"
     },
     {
       "id": "SHORT-4H-1795492800000",
@@ -1440,7 +1444,7 @@
       "estimated_atr": 1421.8118,
       "estimate_updated_at": 1795492800000,
       "last_repriced_candle_close": 1795492800000,
-      "last_checked_ts": 1795499734566,
+      "last_checked_ts": 1795500035067,
       "adx": 31.08,
       "ema20": 61030.29,
       "ema50": 62681.55,
@@ -1472,14 +1476,16 @@
       "ema20": 61164.27,
       "ema50": 61062.56,
       "ema200": 62318.47,
-      "status": "WAITING",
+      "status": "INVALIDATED",
       "note": "MANUAL ONLY. Limit price is a watch level, not an exchange order.",
       "limit_updates": [
         {
           "candle_close": 1795496400000,
           "limit_price": 61164.27
         }
-      ]
+      ],
+      "invalidated_at": 1795500000000,
+      "invalidated_reason": "ADX / EMA50-EMA200 / close-EMA50 / original parent trend"
     },
     {
       "id": "SHORT-1H-1795496400000",
@@ -1505,11 +1511,13 @@
       "ema20": 61164.27,
       "ema50": 61062.65,
       "ema200": 62662.25,
-      "status": "WAITING",
-      "note": "MANUAL ONLY. Limit price is a watch level, not an exchange order."
+      "status": "INVALIDATED",
+      "note": "MANUAL ONLY. Limit price is a watch level, not an exchange order.",
+      "invalidated_at": 1795500000000,
+      "invalidated_reason": "ADX / EMA50-EMA200 / close-EMA50 / original parent trend"
     }
   ],
-  "updated_at": 1795499734328,
+  "updated_at": 1795500035030,
   "trend": {
     "1D": "SHORT",
     "4H": "LONG",
