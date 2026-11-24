@@ -312,7 +312,7 @@ main{max-width:1480px;padding:0 34px 80px}
 
  <!-- manual signals add-on: legacy dashboard remains intact -->
  <section class="card signals-priority" id="manualSignalV728" aria-label="Manuel işlem sinyalleri">
-  <div class="section-kicker">EXECUTION WATCHLIST / PAPER ONLY</div><h2>Manuel sinyal merkezi </h2>
+  <div class="section-kicker">EXECUTION WATCHLIST / PAPER ONLY</div><h2>Binance USDⓈ-M BTCUSDT · Manuel sinyal merkezi </h2>
   <div id="manualV728Status" class="small" role="status">Sinyaller yükleniyor…</div>
   <div style="overflow-x:auto;margin-top:12px">
    <table><thead><tr><th>Oluşma</th><th>Yön</th><th>Giriş TF</th><th>Üst trend</th><th>Limit ($)</th><th>PAPER Giriş ($)</th><th>Durum</th><th>Stop ($)</th><th>TP1 ($)</th><th>TP2 ($)</th><th>ATR hesabı</th></tr></thead>
@@ -1418,7 +1418,7 @@ init().catch(error => {
  }
  async function update(){
   try{
-   const r=await fetch('./manual_signals_v7_28.json?t='+Date.now(),{cache:'no-store'});
+   const r=await fetch('./binance_manual_signals.json?t='+Date.now(),{cache:'no-store'});
    if(!r.ok)throw Error('Sinyal verisi henüz bulunamadı (HTTP '+r.status+')');
    const db=await r.json();records=Array.isArray(db.signals)?db.signals.slice().sort((a,b)=>Number(b.created_at||0)-Number(a.created_at||0)):[];updatedAt=db.updated_at;render();
   }catch(e){$('manualV728Status').textContent='Sinyal verisi yüklenemedi: '+e.message;}
@@ -1440,7 +1440,7 @@ init().catch(error => {
  const fmt=t=>new Intl.DateTimeFormat('tr-TR',{hour:'2-digit',minute:'2-digit',timeZone:'Europe/Istanbul'}).format(new Date(t));
  async function summary(){
   try{
-   const response=await fetch('./manual_signals_v7_28.json?dashboard='+Date.now(),{cache:'no-store'});
+   const response=await fetch('./binance_manual_signals.json?dashboard='+Date.now(),{cache:'no-store'});
    if(!response.ok)throw Error('HTTP '+response.status);
    const db=await response.json(),items=Array.isArray(db.signals)?db.signals:[];
    const active=items.filter(x=>x.status==='PAPER_OPEN'),waiting=items.filter(x=>x.status==='WAITING'&&(!Number.isFinite(Number(x.expires_at))||Date.now()<Number(x.expires_at))); 
@@ -1497,7 +1497,7 @@ init().catch(error => {
  }
  async function render(){
   try{
-   const resp=await fetch('./manual_signals_v7_28.json?performance='+Date.now(),{cache:'no-store'});
+   const resp=await fetch('./binance_manual_signals.json?performance='+Date.now(),{cache:'no-store'});
    if(!resp.ok)throw Error('HTTP '+resp.status);
    const db=await resp.json(),all=Array.isArray(db.signals)?db.signals:[];
    // Historical legacy rows may be present. Only completed entries with valid risk can contribute.
