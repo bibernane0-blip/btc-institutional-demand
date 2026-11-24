@@ -1444,7 +1444,7 @@
       "estimated_atr": 1418.3601,
       "estimate_updated_at": 1795521600000,
       "last_repriced_candle_close": 1795521600000,
-      "last_checked_ts": 1795523135472,
+      "last_checked_ts": 1795523157771,
       "adx": 27.77,
       "ema20": 60922.0,
       "ema50": 62508.68,
@@ -1545,7 +1545,7 @@
       "estimated_atr": 1418.3601,
       "estimate_updated_at": 1795521600000,
       "last_repriced_candle_close": 1795521600000,
-      "last_checked_ts": 1795523135472,
+      "last_checked_ts": 1795523157771,
       "adx": 27.77,
       "ema20": 60922.0,
       "ema50": 62508.68,
@@ -2061,7 +2061,7 @@
       "estimated_atr": 1418.3601,
       "estimate_updated_at": 1795521600000,
       "last_repriced_candle_close": 1795521600000,
-      "last_checked_ts": 1795523135472,
+      "last_checked_ts": 1795523157771,
       "adx": 27.77,
       "ema20": 60922.0,
       "ema50": 62508.7,
@@ -2146,7 +2146,7 @@
       "last_exit_bar_end": 1795523100000
     }
   ],
-  "updated_at": 1795523135095,
+  "updated_at": 1795523157167,
   "trend": {
     "1D": "SHORT",
     "4H": "LONG",
