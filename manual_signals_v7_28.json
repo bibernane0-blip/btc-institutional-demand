@@ -2486,7 +2486,7 @@
       "invalidated_reason": "ADX / EMA50-EMA200 / close-EMA50 / original parent trend"
     }
   ],
-  "updated_at": 1795569934850,
+  "updated_at": 1795569957724,
   "trend": {
     "1D": "SHORT",
     "4H": "LONG",
