@@ -3044,7 +3044,7 @@
       "estimated_atr": 247.7126,
       "estimate_updated_at": 1795594500000,
       "last_repriced_candle_close": 1795594500000,
-      "last_checked_ts": 1795594503191,
+      "last_checked_ts": 1795594536466,
       "adx": 26.71,
       "ema20": 59137.56,
       "ema50": 59407.15,
@@ -3082,7 +3082,7 @@
       "estimated_atr": 247.7126,
       "estimate_updated_at": 1795594500000,
       "last_repriced_candle_close": 1795594500000,
-      "last_checked_ts": 1795594503191,
+      "last_checked_ts": 1795594536466,
       "adx": 26.71,
       "ema20": 59137.56,
       "ema50": 59407.15,
@@ -3116,7 +3116,7 @@
       "estimated_atr": 247.7126,
       "estimate_updated_at": 1795594500000,
       "last_repriced_candle_close": 1795594500000,
-      "last_checked_ts": 1795594503209,
+      "last_checked_ts": 1795594536466,
       "adx": 26.71,
       "ema20": 59137.56,
       "ema50": 59407.14,
@@ -3125,7 +3125,7 @@
       "note": "MANUAL ONLY. Limit price is a watch level, not an exchange order."
     }
   ],
-  "updated_at": 1795594503209,
+  "updated_at": 1795594535833,
   "trend": {
     "1D": "SHORT",
     "4H": "LONG",
