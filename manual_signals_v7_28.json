@@ -1028,7 +1028,7 @@
       "estimated_atr": 1410.1719,
       "estimate_updated_at": 1795449600000,
       "last_repriced_candle_close": 1795449600000,
-      "last_checked_ts": 1795572900000,
+      "last_checked_ts": 1795573800000,
       "adx": 35.75,
       "ema20": 61066.39,
       "ema50": 62902.83,
@@ -1288,7 +1288,7 @@
       "estimated_atr": 1416.3253,
       "estimate_updated_at": 1795464000000,
       "last_repriced_candle_close": 1795464000000,
-      "last_checked_ts": 1795574400000,
+      "last_checked_ts": 1795574700000,
       "adx": 34.48,
       "ema20": 61085.54,
       "ema50": 62838.7,
@@ -1304,7 +1304,7 @@
       "tp1_touched": false,
       "fill_method": "OKX_TICKER_LAST_AT_SCAN",
       "fill_observed_at": 1795464339665,
-      "last_exit_bar_end": 1795574400000
+      "last_exit_bar_end": 1795574700000
     },
     {
       "id": "SHORT-4H-1795478400000",
@@ -1325,7 +1325,7 @@
       "estimated_atr": 1419.4142,
       "estimate_updated_at": 1795478400000,
       "last_repriced_candle_close": 1795478400000,
-      "last_checked_ts": 1795574400000,
+      "last_checked_ts": 1795574700000,
       "adx": 33.31,
       "ema20": 61103.37,
       "ema50": 62777.29,
@@ -1341,7 +1341,7 @@
       "tp1_touched": false,
       "fill_method": "OKX_TICKER_LAST_AT_SCAN",
       "fill_observed_at": 1795478734372,
-      "last_exit_bar_end": 1795574400000
+      "last_exit_bar_end": 1795574700000
     },
     {
       "id": "SHORT-1H-1795485600000",
@@ -1900,7 +1900,7 @@
       "estimated_atr": 276.4201,
       "estimate_updated_at": 1795520700000,
       "last_repriced_candle_close": 1795520700000,
-      "last_checked_ts": 1795574400000,
+      "last_checked_ts": 1795574700000,
       "adx": 39.55,
       "ema20": 60068.74,
       "ema50": 60453.83,
@@ -1930,7 +1930,7 @@
       "tp1_touched": true,
       "fill_method": "OKX_TICKER_LAST_AT_SCAN",
       "fill_observed_at": 1795521041272,
-      "last_exit_bar_end": 1795574400000
+      "last_exit_bar_end": 1795574700000
     },
     {
       "id": "SHORT-15m-1795518900000",
@@ -1952,7 +1952,7 @@
       "estimated_atr": 276.4201,
       "estimate_updated_at": 1795520700000,
       "last_repriced_candle_close": 1795520700000,
-      "last_checked_ts": 1795574400000,
+      "last_checked_ts": 1795574700000,
       "adx": 39.55,
       "ema20": 60068.74,
       "ema50": 60453.83,
@@ -1978,7 +1978,7 @@
       "tp1_touched": true,
       "fill_method": "OKX_TICKER_LAST_AT_SCAN",
       "fill_observed_at": 1795521041272,
-      "last_exit_bar_end": 1795574400000
+      "last_exit_bar_end": 1795574700000
     },
     {
       "id": "SHORT-15m-1795519800000",
@@ -2000,7 +2000,7 @@
       "estimated_atr": 276.4201,
       "estimate_updated_at": 1795520700000,
       "last_repriced_candle_close": 1795520700000,
-      "last_checked_ts": 1795574400000,
+      "last_checked_ts": 1795574700000,
       "adx": 39.55,
       "ema20": 60068.74,
       "ema50": 60453.83,
@@ -2022,7 +2022,7 @@
       "tp1_touched": true,
       "fill_method": "OKX_TICKER_LAST_AT_SCAN",
       "fill_observed_at": 1795521041272,
-      "last_exit_bar_end": 1795574400000
+      "last_exit_bar_end": 1795574700000
     },
     {
       "id": "SHORT-15m-1795520700000",
@@ -2044,7 +2044,7 @@
       "estimated_atr": 276.4201,
       "estimate_updated_at": 1795520700000,
       "last_repriced_candle_close": 1795520700000,
-      "last_checked_ts": 1795574400000,
+      "last_checked_ts": 1795574700000,
       "adx": 39.55,
       "ema20": 60068.74,
       "ema50": 60453.8,
@@ -2060,7 +2060,7 @@
       "tp1_touched": true,
       "fill_method": "OKX_TICKER_LAST_AT_SCAN",
       "fill_observed_at": 1795521041272,
-      "last_exit_bar_end": 1795574400000
+      "last_exit_bar_end": 1795574700000
     },
     {
       "id": "SHORT-4H-1795521600000",
@@ -2121,7 +2121,7 @@
       "estimated_atr": 277.1079,
       "estimate_updated_at": 1795521600000,
       "last_repriced_candle_close": 1795521600000,
-      "last_checked_ts": 1795574400000,
+      "last_checked_ts": 1795574700000,
       "adx": 37.17,
       "ema20": 60102.77,
       "ema50": 60452.71,
@@ -2137,7 +2137,7 @@
       "tp1_touched": true,
       "fill_method": "OKX_TICKER_LAST_AT_SCAN",
       "fill_observed_at": 1795521934772,
-      "last_exit_bar_end": 1795574400000
+      "last_exit_bar_end": 1795574700000
     },
     {
       "id": "SHORT-15m-1795522500000",
@@ -2159,7 +2159,7 @@
       "estimated_atr": 277.2509,
       "estimate_updated_at": 1795522500000,
       "last_repriced_candle_close": 1795522500000,
-      "last_checked_ts": 1795574400000,
+      "last_checked_ts": 1795574700000,
       "adx": 34.97,
       "ema20": 60115.89,
       "ema50": 60444.39,
@@ -2175,7 +2175,7 @@
       "tp1_touched": true,
       "fill_method": "OKX_TICKER_LAST_AT_SCAN",
       "fill_observed_at": 1795522842576,
-      "last_exit_bar_end": 1795574400000
+      "last_exit_bar_end": 1795574700000
     },
     {
       "id": "SHORT-15m-1795523400000",
@@ -2197,7 +2197,7 @@
       "estimated_atr": 276.3094,
       "estimate_updated_at": 1795523400000,
       "last_repriced_candle_close": 1795523400000,
-      "last_checked_ts": 1795574400000,
+      "last_checked_ts": 1795574700000,
       "adx": 32.96,
       "ema20": 60129.33,
       "ema50": 60437.04,
@@ -2213,7 +2213,7 @@
       "tp1_touched": true,
       "fill_method": "OKX_TICKER_LAST_AT_SCAN",
       "fill_observed_at": 1795523740076,
-      "last_exit_bar_end": 1795574400000
+      "last_exit_bar_end": 1795574700000
     },
     {
       "id": "SHORT-15m-1795526100000",
@@ -2235,7 +2235,7 @@
       "estimated_atr": 297.4489,
       "estimate_updated_at": 1795527900000,
       "last_repriced_candle_close": 1795527900000,
-      "last_checked_ts": 1795574400000,
+      "last_checked_ts": 1795574700000,
       "adx": 28.11,
       "ema20": 60172.1,
       "ema50": 60403.3,
@@ -2261,7 +2261,7 @@
       "tp1_touched": false,
       "fill_method": "OKX_TICKER_LAST_AT_SCAN",
       "fill_observed_at": 1795528012368,
-      "last_exit_bar_end": 1795574400000
+      "last_exit_bar_end": 1795574700000
     },
     {
       "id": "SHORT-15m-1795527000000",
@@ -2283,7 +2283,7 @@
       "estimated_atr": 297.4489,
       "estimate_updated_at": 1795527900000,
       "last_repriced_candle_close": 1795527900000,
-      "last_checked_ts": 1795574400000,
+      "last_checked_ts": 1795574700000,
       "adx": 28.11,
       "ema20": 60172.1,
       "ema50": 60403.3,
@@ -2305,7 +2305,7 @@
       "tp1_touched": false,
       "fill_method": "OKX_TICKER_LAST_AT_SCAN",
       "fill_observed_at": 1795528012368,
-      "last_exit_bar_end": 1795574400000
+      "last_exit_bar_end": 1795574700000
     },
     {
       "id": "SHORT-15m-1795527900000",
@@ -2327,7 +2327,7 @@
       "estimated_atr": 297.4489,
       "estimate_updated_at": 1795527900000,
       "last_repriced_candle_close": 1795527900000,
-      "last_checked_ts": 1795574400000,
+      "last_checked_ts": 1795574700000,
       "adx": 28.11,
       "ema20": 60172.1,
       "ema50": 60403.29,
@@ -2343,7 +2343,7 @@
       "tp1_touched": false,
       "fill_method": "OKX_TICKER_LAST_AT_SCAN",
       "fill_observed_at": 1795528012368,
-      "last_exit_bar_end": 1795574400000
+      "last_exit_bar_end": 1795574700000
     },
     {
       "id": "SHORT-15m-1795528800000",
@@ -2365,7 +2365,7 @@
       "estimated_atr": 302.5054,
       "estimate_updated_at": 1795528800000,
       "last_repriced_candle_close": 1795528800000,
-      "last_checked_ts": 1795574400000,
+      "last_checked_ts": 1795574700000,
       "adx": 27.67,
       "ema20": 60157.11,
       "ema50": 60388.05,
@@ -2381,7 +2381,7 @@
       "tp1_touched": true,
       "fill_method": "OKX_TICKER_LAST_AT_SCAN",
       "fill_observed_at": 1795529138564,
-      "last_exit_bar_end": 1795574400000
+      "last_exit_bar_end": 1795574700000
     },
     {
       "id": "SHORT-15m-1795529700000",
@@ -2403,7 +2403,7 @@
       "estimated_atr": 309.3743,
       "estimate_updated_at": 1795529700000,
       "last_repriced_candle_close": 1795529700000,
-      "last_checked_ts": 1795574400000,
+      "last_checked_ts": 1795574700000,
       "adx": 25.97,
       "ema20": 60173.29,
       "ema50": 60385.65,
@@ -2419,7 +2419,7 @@
       "tp1_touched": true,
       "fill_method": "OKX_TICKER_LAST_AT_SCAN",
       "fill_observed_at": 1795530033767,
-      "last_exit_bar_end": 1795574400000
+      "last_exit_bar_end": 1795574700000
     },
     {
       "id": "SHORT-4H-1795536000000",
@@ -2484,9 +2484,36 @@
       "note": "MANUAL ONLY. Limit price is a watch level, not an exchange order.",
       "invalidated_at": 1795564800000,
       "invalidated_reason": "ADX / EMA50-EMA200 / close-EMA50 / original parent trend"
+    },
+    {
+      "id": "SHORT-15m-1795574700000",
+      "side": "SHORT",
+      "trend_sources": [
+        "1D"
+      ],
+      "entry_timeframe": "15m",
+      "created_at": 1795574736711,
+      "signal_candle_close": 1795574700000,
+      "expires_at": 1795578300000,
+      "strategy_version": "7.30",
+      "limit_valid_bars": 4,
+      "limit_price": 59549.81,
+      "estimated_stop": 60095.22,
+      "estimated_tp1": 58731.69,
+      "estimated_tp2": 57913.58,
+      "estimated_atr": 218.1646,
+      "estimate_updated_at": 1795574700000,
+      "last_repriced_candle_close": 1795574700000,
+      "last_checked_ts": 1795574736711,
+      "adx": 25.33,
+      "ema20": 59549.81,
+      "ema50": 59783.84,
+      "ema200": 60403.23,
+      "status": "WAITING",
+      "note": "MANUAL ONLY. Limit price is a watch level, not an exchange order."
     }
   ],
-  "updated_at": 1795574434482,
+  "updated_at": 1795574736711,
   "trend": {
     "1D": "SHORT",
     "4H": "LONG",
