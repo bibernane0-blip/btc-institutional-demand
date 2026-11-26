@@ -1028,7 +1028,7 @@
       "estimated_atr": 1410.1719,
       "estimate_updated_at": 1795449600000,
       "last_repriced_candle_close": 1795449600000,
-      "last_checked_ts": 1795660200000,
+      "last_checked_ts": 1795661100000,
       "adx": 35.75,
       "ema20": 61066.39,
       "ema50": 62902.83,
@@ -1288,7 +1288,7 @@
       "estimated_atr": 1416.3253,
       "estimate_updated_at": 1795464000000,
       "last_repriced_candle_close": 1795464000000,
-      "last_checked_ts": 1795661700000,
+      "last_checked_ts": 1795662000000,
       "adx": 34.48,
       "ema20": 61085.54,
       "ema50": 62838.7,
@@ -1304,7 +1304,7 @@
       "tp1_touched": false,
       "fill_method": "OKX_TICKER_LAST_AT_SCAN",
       "fill_observed_at": 1795464339665,
-      "last_exit_bar_end": 1795661700000
+      "last_exit_bar_end": 1795662000000
     },
     {
       "id": "SHORT-4H-1795478400000",
@@ -1325,7 +1325,7 @@
       "estimated_atr": 1419.4142,
       "estimate_updated_at": 1795478400000,
       "last_repriced_candle_close": 1795478400000,
-      "last_checked_ts": 1795661700000,
+      "last_checked_ts": 1795662000000,
       "adx": 33.31,
       "ema20": 61103.37,
       "ema50": 62777.29,
@@ -1341,7 +1341,7 @@
       "tp1_touched": false,
       "fill_method": "OKX_TICKER_LAST_AT_SCAN",
       "fill_observed_at": 1795478734372,
-      "last_exit_bar_end": 1795661700000
+      "last_exit_bar_end": 1795662000000
     },
     {
       "id": "SHORT-1H-1795485600000",
@@ -3972,7 +3972,7 @@
       "estimated_atr": 1341.9881,
       "estimate_updated_at": 1795622400000,
       "last_repriced_candle_close": 1795622400000,
-      "last_checked_ts": 1795661700000,
+      "last_checked_ts": 1795662000000,
       "adx": 25.25,
       "ema20": 59998.95,
       "ema50": 61689.11,
@@ -3988,7 +3988,7 @@
       "tp1_touched": false,
       "fill_method": "OKX_TICKER_LAST_AT_SCAN",
       "fill_observed_at": 1795633543270,
-      "last_exit_bar_end": 1795661700000
+      "last_exit_bar_end": 1795662000000
     },
     {
       "id": "SHORT-1H-1795622400000",
@@ -4115,13 +4115,40 @@
       "closed_at": 1795652220000,
       "exit": 61427.57961350621,
       "exit_method": "1M_OHLC_STOP_FIRST"
+    },
+    {
+      "id": "LONG-15m-1795662000000",
+      "side": "LONG",
+      "trend_sources": [
+        "1H"
+      ],
+      "entry_timeframe": "15m",
+      "created_at": 1795662039456,
+      "signal_candle_close": 1795662000000,
+      "expires_at": 1795665600000,
+      "strategy_version": "7.30",
+      "limit_valid_bars": 4,
+      "limit_price": 60595.71,
+      "estimated_stop": 59799.16,
+      "estimated_tp1": 61790.53,
+      "estimated_tp2": 62985.35,
+      "estimated_atr": 318.6191,
+      "estimate_updated_at": 1795662000000,
+      "last_repriced_candle_close": 1795662000000,
+      "last_checked_ts": 1795662039456,
+      "adx": 41.18,
+      "ema20": 60595.71,
+      "ema50": 60084.04,
+      "ema200": 59928.36,
+      "status": "WAITING",
+      "note": "MANUAL ONLY. Limit price is a watch level, not an exchange order."
     }
   ],
-  "updated_at": 1795661737337,
+  "updated_at": 1795662039456,
   "trend": {
     "1D": "SHORT",
     "4H": "YATAY",
-    "1H": "YATAY"
+    "1H": "LONG"
   },
   "settings": {
     "stop_atr": 2.5,
