@@ -1288,7 +1288,7 @@
       "estimated_atr": 1416.3253,
       "estimate_updated_at": 1795464000000,
       "last_repriced_candle_close": 1795464000000,
-      "last_checked_ts": 1795667700000,
+      "last_checked_ts": 1795668000000,
       "adx": 34.48,
       "ema20": 61085.54,
       "ema50": 62838.7,
@@ -1304,7 +1304,7 @@
       "tp1_touched": false,
       "fill_method": "OKX_TICKER_LAST_AT_SCAN",
       "fill_observed_at": 1795464339665,
-      "last_exit_bar_end": 1795667700000
+      "last_exit_bar_end": 1795668000000
     },
     {
       "id": "SHORT-4H-1795478400000",
@@ -1325,7 +1325,7 @@
       "estimated_atr": 1419.4142,
       "estimate_updated_at": 1795478400000,
       "last_repriced_candle_close": 1795478400000,
-      "last_checked_ts": 1795667700000,
+      "last_checked_ts": 1795668000000,
       "adx": 33.31,
       "ema20": 61103.37,
       "ema50": 62777.29,
@@ -1341,7 +1341,7 @@
       "tp1_touched": false,
       "fill_method": "OKX_TICKER_LAST_AT_SCAN",
       "fill_observed_at": 1795478734372,
-      "last_exit_bar_end": 1795667700000
+      "last_exit_bar_end": 1795668000000
     },
     {
       "id": "SHORT-1H-1795485600000",
@@ -3972,7 +3972,7 @@
       "estimated_atr": 1341.9881,
       "estimate_updated_at": 1795622400000,
       "last_repriced_candle_close": 1795622400000,
-      "last_checked_ts": 1795667700000,
+      "last_checked_ts": 1795668000000,
       "adx": 25.25,
       "ema20": 59998.95,
       "ema50": 61689.11,
@@ -3988,7 +3988,7 @@
       "tp1_touched": false,
       "fill_method": "OKX_TICKER_LAST_AT_SCAN",
       "fill_observed_at": 1795633543270,
-      "last_exit_bar_end": 1795667700000
+      "last_exit_bar_end": 1795668000000
     },
     {
       "id": "SHORT-1H-1795622400000",
@@ -4261,7 +4261,7 @@
       "estimated_atr": 287.6978,
       "estimate_updated_at": 1795667400000,
       "last_repriced_candle_close": 1795667400000,
-      "last_checked_ts": 1795667733069,
+      "last_checked_ts": 1795668035868,
       "adx": 39.17,
       "ema20": 60715.11,
       "ema50": 60247.3,
@@ -4302,7 +4302,7 @@
       "estimated_atr": 287.6978,
       "estimate_updated_at": 1795667400000,
       "last_repriced_candle_close": 1795667400000,
-      "last_checked_ts": 1795667733069,
+      "last_checked_ts": 1795668035868,
       "adx": 39.17,
       "ema20": 60715.11,
       "ema50": 60247.3,
@@ -4339,7 +4339,7 @@
       "estimated_atr": 287.6978,
       "estimate_updated_at": 1795667400000,
       "last_repriced_candle_close": 1795667400000,
-      "last_checked_ts": 1795667733069,
+      "last_checked_ts": 1795668035868,
       "adx": 39.17,
       "ema20": 60715.11,
       "ema50": 60247.3,
@@ -4372,7 +4372,7 @@
       "estimated_atr": 287.6977,
       "estimate_updated_at": 1795667400000,
       "last_repriced_candle_close": 1795667400000,
-      "last_checked_ts": 1795667733069,
+      "last_checked_ts": 1795668035868,
       "adx": 39.17,
       "ema20": 60715.11,
       "ema50": 60247.21,
@@ -4381,7 +4381,7 @@
       "note": "MANUAL ONLY. Limit price is a watch level, not an exchange order."
     }
   ],
-  "updated_at": 1795667731969,
+  "updated_at": 1795668035586,
   "trend": {
     "1D": "SHORT",
     "4H": "YATAY",
