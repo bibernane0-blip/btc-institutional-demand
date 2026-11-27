@@ -5760,7 +5760,7 @@
       "estimated_atr": 221.0622,
       "estimate_updated_at": 1795775400000,
       "last_repriced_candle_close": 1795775400000,
-      "last_checked_ts": 1795775436572,
+      "last_checked_ts": 1795775452663,
       "adx": 37.37,
       "ema20": 61668.39,
       "ema50": 61412.74,
@@ -5769,7 +5769,7 @@
       "note": "MANUAL ONLY. Limit price is a watch level, not an exchange order."
     }
   ],
-  "updated_at": 1795775436572,
+  "updated_at": 1795775452908,
   "trend": {
     "1D": "SHORT",
     "4H": "YATAY",
