@@ -1288,7 +1288,7 @@
       "estimated_atr": 1416.3253,
       "estimate_updated_at": 1795464000000,
       "last_repriced_candle_close": 1795464000000,
-      "last_checked_ts": 1795854000000,
+      "last_checked_ts": 1795854300000,
       "adx": 34.48,
       "ema20": 61085.54,
       "ema50": 62838.7,
@@ -1304,7 +1304,7 @@
       "tp1_touched": false,
       "fill_method": "OKX_TICKER_LAST_AT_SCAN",
       "fill_observed_at": 1795464339665,
-      "last_exit_bar_end": 1795854000000
+      "last_exit_bar_end": 1795854300000
     },
     {
       "id": "SHORT-4H-1795478400000",
@@ -1325,7 +1325,7 @@
       "estimated_atr": 1419.4142,
       "estimate_updated_at": 1795478400000,
       "last_repriced_candle_close": 1795478400000,
-      "last_checked_ts": 1795854000000,
+      "last_checked_ts": 1795854300000,
       "adx": 33.31,
       "ema20": 61103.37,
       "ema50": 62777.29,
@@ -1341,7 +1341,7 @@
       "tp1_touched": false,
       "fill_method": "OKX_TICKER_LAST_AT_SCAN",
       "fill_observed_at": 1795478734372,
-      "last_exit_bar_end": 1795854000000
+      "last_exit_bar_end": 1795854300000
     },
     {
       "id": "SHORT-1H-1795485600000",
@@ -3972,7 +3972,7 @@
       "estimated_atr": 1341.9881,
       "estimate_updated_at": 1795622400000,
       "last_repriced_candle_close": 1795622400000,
-      "last_checked_ts": 1795854000000,
+      "last_checked_ts": 1795854300000,
       "adx": 25.25,
       "ema20": 59998.95,
       "ema50": 61689.11,
@@ -3988,7 +3988,7 @@
       "tp1_touched": false,
       "fill_method": "OKX_TICKER_LAST_AT_SCAN",
       "fill_observed_at": 1795633543270,
-      "last_exit_bar_end": 1795854000000
+      "last_exit_bar_end": 1795854300000
     },
     {
       "id": "SHORT-1H-1795622400000",
@@ -7235,7 +7235,7 @@
       "estimated_atr": 190.5675,
       "estimate_updated_at": 1795823100000,
       "last_repriced_candle_close": 1795823100000,
-      "last_checked_ts": 1795854000000,
+      "last_checked_ts": 1795854300000,
       "adx": 31.4,
       "ema20": 59867.0,
       "ema50": 60217.52,
@@ -7265,7 +7265,7 @@
       "tp1_touched": true,
       "fill_method": "OKX_TICKER_LAST_AT_SCAN",
       "fill_observed_at": 1795823434067,
-      "last_exit_bar_end": 1795854000000
+      "last_exit_bar_end": 1795854300000
     },
     {
       "id": "SHORT-15m-1795821300000",
@@ -7286,7 +7286,7 @@
       "estimated_atr": 190.5675,
       "estimate_updated_at": 1795823100000,
       "last_repriced_candle_close": 1795823100000,
-      "last_checked_ts": 1795854000000,
+      "last_checked_ts": 1795854300000,
       "adx": 31.4,
       "ema20": 59867.0,
       "ema50": 60217.52,
@@ -7312,7 +7312,7 @@
       "tp1_touched": true,
       "fill_method": "OKX_TICKER_LAST_AT_SCAN",
       "fill_observed_at": 1795823434067,
-      "last_exit_bar_end": 1795854000000
+      "last_exit_bar_end": 1795854300000
     },
     {
       "id": "SHORT-15m-1795822200000",
@@ -7333,7 +7333,7 @@
       "estimated_atr": 190.5675,
       "estimate_updated_at": 1795823100000,
       "last_repriced_candle_close": 1795823100000,
-      "last_checked_ts": 1795854000000,
+      "last_checked_ts": 1795854300000,
       "adx": 31.4,
       "ema20": 59867.0,
       "ema50": 60217.52,
@@ -7355,7 +7355,7 @@
       "tp1_touched": true,
       "fill_method": "OKX_TICKER_LAST_AT_SCAN",
       "fill_observed_at": 1795823434067,
-      "last_exit_bar_end": 1795854000000
+      "last_exit_bar_end": 1795854300000
     },
     {
       "id": "SHORT-15m-1795823100000",
@@ -7376,7 +7376,7 @@
       "estimated_atr": 190.5675,
       "estimate_updated_at": 1795823100000,
       "last_repriced_candle_close": 1795823100000,
-      "last_checked_ts": 1795854000000,
+      "last_checked_ts": 1795854300000,
       "adx": 31.4,
       "ema20": 59867.0,
       "ema50": 60217.53,
@@ -7392,10 +7392,10 @@
       "tp1_touched": true,
       "fill_method": "OKX_TICKER_LAST_AT_SCAN",
       "fill_observed_at": 1795823434067,
-      "last_exit_bar_end": 1795854000000
+      "last_exit_bar_end": 1795854300000
     }
   ],
-  "updated_at": 1795854034861,
+  "updated_at": 1795854341505,
   "trend": {
     "1D": "YATAY",
     "4H": "YATAY",
